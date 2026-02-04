@@ -7,8 +7,10 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "cd frontend && npm install && npm run build",
     "build:frontend": "cd frontend && npm run build",
-    "start:backend": "cd backend && npm start"
+    "start:backend": "cd backend && npm start",
+    "vercel-build": "cd frontend && npm install && npm run build"
   },
   "keywords": ["refresh-breeze", "cheki", "idol"],
   "author": "Refresh Breeze",
