@@ -1,0 +1,15 @@
+# Backend Keys
+NODE_ENV=production
+# PORT is handled by Vercel automatically, usually not needed but harmless
+PORT=5000
+SUPABASE_URL=https://zwrhcxqfnshcgyfuuzbl.supabase.co
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3cmhjeHFmbnNoY2d5ZnV1emJsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDA5Njk1MSwiZXhwIjoyMDg1NjcyOTUxfQ.7p7YN8OEEBChTa6VeFV09O6YjL8d_AZjK1E_4lsP6KE
+JWT_SECRET=refresh_breeze_demo_secret_key_2026
+# Update this after you have your Vercel URL, or use the default production URL provided by Vercel
+FRONTEND_URL=https://your-project-name.vercel.app
+
+# Frontend Keys
+VITE_SUPABASE_URL=https://zwrhcxqfnshcgyfuuzbl.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3cmhjeHFmbnNoY2d5ZnV1emJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTY5NTEsImV4cCI6MjA4NTY3Mjk1MX0.xLwFxezQoxYnzHiHPQvhvxK66uPga5LvHm0K1M2w7-8
+# Use relative path for Vercel deployment so frontend requests go to the same domain's /api
+VITE_API_URL=/api
