@@ -326,8 +326,13 @@ const AdminPage = () => {
       const queryString = new URLSearchParams(params).toString()
       const token = localStorage.getItem('admin_token')
       
+      // Construct API URL - use relative path in production
+      const apiUrl = import.meta.env.MODE === 'production' 
+        ? '/api' 
+        : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
+      
       // Fetch with authorization header
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/export/excel?${queryString}`, {
+      const response = await fetch(`${apiUrl}/orders/export/excel?${queryString}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
