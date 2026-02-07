@@ -50,7 +50,7 @@ router.get('/', authMiddleware, async (req, res) => {
       query = query.lte('created_at', dateTo)
     }
 
-    // Search by name, email, or order number
+    // Search by name or order number
     if (search) {
       query = query.or(`nama_lengkap.ilike.%${search}%,email.ilike.%${search}%,order_number.ilike.%${search}%`)
     }
@@ -296,7 +296,6 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
       { header: 'Tipe', key: 'tipe', width: 12 },
       { header: 'Nama Lengkap', key: 'nama_lengkap', width: 25 },
       { header: 'WhatsApp', key: 'whatsapp', width: 16 },
-      { header: 'Email', key: 'email', width: 30 },
       { header: 'Instagram', key: 'instagram', width: 20 },
       { header: 'Items', key: 'items', width: 45 },
       { header: 'Total Harga', key: 'total_harga', width: 18 },
@@ -326,7 +325,6 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
           tipe: order.is_ots ? 'OTS' : 'Pre-Order',
           nama_lengkap: order.nama_lengkap,
           whatsapp: order.whatsapp,
-          email: order.email,
           instagram: order.instagram || '-',
           items: itemsText,
           total_harga: order.total_harga,

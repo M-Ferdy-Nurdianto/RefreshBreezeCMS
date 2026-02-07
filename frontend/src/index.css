@@ -152,3 +152,11 @@
 .hero-column:hover::after {
   @apply opacity-20;
 }
+
+@media only screen and (max-width: 480px) {
+  .Toastify__toast-container {
+    width: 90vw !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}

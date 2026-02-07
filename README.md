@@ -30,7 +30,7 @@ Website fullstack untuk penjualan Cheki (foto polaroid) dengan member Refresh Br
   - Type (OTS/Pre-Order)
   - Event (filter by specific event)
   - Date Range (week/month/custom)
-  - Search (nama/email/order number)
+  - Search (nama/order number)
 - ✅ **OTS Orders** - Create manual orders untuk on-the-spot sales (with event selection)
 - ✅ **Excel Export** - Download filtered orders dengan **total pendapatan** calculation
 - ✅ **Bulk Delete** - Delete orders by: all, event, weeks, months
@@ -214,9 +214,8 @@ Atau gunakan Postman/Thunder Client.
 2. Add to cart
 3. Scroll ke "Konfirmasi Pembayaran"
 4. Transfer sesuai nominal
-5. Upload bukti transfer
-6. Submit form
-7. Tunggu email konfirmasi
+5. Simpan bukti transfer & Order ID
+6. Tunggu konfirmasi admin
 
 ### Admin Flow:
 
@@ -225,7 +224,7 @@ Atau gunakan Postman/Thunder Client.
 3. **Filter berdasarkan**:
    - Status (Pending/Checked/Completed)
    - Periode (Minggu/Bulan/Custom)
-   - Search nama/email
+   - Search nama
 4. **Ubah status** dengan dropdown di setiap row
 5. **Klik "Detail"** untuk lihat bukti pembayaran
 6. **Export Excel** untuk rekap periode tertentu
@@ -247,16 +246,15 @@ Admin tinggal ubah dropdown status di tabel.
 Fitur export menghasilkan file `.xlsx` dengan kolom:
 
 - Order Number
-- Nama Lengkap
-- WhatsApp
-- Email
-- Instagram
+- Nama Lengkap (Required)
+- WhatsApp (Required)
+- Instagram (Optional)
 - Items (detail cheki yang dibeli)
-- Total Harga
+- Total Harga (Auto)
 - Status
 - Tanggal Order
 
-Filter by date range sebelum export untuk rekap bulanan/mingguan.
+Filter by date range sebelum export untuk rekap bulanan/minggu.
 
 ## 🔐 Security
 
@@ -466,12 +464,9 @@ Untuk development lokal:
 
 © 2026 Refresh Breeze. All rights reserved.
 
-## 💬 Support
+## 💬 Contact
 
-Untuk pertanyaan atau issue:
-
-- Email: [contact@refreshbreeze.com]
-- Instagram: [@refbreeze](https://instagram.com/refbreeze)
+- Instagram: [@refresh.breeze](https://instagram.com/refresh.breeze)
 
 ---
 

@@ -19,6 +19,7 @@ const memberData = {
     tanggalLahir: '22 November',
     hobi: 'Makeup, dance, baking',
     instagram: '@ho_yan.yee',
+    objectPosition: 'center 20%',
     gallery: ['yanyee1.webp', 'yanyee2.webp', 'yanyee3.webp']
   },
   'sinta': {
@@ -31,6 +32,7 @@ const memberData = {
     tanggalLahir: '12 Oktober',
     hobi: 'Memasak, menyanyi, menari, nonton anime, tidur',
     instagram: '@sii_ntaa',
+    objectPosition: 'center 20%',
     gallery: ['sinta1.webp', 'sinta2.webp', 'sinta3.webp']
   },
   'cissi': {
@@ -43,6 +45,7 @@ const memberData = {
     tanggalLahir: '22 Agustus',
     hobi: 'Dance dan melamun',
     instagram: '@bakedciz',
+    objectPosition: 'center 20%',
     gallery: ['cissi1.webp', 'cissi2.webp', 'cissi3.webp']
   },
   'channie': {
@@ -55,6 +58,7 @@ const memberData = {
     tanggalLahir: '8 September',
     hobi: 'Dance, bikin koreo, nulis, makan gorengan',
     instagram: '@zzuchannie',
+    objectPosition: 'center 20%',
     gallery: ['channie1.webp', 'channie2.webp', 'channie3.webp']
   },
   'acaa': {
@@ -67,6 +71,7 @@ const memberData = {
     tanggalLahir: '25 Agustus',
     hobi: 'Nyanyi, turu, main emel, berak, repeat',
     instagram: '@caafoxy',
+    objectPosition: 'center 20%',
     gallery: ['aca1.webp', 'aca2.webp', 'aca3.webp']
   },
   'cally': {
@@ -79,6 +84,7 @@ const memberData = {
     tanggalLahir: '5 September',
     hobi: 'Menonton film, mempertanyakan eksistensi diri sendiri, menyanyi',
     instagram: '@calismilikitiw',
+    objectPosition: 'center 25%',
     gallery: ['cally1.webp', 'cally2.webp', 'cally3.webp']
   },
   'piya': {
@@ -91,6 +97,7 @@ const memberData = {
     tanggalLahir: '1 Januari',
     hobi: 'Gambar dan main rosbloz',
     instagram: '@matcvie_',
+    objectPosition: 'center 20%',
     gallery: ['piya1.webp', 'piya2.webp', 'piya3.webp']
   }
 }
@@ -123,9 +130,14 @@ const MembersPage = () => {
       try {
         const response = await api.get('/members')
         if (response.data.success) {
+          const heroOrder = ['cally', 'yanyee', 'channie', 'acaa', 'cissi', 'sinta', 'piya']
           const sorted = response.data.data
             .filter(m => m.member_id !== 'group')
-            .sort((a, b) => a.nama_panggung.localeCompare(b.nama_panggung))
+            .sort((a, b) => {
+              const indexA = heroOrder.indexOf(a.member_id)
+              const indexB = heroOrder.indexOf(b.member_id)
+              return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99)
+            })
           setMembers(sorted)
         }
       } catch (error) {
@@ -307,103 +319,104 @@ const MembersPage = () => {
                       Back to Members
                     </motion.button>
 
-                    {/* Profile Hero */}
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="relative rounded-[2rem] overflow-hidden mb-8"
-                      style={{
-                        background: `linear-gradient(135deg, ${data.color}20, ${data.color}05)`
-                      }}
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-                        {/* Image Side */}
-                        <div className="relative h-80 md:h-[500px]">
+                    {/* Profile Hero - Polaroid Style Redesign */}
+                    <div className="relative mb-12 flex flex-col lg:flex-row items-center lg:items-center rounded-[3rem] overflow-hidden bg-[#fafafa] shadow-xl border border-gray-100 p-6 md:p-12 gap-8 md:gap-16">
+                      
+                      {/* Visual Stage - Polaroid Frame */}
+                      <motion.div 
+                        initial={{ rotate: -2, scale: 0.9, opacity: 0 }}
+                        animate={{ rotate: -1, scale: 1, opacity: 1 }}
+                        whileHover={{ rotate: 0, scale: 1.02 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="relative w-full lg:w-[45%] aspect-[4/5] bg-white p-4 pb-16 md:p-6 md:pb-24 shadow-2xl rounded-sm border-t border-l border-gray-50 flex-shrink-0"
+                      >
+                        <div className="w-full h-full overflow-hidden bg-gray-100 rounded-sm">
                           <img 
                             src={getProfileImage(selectedMember.nama_panggung)} 
                             alt={selectedMember.nama_panggung}
-                            className="w-full h-full object-cover object-center"
+                            className="w-full h-full object-cover"
+                            style={{ objectPosition: data.objectPosition || 'center 20%' }}
                           />
-                          <div 
-                            className="absolute inset-0 md:hidden"
-                            style={{
-                              background: `linear-gradient(to top, ${data.color}, transparent 50%)`
-                            }}
-                          ></div>
                         </div>
+                        
+                        {/* Decorative Tape or Label could go here, but keeping it clean for now */}
+                        <div className="absolute bottom-4 md:bottom-8 left-0 right-0 text-center">
+                          <span className="font-marker text-2xl md:text-3xl text-gray-400 opacity-40 select-none">
+                            {data.namaPanggung}
+                          </span>
+                        </div>
+                      </motion.div>
 
-                        {/* Info Side */}
-                        <div className="p-8 md:p-12 flex flex-col justify-center">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div 
-                              className="px-4 py-1.5 rounded-full text-white text-xs font-black uppercase tracking-widest"
+                      {/* Content Stage */}
+                      <div className="relative flex-1 flex flex-col justify-center">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          <div className="flex items-center gap-3 mb-6">
+                            <span 
+                              className="px-5 py-2 rounded-full text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg"
                               style={{ backgroundColor: data.color }}
                             >
                               {data.tagline}
-                            </div>
+                            </span>
                           </div>
                           
-                          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-6" style={{ color: data.color }}>
+                          <h1 
+                            className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9] mb-8"
+                            style={{ color: data.color }}
+                          >
                             {data.namaPanggung}
                           </h1>
 
-                          {/* Quote / Jikoshoukai */}
-                          <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/50">
-                            <FaQuoteLeft className="text-2xl mb-3" style={{ color: data.color }} />
-                            <p className="text-gray-700 leading-relaxed italic">
-                              {data.jiko || selectedMember.jikoshoukai || 'Salam kenal semuanya!'}
-                            </p>
+                          {/* Minimal Bio */}
+                          <div className="mb-10 text-gray-600">
+                             <p className="text-lg md:text-xl leading-relaxed italic font-medium border-l-4 pl-6" style={{ borderColor: data.color }}>
+                                "{data.jiko || selectedMember.jikoshoukai || 'Salam kenal semuanya!'}"
+                             </p>
                           </div>
 
-                          {/* Stats / Details - Vertical List */}
-                          <div className="space-y-3">
-                            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/50 flex items-center gap-4">
-                              <div 
-                                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: `${data.color}20` }}
-                              >
-                                <FaBirthdayCake style={{ color: data.color }} />
+                          {/* Stats Grid - Clean Cards */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50" style={{ color: data.color }}>
+                                <FaBirthdayCake />
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Birthday</p>
-                                <p className="font-black text-gray-900">{data.tanggalLahir}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Birthday</p>
+                                <p className="font-bold text-gray-900 text-sm">{data.tanggalLahir}</p>
                               </div>
                             </div>
-                            
-                            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/50 flex items-start gap-4">
-                              <div 
-                                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: `${data.color}20` }}
-                              >
-                                <FaPalette style={{ color: data.color }} />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hobi</p>
-                                <p className="font-bold text-gray-900">{data.hobi}</p>
-                              </div>
-                            </div>
-                            
+
                             <a 
                               href={`https://instagram.com/${data.instagram?.replace('@', '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/50 flex items-center gap-4 hover:bg-white/80 transition-colors cursor-pointer block"
+                              className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow group"
                             >
-                              <div 
-                                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: `${data.color}20` }}
-                              >
-                                <FaInstagram style={{ color: data.color }} />
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 group-hover:bg-[#E1306C] group-hover:text-white transition-colors" style={{ color: data.color }}>
+                                <FaInstagram />
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Instagram</p>
-                                <p className="font-black" style={{ color: data.color }}>{data.instagram}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Contact</p>
+                                <p className="font-bold text-gray-900 text-sm group-hover:text-[#E1306C] transition-colors">{data.instagram}</p>
                               </div>
                             </a>
+                            
+                            <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-shadow">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 flex-shrink-0" style={{ color: data.color }}>
+                                <FaPalette />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Hobbies & Interests</p>
+                                <p className="font-bold text-gray-900 text-sm leading-snug">{data.hobi}</p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        </motion.div>
                       </div>
-                    </motion.div>
+                    </div>
 
                     {/* Gallery */}
                     <motion.div 
@@ -456,7 +469,6 @@ const MembersPage = () => {
         </AnimatePresence>
       </main>
 
-      <Footer />
     </div>
   )
 }

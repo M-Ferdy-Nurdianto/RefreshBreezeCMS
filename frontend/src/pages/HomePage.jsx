@@ -159,164 +159,109 @@ const HomePage = () => {
         <div className="absolute bottom-0 w-full h-2 caution-pattern z-30 opacity-60"></div>
       </section>
 
-      {/* Mobile Hero - Simple horizontal strips with text overlay */}
-      <section className="md:hidden relative">
-        {/* All Member Strips stacked */}
-        <div className="flex flex-col pt-16">
+      {/* Mobile Hero - Option C: Top Header Focus */}
+      <section className="md:hidden relative bg-white flex flex-col pt-16">
+        {/* Branding Section at the Top */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-6 py-8 text-center bg-white"
+        >
+          <p className="text-[8px] tracking-[0.5em] font-black text-[#079108]/60 uppercase mb-2">
+            Japanese Style Idol Group • Tulungagung
+          </p>
+          <h1 className="text-4xl font-black tracking-tight text-[#079108] mb-1">
+            REFRESH BREEZE
+          </h1>
+          <p className="text-xs font-black tracking-[0.4em] text-accent-yellow">
+            リフレッシュ・ブリーズ
+          </p>
+        </motion.div>
+
+        {/* Member Strips Column - Full Width */}
+        <div className="flex flex-col relative">
           {members.map((member, idx) => (
             <motion.div
               key={member.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: idx * 0.05 }}
+              initial={{ opacity: 0, height: 80 }}
+              animate={{ 
+                opacity: 1,
+                height: activeMemberId === member.id ? 180 : 80 
+              }}
+              whileHover={{ height: 120 }}
+              transition={{ 
+                height: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { delay: idx * 0.05 }
+              }}
               onClick={() => setActiveMemberId(activeMemberId === member.id ? null : member.id)}
-              className="relative h-20 overflow-hidden cursor-pointer bg-white"
+              className="relative overflow-hidden cursor-pointer group border-b border-white/5"
             >
               <img 
                 src={member.photo} 
                 alt={member.name}
-                className={`absolute inset-0 w-full h-full object-cover z-0 transition-all duration-500 ${activeMemberId === member.id ? 'grayscale-0 scale-110 brightness-110' : 'grayscale opacity-70'}`}
+                className={`absolute inset-0 w-full h-full object-cover z-0 transition-all duration-700 ${activeMemberId === member.id ? 'grayscale-0 scale-110 brightness-110' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'}`}
                 style={getMemberStyle(member)}
               />
-              <div className={`absolute inset-0 ${member.color} transition-opacity duration-500 z-10 ${activeMemberId === member.id ? 'opacity-0' : 'opacity-40 mix-blend-multiply'}`}></div>
+              <div className={`absolute inset-0 ${member.color} transition-opacity duration-700 z-10 ${activeMemberId === member.id ? 'opacity-0' : 'opacity-40 mix-blend-multiply group-hover:opacity-0'}`}></div>
             </motion.div>
           ))}
-        </div>
-
-        {/* Text Overlay - centered on all strips */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none pt-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className={`text-center transition-opacity duration-300 ${activeMemberId ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-          >
-            <p className="text-[6px] tracking-[0.3em] font-bold text-white/80 uppercase mb-1 drop-shadow-lg">
-              Japanese Style Idol Group • Tulungagung
-            </p>
-            <h1 className="text-2xl font-black tracking-wider text-white drop-shadow-2xl mb-1">
-              REFRESH BREEZE
-            </h1>
-            <p className="text-[9px] font-bold tracking-[0.2em] text-accent-yellow drop-shadow-lg">
-              リフレッシュ・ブリーズ
-            </p>
-          </motion.div>
+          
+          {/* Bottom Hard Break - Caution Pattern */}
+          <div className="h-2 w-full caution-pattern opacity-60"></div>
         </div>
       </section>
 
-      {/* About Us Section */}
-      <section id="about" className="py-16 md:py-32 container mx-auto max-w-7xl px-4 relative z-40 overflow-hidden md:overflow-visible">
-        
-        <div className="grid lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="space-y-6 md:space-y-8"
-          >
-             <div className="flex items-center gap-4">
-               <div className="w-8 h-1 md:w-12 md:h-1 bg-[#079108]"></div>
-               <span className="text-[#079108] font-black tracking-[0.3em] md:tracking-[0.4em] text-xs uppercase underline underline-offset-8">REFRESH BREEZE</span>
+      <section id="about" className="py-16 md:py-32 container mx-auto max-w-7xl px-4 relative z-40">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto text-center space-y-8"
+        >
+          <div className="flex flex-col items-center">
+             <div className="flex items-center gap-4 mb-4">
+               <div className="w-8 h-1 bg-[#079108]"></div>
+               <span className="text-[#079108] font-black tracking-[0.4em] text-xs uppercase">ABOUT US</span>
+               <div className="w-8 h-1 bg-[#079108]"></div>
              </div>
-            <h2 className="text-3xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight text-dark">
-              BRINGING THE <span className="text-[#079108]">FRESH WIND</span><br />
-              OF ENERGY.
-            </h2>
-            <p className="text-gray-500 text-sm sm:text-base md:text-lg leading-relaxed font-light">
-              Refresh Breeze adalah sebuah grup idola lokal asal Tulungagung. Beranggotakan 7 Member yang setiap member memiliki bakat dan karakter yang berbeda. Kami hadir untuk mencerahkan hari-harimu dengan semangat dan kegembiraan di setiap penampilan kami.
+             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-dark uppercase mb-6">
+               OUR <span className="text-[#079108]">STORY</span>
+             </h2>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-xl border-2 border-dashed border-[#079108]/30 p-8 md:p-12 rounded-[2.5rem] shadow-2xl space-y-6 relative overflow-hidden">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black tracking-widest animate-pulse uppercase">
+              Update in Progress
+            </div>
+            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight">UNDER MAINTENANCE</h3>
+            <p className="text-gray-500 text-lg leading-relaxed font-light max-w-2xl mx-auto">
+              Kami sedang memperbarui rangkuman perjalanan Refresh Breeze untuk memberikan Anda pengalaman yang lebih berkesan. Halaman "Our Story" akan segera kembali dengan konten yang lebih segar!
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 pt-2">
-              <button 
-                onClick={() => navigate('/story')}
-                className="px-8 sm:px-10 py-3 sm:py-4 bg-[#0a0f1d] text-white font-black tracking-widest text-xs uppercase rounded-full hover:bg-[#079108] transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 text-center"
-              >
-                Our Story
-              </button>
-              <button 
-                onClick={() => navigate('/members')}
-                className="px-8 sm:px-10 py-3 sm:py-4 border-2 border-dark/10 text-dark font-black tracking-widest text-xs uppercase rounded-full hover:bg-[#079108] hover:border-[#079108] hover:text-white transition-all transform hover:-translate-y-1 text-center"
-              >
-                Members
-              </button>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="relative lg:pl-10 pt-10 flex justify-center lg:justify-end"
-          >
-            {/* Abstract Shapes */}
-            <div className="absolute top-10 right-10 w-24 h-24 md:w-32 md:h-32 bg-[#c3e3a3] rounded-full opacity-50 blur-2xl -z-10"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 md:w-48 md:h-48 bg-[#079108] rounded-full opacity-10 blur-3xl -z-10"></div>
-
-            <div className="relative z-10 w-full max-w-sm">
-                 {/* Vertical Text behind image - Responsive adjustment */}
-                 <div className="hidden md:flex absolute -right-12 top-1/2 -translate-y-1/2 h-auto items-center -z-10 select-none pointer-events-none">
-                    <h2 
-                      data-aos="fade-left"
-                      className="text-5xl md:text-6xl font-black text-gray-300/50 leading-none tracking-widest uppercase vertical-rl text-orientation-mixed whitespace-nowrap"
-                    >
-                       REFRESH BREEZE
-                    </h2>
-                 </div>
-                 
-                 {/* Mobile version of decorative text - horizontal or subtly placed */}
-                 <div className="md:hidden absolute -right-4 top-0 -z-10 select-none pointer-events-none opacity-20">
-                     <h2 className="text-4xl font-black text-gray-300 tracking-widest uppercase writing-vertical-rl">
-                       REFRESH
-                     </h2>
-                 </div>
-
-                <div 
-                  data-aos="zoom-in"
-                  className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-[0_20px_50px_rgba(7,145,8,0.15)] relative"
-                >
-                  <div className="absolute inset-0 bg-white/10 z-20 mix-blend-overlay pointer-events-none"></div> {/* Texture Overlay (Removed blur) */}
-                  <img 
-                    src={getAssetPath('/images/members/group.webp')} 
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
-                    onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=1200&q=80'} 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60"></div>
-                </div>
-                
-                {/* Floating Badge */}
-                <div 
-                  data-aos="fade-up"
-                  data-aos-delay="200"
-                  className="absolute -bottom-6 -left-6 bg-white p-6 rounded-[2rem] shadow-xl border border-gray-100 flex items-center gap-4 animate-float z-30"
-                >
-                   <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden">
-                      <img src={getAssetPath('/images/logos/logo.webp')} alt="Logo" className="w-full h-full object-cover" />
-                   </div>
-                   <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Since</p>
-                      <p className="text-2xl font-black text-dark">2023</p>
-                   </div>
-                </div>
-            </div>
-          </motion.div>
-        </div>
+            <button 
+              onClick={() => navigate('/story')}
+              className="px-10 py-4 bg-gradient-to-r from-[#079108] to-emerald-500 text-white font-black tracking-[0.2em] text-xs uppercase rounded-full hover:shadow-2xl hover:scale-105 transition-all"
+            >
+              See Maintenance Status
+            </button>
+          </div>
+        </motion.div>
       </section>
 
       {/* SCHEDULE SECTION */}
       <section className="py-12 sm:py-16 md:py-24 bg-[#079108]/5 relative overflow-hidden">
         <div className="container mx-auto max-w-7xl px-4 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-                <div>
-                     <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-dark tracking-tighter uppercase mb-2 sm:mb-4">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 sm:mb-16 gap-6 md:gap-8 text-center md:text-left">
+                <div className="w-full">
+                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-dark tracking-tighter uppercase mb-2 sm:mb-4">
                         Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#079108] to-[#a3e635]">Live</span>
                      </h2>
-                     <p className="text-gray-500 font-medium max-w-lg">
+                     <p className="text-gray-500 font-bold max-w-lg uppercase tracking-[0.1em] opacity-80 mx-auto md:mx-0 text-xs sm:text-sm">
                         Jangan lewatkan penampilan seru kami di event terdekat!
                      </p>
                 </div>
                 <button 
                   onClick={() => navigate('/schedule')}
-                  className="px-8 py-3 rounded-full border-2 border-dark/10 text-dark font-black text-xs uppercase tracking-widest hover:bg-dark hover:text-white hover:border-dark transition-all"
+                  className="w-full md:w-auto px-8 py-4 md:py-3 rounded-full border-2 border-[#4A90B5]/20 text-[#4A90B5] font-black text-xs uppercase tracking-widest hover:bg-[#4A90B5] hover:text-white hover:border-[#4A90B5] transition-all"
                 >
                     View Full Schedule
                 </button>
@@ -329,69 +274,104 @@ const HomePage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="bg-dark text-white rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden group cursor-pointer"
+                        className="bg-[#0a0f1d] text-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 md:p-12 relative overflow-hidden group cursor-pointer border border-[#079108]/30 hover:border-[#079108] hover:shadow-[0_0_50px_rgba(7,145,8,0.3)] transition-all"
                         onClick={() => navigate('/schedule')}
                     >
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#079108] blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#079108] blur-[100px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
                         
                         <div className="relative z-10">
-                            <div className="inline-block px-4 py-2 bg-[#079108] rounded-full text-[10px] font-black tracking-widest uppercase mb-6">
-                                Next Stage
+                            <div className="flex flex-wrap gap-3 mb-6">
+                                <div className="inline-block px-4 py-2 bg-[#079108] rounded-full text-[10px] font-black tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(7,145,8,0.5)]">
+                                    NEXT STAGE
+                                </div>
+                                {(events[0].is_special || events[0].nama.toLowerCase().includes('valentine')) && (
+                                    <div className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF6B9D] to-[#FFD700] rounded-full text-[10px] font-black tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(255,107,157,0.4)]">
+                                        PO ONLY
+                                    </div>
+                                )}
                             </div>
-                            <h3 className="text-3xl md:text-4xl font-black leading-tight mb-6">
+                            <h3 className="text-3xl md:text-5xl font-black leading-tight mb-6 tracking-tight">
                                 {events[0].nama}
                             </h3>
-                            <div className="space-y-4 mb-8">
-                                <div className="flex items-center gap-4 text-gray-300">
-                                    <FaCalendarAlt className="text-[#079108]" />
-                                    <span className="font-bold tracking-wide">{events[0].tanggal} {events[0].bulan} {events[0].tahun}</span>
+                            <div className="space-y-4 mb-10">
+                                <div className="flex items-center gap-3 sm:gap-4 text-gray-400 group-hover:text-white transition-colors">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#079108] shrink-0">
+                                        <FaCalendarAlt size={16} />
+                                    </div>
+                                    <span className="font-bold tracking-wide text-sm sm:text-base">{events[0].tanggal} {events[0].bulan} {events[0].tahun}</span>
                                 </div>
-                                <div className="flex items-center gap-4 text-gray-300">
-                                    <FaClock className="text-[#079108]" />
-                                    <span className="font-bold tracking-wide">{events[0].event_time}</span>
+                                <div className="flex items-center gap-3 sm:gap-4 text-gray-400 group-hover:text-white transition-colors">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#079108] shrink-0">
+                                        <FaClock size={16} />
+                                    </div>
+                                    <span className="font-bold tracking-wide text-sm sm:text-base">{events[0].event_time}</span>
                                 </div>
-                                <div className="flex items-center gap-4 text-gray-300">
-                                    <FaMapMarkerAlt className="text-[#079108]" />
-                                    <span className="font-bold tracking-wide">{events[0].lokasi}</span>
+                                <div className="flex items-center gap-3 sm:gap-4 text-gray-400 group-hover:text-white transition-colors">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#079108] shrink-0">
+                                        <FaMapMarkerAlt size={16} />
+                                    </div>
+                                    <span className="font-bold tracking-wide text-sm sm:text-base line-clamp-1">{events[0].lokasi}</span>
                                 </div>
                             </div>
                             
-                            <div className="flex items-center gap-4 text-[#a3e635] font-black text-xs uppercase tracking-widest group-hover:translate-x-2 transition-transform">
-                                More Info <FaArrowRight />
+                            <div className="flex items-center gap-4 text-[#a3e635] font-black text-xs uppercase tracking-[0.3em] group-hover:translate-x-2 transition-transform">
+                                VIEW DETAILS <FaArrowRight />
                             </div>
                         </div>
                     </motion.div>
 
                     {/* Other Events List */}
-                    <div className="space-y-4">
-                        {events.slice(1).map((event, idx) => (
-                            <motion.div 
-                                key={event.id}
-                                initial={{ opacity: 0, x: 20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="bg-white p-8 rounded-[2rem] border border-gray-100 hover:shadow-xl hover:border-[#079108]/20 transition-all cursor-pointer group"
-                                onClick={() => navigate('/schedule')}
-                            >
-                                <div className="flex items-center gap-6">
-                                    <div className="text-center min-w-[60px]">
-                                        <span className="block text-2xl font-black text-[#079108]">{event.tanggal}</span>
-                                        <span className="block text-[10px] font-black uppercase text-gray-400">{event.bulan}</span>
+                    <div className="space-y-6">
+                        {events.slice(1).map((event, idx) => {
+                            const isSpecial = event.nama.toLowerCase().includes('valentine') || event.is_special;
+                            return (
+                                <motion.div 
+                                    key={event.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className={`p-1 rounded-[2.5rem] transition-all duration-500 overflow-hidden ${
+                                        isSpecial 
+                                        ? 'bg-gradient-to-r from-[#FF6B9D] via-pink-400 to-[#FFD700] p-[2px] shadow-[0_0_30px_rgba(255,107,157,0.2)]' 
+                                        : 'bg-[#0a0f1d]/50 hover:bg-[#0a0f1d]'
+                                    }`}
+                                >
+                                    <div 
+                                        className={`bg-[#0a0f1d] p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.4rem] border border-white/5 hover:border-[#079108]/50 transition-all cursor-pointer group flex items-center gap-4 sm:gap-6`}
+                                        onClick={() => navigate('/schedule')}
+                                    >
+                                        <div className="text-center min-w-[50px] sm:min-w-[70px] relative">
+                                            {isSpecial && (
+                                                <div className="absolute -inset-4 bg-pink-500/20 blur-xl rounded-full"></div>
+                                            )}
+                                            <span className={`block text-2xl sm:text-3xl font-black relative ${isSpecial ? 'text-[#FF6B9D]' : 'text-[#079108]'}`}>{event.tanggal}</span>
+                                            <span className="block text-[8px] sm:text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] relative">{event.bulan}</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
+                                                {isSpecial && (
+                                                    <div className="flex gap-1.5 flex-wrap">
+                                                        <span className="text-[7px] sm:text-[8px] font-black bg-gradient-to-r from-[#FF6B9D] to-[#FFD700] text-white px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg shadow-pink-500/30">SPECIAL</span>
+                                                        <span className="text-[7px] sm:text-[8px] font-black bg-white/10 text-[#FF6B9D] border border-[#FF6B9D]/30 px-2 py-0.5 rounded-full uppercase tracking-widest">PO ONLY</span>
+                                                    </div>
+                                                )}
+                                                <h4 className="text-base sm:text-xl font-black text-white group-hover:text-[#079108] transition-colors truncate">
+                                                    {event.nama}
+                                                </h4>
+                                            </div>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-[0.1em] sm:tracking-[0.2em] truncate">{event.lokasi}</p>
+                                        </div>
+                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 shrink-0 ${isSpecial ? 'bg-pink-500/10 text-[#FF6B9D]' : 'bg-white/5 text-gray-500'} group-hover:bg-[#079108] group-hover:text-white group-hover:shadow-[0_0_15px_rgba(7,145,8,0.5)]`}>
+                                            <FaArrowRight className="-rotate-45 group-hover:rotate-0 transition-transform size-4 sm:size-5" />
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-lg font-black text-dark mb-1 group-hover:text-[#079108] transition-colors line-clamp-1">{event.nama}</h4>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{event.lokasi}</p>
-                                    </div>
-                                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-[#079108] group-hover:text-white transition-colors">
-                                        <FaArrowRight className="-rotate-45 group-hover:rotate-0 transition-transform" />
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            );
+                        })}
                         {events.length === 1 && (
-                             <div className="h-full bg-white/50 border-2 border-dashed border-gray-200 rounded-[2rem] flex items-center justify-center">
-                                <p className="text-gray-400 font-bold text-sm">More events coming soon</p>
+                             <div className="h-full bg-[#0a0f1d]/30 border-2 border-dashed border-white/5 rounded-[2.5rem] flex items-center justify-center p-12">
+                                <p className="text-gray-600 font-bold text-sm tracking-widest uppercase opacity-50">More events coming soon</p>
                              </div>
                         )}
                     </div>
@@ -461,9 +441,40 @@ const HomePage = () => {
                     </div>
 
                     <div className="relative h-48 w-full">
-                         {/* Stacked Images Effect */}
-                        <img src={getAssetPath('/images/members/cally.webp')} loading="lazy" className="absolute bottom-0 right-0 w-32 h-40 object-cover rounded-xl shadow-lg transform rotate-6 group-hover:rotate-12 transition-transform duration-500 z-10" />
-                        <img src={getAssetPath('/images/members/aca.webp')} loading="lazy" className="absolute bottom-2 right-12 w-30 h-36 object-cover rounded-xl shadow-lg transform -rotate-6 group-hover:-rotate-12 transition-transform duration-500" />
+                         {/* Polaroid Stacked Effect */}
+                        {/* Aca (Front) - Main Subject */}
+                        <div className="absolute bottom-0 right-0 w-32 h-44 bg-white p-1.5 pb-10 shadow-2xl transform rotate-6 group-hover:rotate-12 transition-transform duration-500 z-30 border border-gray-100">
+                          <div className="w-full h-full overflow-hidden bg-gray-50/50 rounded-sm">
+                            <img 
+                              src={getAssetPath('/images/shop/aca.webp')} 
+                              loading="lazy" 
+                              className="w-full h-full object-contain scale-[1.3] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-2" 
+                            />
+                          </div>
+                          <p className="absolute bottom-2 left-0 w-full text-center text-[7px] font-black text-gray-400 tracking-[0.2em] uppercase">Official Cheki</p>
+                        </div>
+
+                        {/* Sinta (Middle) */}
+                        <div className="absolute bottom-2 right-12 w-30 h-40 bg-white p-1.5 pb-8 shadow-xl transform -rotate-3 group-hover:-rotate-6 transition-transform duration-500 z-20 border border-gray-100">
+                          <div className="w-full h-full overflow-hidden bg-gray-50/50 rounded-sm">
+                            <img 
+                              src={getAssetPath('/images/shop/sinta.webp')} 
+                              loading="lazy" 
+                              className="w-full h-full object-contain scale-[1.3] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-2" 
+                            />
+                          </div>
+                        </div>
+
+                        {/* Cally (Back) */}
+                        <div className="absolute bottom-4 right-24 w-28 h-36 bg-white p-1.5 pb-8 shadow-lg transform -rotate-12 group-hover:-rotate-20 transition-transform duration-500 z-10 border border-gray-100 opacity-80 group-hover:opacity-100">
+                          <div className="w-full h-full overflow-hidden bg-gray-50/50 rounded-sm">
+                            <img 
+                              src={getAssetPath('/images/shop/cally.webp')} 
+                              loading="lazy" 
+                              className="w-full h-full object-contain scale-[1.3] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-2" 
+                            />
+                          </div>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-dark font-black text-xs uppercase tracking-widest group-hover:text-[#079108] transition-colors">
@@ -487,13 +498,13 @@ const HomePage = () => {
       <section className="py-12 sm:py-16 md:py-24 bg-[#079108]/5 text-dark overflow-hidden relative">
          <div className={`absolute top-0 left-0 w-full h-full bg-[url('${getAssetPath('/noise.png')}')] opacity-5`}></div>
          <div className="container mx-auto max-w-7xl px-4 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-dark">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 sm:mb-16 gap-4 md:gap-6 text-center md:text-left">
+                <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tighter text-dark">
                    Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#079108] to-emerald-400">Media</span>
                 </h2>
                 <button 
                   onClick={() => navigate('/media')}
-                  className="text-gray-400 hover:text-dark font-black text-xs uppercase tracking-widest transition-colors flex items-center gap-2"
+                  className="w-full md:w-auto px-6 py-3 rounded-full border border-gray-200 text-gray-500 hover:text-dark font-black text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                 >
                    View Gallery <FaArrowRight />
                 </button>
@@ -570,15 +581,12 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.05 }}
-                className={`transition-all duration-300 border border-[#079108]/30 hover:border-[#079108] hover:shadow-[0_0_20px_rgba(7,145,8,0.3)] ${openFaq === idx ? 'bg-white shadow-lg rounded-xl' : 'bg-transparent border-b border-gray-100'}`}
+                className={`transition-all duration-300 border-2 border-[#079108]/20 hover:border-[#079108] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-[0_8px_30px_rgba(7,145,8,0.1)] ${openFaq === idx ? 'border-[#079108] shadow-md' : ''}`}
               >
                 <button 
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                   className="w-full py-6 px-6 text-left flex items-center justify-between gap-6 group relative overflow-hidden"
                 >
-                  {openFaq === idx && (
-                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#079108]"></div>
-                  )}
                   <span className={`text-base md:text-lg font-bold transition-colors ${openFaq === idx ? 'text-dark' : 'text-gray-500 group-hover:text-[#079108]'}`}>
                     {faq.tanya}
                   </span>

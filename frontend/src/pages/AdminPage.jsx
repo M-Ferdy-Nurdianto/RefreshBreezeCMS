@@ -705,7 +705,7 @@ const AdminPage = () => {
             {/* Search */}
             <input
               type="text"
-              placeholder="Cari nama, email, order number..."
+              placeholder="Cari nama atau order number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
@@ -1430,7 +1430,7 @@ const RenderTable = ({ data, title, icon, emptyMessage, action, loading, onView,
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <div className="font-semibold">{order.nama_lengkap}</div>
-                      <div className="text-xs text-gray-500">{order.email}</div>
+                      <div className="text-xs text-blue-600 font-medium">{order.whatsapp && order.whatsapp !== '-' ? `WA: ${order.whatsapp}` : order.instagram && order.instagram !== '-' ? `IG: ${order.instagram}` : ''}</div>
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <div className="space-y-1">
@@ -1539,12 +1539,11 @@ const OrderDetailModal = ({ order, onClose }) => {
               <p className="font-semibold">{order.whatsapp}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-semibold">{order.email}</p>
-            </div>
-            <div>
               <p className="text-sm text-gray-500">Instagram</p>
               <p className="font-semibold">{order.instagram || '-'}</p>
+            </div>
+            <div>
+              {/* Email space removed or can be replaced with something else */}
             </div>
           </div>
 

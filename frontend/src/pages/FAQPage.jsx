@@ -112,14 +112,12 @@ const FAQPage = () => {
         <div className="mt-32 p-12 bg-dark rounded-[3.5rem] text-center space-y-8 relative overflow-hidden shadow-2xl">
            <div className="absolute top-0 left-0 w-40 h-40 bg-[#079108]/20 rounded-full blur-3xl -ml-20 -mt-20"></div>
            <h3 className="text-2xl font-black text-white tracking-widest uppercase">Masih Bingung?</h3>
-           <p className="text-white/40 text-sm font-medium uppercase tracking-[0.2em]">Hubungi tim kami melalui Instagram atau Email resmi.</p>
+           <p className="text-white/40 text-sm font-medium uppercase tracking-[0.2em]">Hubungi tim kami melalui Instagram atau WhatsApp resmi.</p>
            <div className="flex justify-center gap-6">
               <a href="https://instagram.com/refresh.breeze" target="_blank" className="px-12 py-5 bg-[#079108] text-white rounded-full font-black tracking-widest text-[10px] uppercase hover:scale-105 transition-all shadow-xl">Contact Instagram</a>
            </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   )
 }

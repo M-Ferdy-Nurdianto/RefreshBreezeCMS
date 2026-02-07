@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion'
-import { FaMusic, FaSpotify, FaApple, FaYoutube, FaInstagram, FaTwitter } from 'react-icons/fa'
+import { FaMusic, FaInstagram, FaTwitter, FaYoutube, FaTiktok } from 'react-icons/fa'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 
 const MusicPage = () => {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Header />
       
-      <main className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center min-h-[70vh]">
+      <main className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center min-h-[80vh]">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -38,27 +37,32 @@ const MusicPage = () => {
           </div>
 
           <div className="max-w-xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">COMING SOON</h2>
+            <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black mb-4 tracking-widest animate-pulse uppercase">
+              Discography Update in Progress
+            </div>
+            <h2 className="text-3xl font-black text-gray-800 uppercase tracking-tight">UNDER MAINTENANCE</h2>
             <p className="text-gray-500 text-lg leading-relaxed font-light">
-              Sesuatu yang spesial sedang disiapkan. Nantikan kejutan besar dari kami segera.
+              Halaman Music sedang dalam pembaruan konten. Kami akan segera kembali dengan fitur-fitur baru yang menarik.
             </p>
           </div>
 
           {/* Social Links to stay updated */}
           <div className="pt-12 space-y-8">
             <h3 className="text-xs font-black tracking-[0.4em] text-gray-400 uppercase">Stay Updated</h3>
-            <div className="flex justify-center gap-8">
+            <div className="flex justify-center gap-6 sm:gap-8">
               {[
-                { icon: <FaInstagram />, href: '#', label: 'Instagram' },
-                { icon: <FaTwitter />, href: '#', label: 'Twitter' },
-                { icon: <FaYoutube />, href: '#', label: 'YouTube' },
-                { icon: <FaSpotify />, href: '#', label: 'Spotify' },
+                { icon: <FaInstagram />, href: 'https://instagram.com/refbreeze', label: 'Instagram' },
+                { icon: <FaTwitter />, href: 'https://twitter.com/ref_breeze', label: 'Twitter' },
+                { icon: <FaYoutube />, href: 'https://youtube.com/@RefreshBreeze', label: 'YouTube' },
+                { icon: <FaTiktok />, href: 'https://tiktok.com/@refbreeze', label: 'TikTok' },
               ].map((social, idx) => (
                 <motion.a
                   key={idx}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ y: -5, scale: 1.1 }}
-                  className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-xl text-gray-400 hover:text-[#079108] hover:bg-[#079108]/5 transition-all shadow-sm hover:shadow-lg"
+                  className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-xl text-gray-400 hover:text-[#079108] hover:bg-[#079108]/5 transition-all shadow-sm hover:shadow-lg"
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -72,8 +76,6 @@ const MusicPage = () => {
         <div className="fixed top-1/2 left-0 w-64 h-64 bg-[#079108] rounded-full blur-[120px] opacity-5 -translate-x-1/2 pointer-events-none"></div>
         <div className="fixed bottom-0 right-0 w-96 h-96 bg-[#079108] rounded-full blur-[150px] opacity-5 translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
       </main>
-
-      <Footer />
     </div>
   )
 }

@@ -4,27 +4,27 @@ import { FaInstagram, FaTwitter, FaYoutube, FaMapMarkerAlt, FaEnvelope, FaTiktok
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-50 text-gray-900 py-12 sm:py-16 px-4 border-t border-gray-200 font-sans">
+    <footer className="bg-gray-50 text-gray-900 py-8 sm:py-16 px-4 border-t border-gray-200 font-sans">
       <div className="container mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-20">
           
           {/* COL 1: IDENTITY */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-black tracking-widest uppercase text-dark">
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-dark">
               REFRESH BREEZE
             </h3>
             <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-md">
               Membawa gelombang energi baru melalui penampilan idola gaya Jepang yang unik di Tulungagung.
             </p>
-            <p className="text-[#079108] font-bold text-xs tracking-widest">
+            <p className="text-[#079108] font-bold text-xs tracking-widest uppercase">
               リフレッシュ・ブリーズ
             </p>
           </div>
 
           {/* COL 2: QUICK LINKS */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <h4 className="text-lg font-bold text-dark">Quick Links</h4>
-            <ul className="space-y-4">
+            <ul className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4">
               {[
                 { name: 'About Us', href: '/#about' },
                 { name: 'Members', href: '/members' },
@@ -42,16 +42,12 @@ const Footer = () => {
           </div>
 
           {/* COL 3: GET IN TOUCH */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
              <h4 className="text-lg font-bold text-dark">Get in Touch</h4>
              <div className="space-y-4">
                 <div className="flex items-start gap-4 text-gray-500 text-sm">
                    <div className="mt-1 min-w-[1rem]"><FaMapMarkerAlt /></div>
                    <span>Tulungagung, Jawa Timur, Indonesia</span>
-                </div>
-                <div className="flex items-center gap-4 text-gray-500 text-sm">
-                   <div className="min-w-[1rem]"><FaEnvelope /></div>
-                   <a href="mailto:official.refreshbreeze@gmail.com" className="hover:text-[#079108] transition-colors">official.refreshbreeze@gmail.com</a>
                 </div>
              </div>
 
@@ -77,7 +73,7 @@ const Footer = () => {
 
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-gray-400 font-medium">
+        <div className="mt-12 md:mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-gray-400 font-medium">
           <p>© 2026 REFRESH BREEZE. ALL RIGHTS RESERVED.</p>
           <div className="flex gap-8">
              <Link to="/admin/login" className="hover:text-[#079108] transition-colors">Staff Login</Link>

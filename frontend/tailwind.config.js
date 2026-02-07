@@ -20,6 +20,7 @@ export default {
         'accent-yellow': '#fbbf24',
         'accent-blue': '#38bdf8',
         'accent-emerald': '#10b981',
+        'aca-blue': '#4A90B5',
       },
       fontFamily: {
         'sans': ['Poppins', 'sans-serif'],

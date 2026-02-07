@@ -1,154 +1,81 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
-import { FaPlay, FaImage, FaExternalLinkAlt } from 'react-icons/fa'
+import { FaImage, FaInstagram, FaTwitter, FaYoutube, FaTiktok } from 'react-icons/fa'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 
 const MediaPage = () => {
-  const [activeTab, setActiveTab] = useState('all')
-
-  const mediaItems = [
-    { 
-      type: 'video', 
-      title: 'JEWEL KISS - 恋華 (Lovers Flower)', 
-      thumbnail: 'https://img.youtube.com/vi/77iP-nJ4b8Q/maxresdefault.jpg', 
-      category: 'Live Performance',
-      url: 'https://youtu.be/77iP-nJ4b8Q?si=CfZ3haCys12C7ONg'
-    },
-    { 
-      type: 'video', 
-      title: 'FRUiTY - LOVE SONG FOR YOU', 
-      thumbnail: 'https://img.youtube.com/vi/Twin7LVhnHI/maxresdefault.jpg', 
-      category: 'Live Performance',
-      url: 'https://youtu.be/Twin7LVhnHI?si=r-REpbjFgJkvrv7r'
-    },
-    { 
-      type: 'video', 
-      title: 'MARY ANGEL - LIKE A ANGEL', 
-      thumbnail: 'https://img.youtube.com/vi/dKcq3tR69sM/maxresdefault.jpg', 
-      category: 'Live Performance',
-      url: 'https://youtu.be/dKcq3tR69sM?si=DnheTptSVN-FK-cl'
-    },
-    { 
-      type: 'photo', 
-      title: 'TIERRA HALLOWEEN FEST (1)', 
-      thumbnail: '/foto/dokumentasi/1.webp', 
-      category: 'Photography',
-      credit: '@yoga_arfi' 
-    },
-    { 
-      type: 'photo', 
-      title: 'TIERRA HALLOWEEN FEST (2)', 
-      thumbnail: '/foto/dokumentasi/2.webp', 
-      category: 'Photography',
-      credit: '@ikifer' 
-    },
-    { 
-      type: 'photo', 
-      title: 'TIERRA HALLOWEEN FEST (3)', 
-      thumbnail: '/foto/dokumentasi/3.webp', 
-      category: 'Photography',
-      credit: '@wannphotography' 
-    }
-  ]
-
-  const filteredMedia = activeTab === 'all' ? mediaItems : mediaItems.filter(item => {
-    if (activeTab === 'video') return item.type === 'video'
-    if (activeTab === 'photo') return item.type === 'photo'
-    return true
-  })
-
   return (
-    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+    <div className="min-h-screen bg-white text-gray-900">
       <Header />
       
-      <main className="container mx-auto max-w-7xl px-4 py-32">
-        <div className="text-center mb-32 relative">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl md:text-9xl font-black text-gray-50 select-none -z-10 tracking-[0.2em] opacity-40 uppercase">
-             MEDIA
-           </div>
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-6xl font-black tracking-widest mb-6"
+      <main className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center min-h-[80vh]">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-8"
+        >
+          {/* Animated Icon */}
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.1, 1],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{ 
+              duration: 4, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-24 h-24 bg-[#079108]/10 rounded-full flex items-center justify-center mx-auto text-[#079108] mb-8 shadow-[0_0_30px_rgba(7,145,8,0.2)]"
           >
-            GALLERY
-          </motion.h1>
-          <div className="w-32 h-1.5 bg-[#079108] mx-auto mb-8 shadow-[0_0_15px_rgba(7,145,8,0.3)]"></div>
-          
-          <div className="flex justify-center gap-12 mb-16">
-            {[
-              { id: 'all', label: 'All' },
-              { id: 'video', label: 'Videos' },
-              { id: 'photo', label: 'Photos' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`text-xs font-black tracking-[0.4em] uppercase transition-all relative pb-4 ${activeTab === tab.id ? 'text-[#079108]' : 'text-gray-300 hover:text-gray-500'}`}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <motion.div layoutId="mediaTab" className="absolute bottom-0 left-0 w-full h-1 bg-[#079108] rounded-full" />
-                )}
-              </button>
-            ))}
+            <FaImage className="text-4xl" />
+          </motion.div>
+
+          <div className="space-y-4">
+            <h1 className="text-4xl md:text-5xl font-black tracking-widest text-dark uppercase">
+              GALLERY
+            </h1>
+            <div className="w-32 h-1.5 bg-[#079108] mx-auto rounded-full shadow-[0_0_15px_rgba(7,145,8,0.4)]"></div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {filteredMedia.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1, duration: 0.8 }}
-              viewport={{ once: true }}
-              className="group cursor-pointer"
-            >
-              <div className="aspect-video relative rounded-[2rem] overflow-hidden bg-gray-100 border-4 border-white shadow-xl group-hover:shadow-2xl group-hover:shadow-[#079108]/20 transition-all duration-700">
-                <img 
-                  src={item.thumbnail} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 grayscale group-hover:grayscale-0"
-                  onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=800&q=80' }}
-                />
-                
-                {/* Overlay Icon */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-dark/20 backdrop-blur-[2px]">
-                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-[#079108] shadow-2xl transform scale-75 group-hover:scale-100 transition-transform duration-500">
-                     {item.type === 'video' ? <FaPlay className="ml-1" /> : <FaImage />}
-                   </div>
-                </div>
+          <div className="max-w-xl mx-auto space-y-6">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black mb-4 tracking-widest animate-pulse uppercase">
+              Gallery Update in Progress
+            </div>
+            <h2 className="text-3xl font-black text-gray-800 uppercase tracking-tight">UNDER MAINTENANCE</h2>
+            <p className="text-gray-500 text-lg leading-relaxed font-light">
+              Halaman Media sedang dalam pembaruan konten. Kami sedang menyiapkan dokumentasi penampilan terbaik kami untuk Anda.
+            </p>
+          </div>
 
-                {/* Badge */}
-                <div className="absolute top-6 left-6">
-                   <span className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-full text-[8px] font-black tracking-widest text-[#079108] uppercase">
-                     {item.type}
-                   </span>
-                </div>
-              </div>
-              
-              <div className="mt-8 px-2">
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <span className="text-[10px] text-[#079108] font-black tracking-[0.3em] uppercase opacity-60 decoration-[#079108] decoration-2 underline underline-offset-4">{item.category}</span>
-                    <h3 className="text-xl font-black mt-3 text-dark leading-tight group-hover:text-[#079108] transition-colors">{item.title}</h3>
-                    {item.credit && <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Credit: {item.credit}</p>}
-                  </div>
-                  {item.url && (
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-4 bg-gray-50 rounded-2xl text-gray-400 hover:bg-[#079108] hover:text-white transition-all">
-                      <FaExternalLinkAlt className="text-sm" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+          {/* Social Links to stay updated */}
+          <div className="pt-12 space-y-8">
+            <h3 className="text-xs font-black tracking-[0.4em] text-gray-400 uppercase">Stay Updated</h3>
+            <div className="flex justify-center gap-6 sm:gap-8">
+              {[
+                { icon: <FaInstagram />, href: 'https://instagram.com/refbreeze', label: 'Instagram' },
+                { icon: <FaTwitter />, href: 'https://twitter.com/ref_breeze', label: 'Twitter' },
+                { icon: <FaYoutube />, href: 'https://youtube.com/@RefreshBreeze', label: 'YouTube' },
+                { icon: <FaTiktok />, href: 'https://tiktok.com/@refbreeze', label: 'TikTok' },
+              ].map((social, idx) => (
+                <motion.a
+                  key={idx}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -5, scale: 1.1 }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-xl text-gray-400 hover:text-[#079108] hover:bg-[#079108]/5 transition-all shadow-sm hover:shadow-lg"
+                  aria-label={social.label}
+                >
+                  {social.icon}
+                </motion.a>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Decorative elements */}
+        <div className="fixed top-1/2 left-0 w-64 h-64 bg-[#079108] rounded-full blur-[120px] opacity-5 -translate-x-1/2 pointer-events-none"></div>
+        <div className="fixed bottom-0 right-0 w-96 h-96 bg-[#079108] rounded-full blur-[150px] opacity-5 translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
       </main>
-
-      <Footer />
     </div>
   )
 }

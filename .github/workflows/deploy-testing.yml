@@ -19,6 +19,8 @@ jobs:
         run: |
           cd frontend
           npm install
+          # To fix 404/405 errors on GH Pages, add your Vercel API URL below:
+          # VITE_API_URL=https://your-project.vercel.app/api npm run build
           npm run build
 
       - name: Deploy 🚀

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { FaBars, FaTimes, FaShoppingCart, FaHome, FaUsers, FaMusic, FaCalendarAlt, FaCamera, FaStore, FaInfoCircle, FaInstagram, FaTwitter, FaYoutube, FaTiktok } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getAssetPath } from '../lib/pathUtils'
@@ -10,7 +11,7 @@ const Header = ({ cartCount = 0, onCartClick }) => {
 
   const navLinks = [
     { name: 'HOME', href: '/', icon: FaHome },
-    { name: 'ABOUT US', href: '/#about', icon: FaInfoCircle },
+    { name: 'ABOUT US', href: '/story', icon: FaInfoCircle },
     { name: 'MEMBERS', href: '/members', icon: FaUsers },
     { name: 'MUSIC', href: '/music', icon: FaMusic },
     { name: 'SCHEDULE', href: '/schedule', icon: FaCalendarAlt },
@@ -26,8 +27,14 @@ const Header = ({ cartCount = 0, onCartClick }) => {
   ]
 
   const isActive = (href) => {
+    const [path] = href.split('#')
     if (href === '/') return location.pathname === '/'
-    return location.pathname.startsWith(href.split('#')[0])
+    if (path === '/') return location.pathname === '/' && (location.hash === href.split('#')[1] || !href.includes('#'))
+    return location.pathname.startsWith(path)
+  }
+
+  const handleNavLinkClick = (e, link) => {
+    setMobileMenuOpen(false)
   }
 
   return (
@@ -52,6 +59,7 @@ const Header = ({ cartCount = 0, onCartClick }) => {
               <Link
                 key={link.name}
                 to={link.href}
+                onClick={(e) => handleNavLinkClick(e, link)}
                 className={`text-xs font-bold tracking-[0.2em] transition-colors relative group ${
                   isActive(link.href) ? 'text-[#079108]' : 'text-gray-500 hover:text-[#079108]'
                 }`}
@@ -148,7 +156,7 @@ const Header = ({ cartCount = 0, onCartClick }) => {
                     >
                       <Link
                         to={link.href}
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={(e) => handleNavLinkClick(e, link)}
                         className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all ${
                           active 
                             ? 'bg-[#079108] text-white shadow-lg shadow-[#079108]/30' 

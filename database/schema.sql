@@ -334,6 +334,6 @@ VALUES (
     ),
     (
         'Setelah checkout berhasil, apa langkah selanjutnya?',
-        'Anda akan menerima email konfirmasi otomatis. Simpan email tersebut. Saat hari event, datang ke booth kami dan tunjukkan bukti email atau data diri Anda untuk menukarkannya dengan tiket Cheki fisik.',
+        'Simpan bukti transfer dan Order ID Anda. Saat hari event, datang ke booth kami dan tunjukkan bukti transfer atau data diri Anda untuk menukarkannya dengan tiket Cheki fisik.',
         5
     );

@@ -30,9 +30,9 @@ function App() {
   return (
     <Router basename="/RefreshBreezeCMS">
       <ToastContainer
-        position="top-center"
+        position="bottom-center"
         autoClose={2000}
-        hideProgressBar={false}
+        hideProgressBar={true}
         newestOnTop={true}
         closeOnClick
         rtl={false}
@@ -41,7 +41,8 @@ function App() {
         pauseOnHover
         theme="light"
         transition={Zoom}
-        style={{ zIndex: 99999 }}
+        toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
+        style={{ zIndex: 99999, width: 'auto' }}
       />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>

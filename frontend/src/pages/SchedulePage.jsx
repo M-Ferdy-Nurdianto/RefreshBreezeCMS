@@ -147,7 +147,7 @@ const SchedulePage = () => {
                           <div className="w-full md:w-auto">
                             <button 
                               className="w-full md:w-auto px-12 py-4 text-white rounded-full font-black tracking-widest text-xs uppercase hover:opacity-90 transition-all shadow-xl active:scale-95"
-                              style={{ backgroundColor: event.is_special ? event.theme_color : '#1a1a1a' }}
+                              style={{ backgroundColor: event.is_special ? event.theme_color : '#4A90B5' }}
                             >
                                 {event.is_special ? 'Pre-Order Now' : 'Ticket Info'}
                             </button>
@@ -220,13 +220,11 @@ const SchedulePage = () => {
         )}
 
         <div className="mt-24 text-center">
-          <button onClick={() => window.history.back()} className="px-12 py-5 border-2 border-gray-100 text-gray-400 font-black rounded-full text-[10px] tracking-[0.3em] uppercase hover:bg-dark hover:text-white hover:border-dark transition-all active:scale-95 shadow-sm">
+          <button onClick={() => window.history.back()} className="px-12 py-5 border-2 border-[#4A90B5]/20 text-[#4A90B5] font-black rounded-full text-[10px] tracking-[0.3em] uppercase hover:bg-[#4A90B5] hover:text-white hover:border-[#4A90B5] transition-all active:scale-95 shadow-sm">
             ← STEP BACK
           </button>
         </div>
       </main>
-
-      <Footer />
     </div>
   )
 }

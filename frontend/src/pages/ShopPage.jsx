@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaShoppingCart, FaPlus, FaMinus, FaChevronRight, FaCamera, FaCheckCircle, FaRegCopy, FaTicketAlt, FaInfoCircle, FaSpinner, FaUniversity } from 'react-icons/fa'
+import { FaShoppingCart, FaPlus, FaMinus, FaChevronRight, FaCamera, FaCheckCircle, FaRegCopy, FaTicketAlt, FaInfoCircle, FaSpinner, FaUniversity, FaTrash, FaCopy } from 'react-icons/fa'
 import { getAssetPath } from '../lib/pathUtils'
 import api from '../lib/api'
 import Skeleton from '../components/Skeleton'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { getMemberColor, getMemberEmoji, formatMemberName } from '../lib/memberUtils'
+import { toast } from 'react-toastify'
 
 const ShopPage = () => {
   const navigate = useNavigate()
@@ -39,9 +40,14 @@ const ShopPage = () => {
   // Helper functions
   const sanitizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
 
-  const getMemberImage = (name) => {
-    const clean = sanitizeName(name)
-    if (clean === 'acaa' || clean === 'aca') return getAssetPath('/images/shop/aca.webp')
+  const getMemberImage = (member) => {
+    // Prefer member_id for mapping to simplified filenames
+    const id = member.member_id || sanitizeName(member.nama_panggung)
+    const clean = id.replace('aa', 'a') // normalize acaa to aca if needed, or keep as is
+    
+    // Check for aca/acaa specifically since we named it aca.webp
+    if (clean === 'aca' || clean === 'acaa') return getAssetPath('/images/shop/aca.webp')
+    
     return getAssetPath(`/images/shop/${clean}.webp`)
   }
 
@@ -92,9 +98,14 @@ const ShopPage = () => {
         
         if (configRes.data.success) setConfig(configRes.data.data)
         if (membersRes.data.success) {
+           const heroOrder = ['cally', 'yanyee', 'channie', 'acaa', 'cissi', 'sinta', 'piya']
            const sorted = membersRes.data.data
              .filter(m => m.member_id !== 'group')
-             .sort((a, b) => a.nama_panggung.localeCompare(b.nama_panggung))
+             .sort((a, b) => {
+                const indexA = heroOrder.indexOf(a.member_id)
+                const indexB = heroOrder.indexOf(b.member_id)
+                return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99)
+             })
            setMembers(sorted)
         }
         if (eventsRes.data.success) setEvents(eventsRes.data.data)
@@ -119,7 +130,7 @@ const ShopPage = () => {
   // Cart Logic
   const addToCart = (type, member = null) => {
     const isGroup = type === 'group'
-    const imageUrl = isGroup ? getAssetPath('/images/members/group.webp') : getMemberImage(member.nama_panggung)
+    const imageUrl = isGroup ? getAssetPath('/images/members/group.webp') : getMemberImage(member)
     
     const item = {
       id: isGroup ? 'group' : member.id,
@@ -137,20 +148,94 @@ const ShopPage = () => {
       }
       return [...prev, item]
     })
+
+    toast(
+      <div className="flex items-center gap-4 px-6 py-3 bg-gray-900/95 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
+        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
+          {isGroup ? '✨' : getMemberEmoji(member.id)}
+        </div>
+        <div className="flex flex-col">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 leading-none mb-1.5">Added to Cart</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-black text-white whitespace-nowrap">{item.name}</p>
+            <span className="text-white/40 text-[10px] font-bold">• {item.quantity}x</span>
+          </div>
+        </div>
+      </div>,
+      {
+        position: "bottom-center",
+        autoClose: 2500,
+        className: "!bg-transparent !p-0 !shadow-none min-h-0",
+        bodyClassName: "!p-0 !m-0",
+        closeButton: false,
+      }
+    )
   }
 
   const updateQuantity = (id, delta) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.quantity + delta)
-        return { ...item, quantity: newQty }
+    setCart(prev => {
+      const item = prev.find(i => i.id === id)
+      if (item && item.quantity === 1 && delta === -1) {
+        // Remove item if minus clicked at quantity 1
+        const removedName = item.name
+        const newCart = prev.filter(i => i.id !== id)
+        
+        toast(
+          <div className="flex items-center gap-4 px-6 py-3 bg-red-900/90 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
+              🗑️
+            </div>
+            <div className="flex flex-col">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 leading-none mb-1.5">Removed from Cart</p>
+              <p className="text-sm font-black text-white whitespace-nowrap">{removedName}</p>
+            </div>
+          </div>,
+          {
+            position: "bottom-center",
+            autoClose: 2000,
+            className: "!bg-transparent !p-0 !shadow-none min-h-0",
+            bodyClassName: "!p-0 !m-0",
+            closeButton: false,
+          }
+        )
+        return newCart
       }
-      return item
-    }).filter(item => item.quantity > 0))
+
+      return prev.map(item => {
+        if (item.id === id) {
+          const newQty = Math.max(1, item.quantity + delta)
+          return { ...item, quantity: newQty }
+        }
+        return item
+      })
+    })
   }
 
   const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id))
+    setCart(prev => {
+      const item = prev.find(i => i.id === id)
+      if (item) {
+        toast(
+          <div className="flex items-center gap-4 px-6 py-3 bg-red-900/90 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
+              🗑️
+            </div>
+            <div className="flex flex-col">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 leading-none mb-1.5">Removed from Cart</p>
+              <p className="text-sm font-black text-white whitespace-nowrap">{item.name}</p>
+            </div>
+          </div>,
+          {
+            position: "bottom-center",
+            autoClose: 2000,
+            className: "!bg-transparent !p-0 !shadow-none min-h-0",
+            bodyClassName: "!p-0 !m-0",
+            closeButton: false,
+          }
+        )
+      }
+      return prev.filter(item => item.id !== id)
+    })
   }
 
   const totalHarga = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -342,11 +427,11 @@ const ShopPage = () => {
                               ></div>
 
                               {/* Image container */}
-                              <div className="absolute inset-3 top-3 bottom-24 rounded-2xl overflow-hidden bg-gray-100">
+                              <div className="absolute inset-3 top-3 bottom-24 rounded-2xl overflow-hidden bg-gradient-to-b from-white/20 to-white/40 backdrop-blur-sm border border-white/30">
                                  <img 
-                                    src={getMemberImage(member.nama_panggung)}
+                                    src={getMemberImage(member)}
                                     alt={member.nama_panggung} 
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 p-2"
                                  />
                                  {/* Gradient overlay */}
                                  <div 
@@ -389,24 +474,6 @@ const ShopPage = () => {
                      )}
                    </div>
                 </div>
-
-                {/* Info Card */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100/50 p-4 sm:p-6 rounded-xl sm:rounded-2xl flex gap-3 sm:gap-5 items-start shadow-lg shadow-blue-100/30"
-                >
-                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
-                     <FaInfoCircle className="text-white" />
-                   </div>
-                   <div>
-                      <h4 className="font-bold text-blue-900 uppercase text-xs tracking-widest mb-1">Pre-Order System</h4>
-                      <p className="text-sm text-blue-800/70 leading-relaxed">
-                         Tiket yang dipesan adalah tiket digital (Pre-Order). Tunjukkan bukti pesanan Anda di booth merchandise saat event berlangsung untuk penukaran.
-                      </p>
-                   </div>
-                </motion.div>
             </div>
 
             {/* RIGHT COLUMN: Cart Sticky - Hidden on mobile */}
@@ -461,7 +528,15 @@ const ShopPage = () => {
                                     <img src={item.image} alt="" className="w-full h-full object-cover" />
                                  </div>
                                  <div className="flex-1 min-w-0">
-                                    <h4 className="text-xs font-black uppercase truncate">{item.name}</h4>
+                                    <div className="flex items-start justify-between">
+                                       <h4 className="text-xs font-black uppercase truncate">{item.name}</h4>
+                                       <button 
+                                         onClick={(e) => { e.stopPropagation(); removeFromCart(item.id) }}
+                                         className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"
+                                       >
+                                          <FaTrash className="text-[10px]" />
+                                       </button>
+                                    </div>
                                     <p className="text-[10px] text-gray-500 font-bold mb-2">IDR {item.price.toLocaleString()}</p>
                                     <div className="flex items-center gap-3">
                                        <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1)}} className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"><FaMinus className="text-[8px]" /></button>
@@ -492,22 +567,22 @@ const ShopPage = () => {
                      </div>
                   </motion.div>
 
-                  {/* Payment Info Card */}
+                  {/* Payment Info Card - Blue Premium */}
                   <motion.div 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6 rounded-3xl relative overflow-hidden shadow-2xl"
+                    className="bg-gradient-to-br from-[#4A90B5] to-[#2B5D7A] text-white p-6 rounded-3xl relative overflow-hidden shadow-2xl group border border-white/10"
                   >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#079108] blur-[80px] opacity-40"></div>
-                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-400 blur-[60px] opacity-20"></div>
+                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
+                      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-blue-400/20 rounded-full blur-xl animate-pulse"></div>
                       
                       <div className="relative z-10">
                          <div className="flex items-center gap-3 mb-5">
-                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-[#079108] rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20 shadow-inner">
                               <FaUniversity className="text-sm text-white" />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">{payment.bank}</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-blue-100">{payment.bank}</span>
                          </div>
                          <motion.div 
                             whileHover={{ scale: 1.02 }}
@@ -516,12 +591,12 @@ const ShopPage = () => {
                                setCopied(true)
                                setTimeout(() => setCopied(false), 2000)
                             }}
-                            className="flex items-center gap-4 cursor-pointer mb-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center justify-between group/number hover:bg-white/20 transition-all cursor-pointer active:scale-95 shadow-lg mb-3"
                             title="Click to copy"
                          >
-                            <p className="text-2xl font-black tracking-wider flex-1">{payment.rekening}</p>
-                            <div className="bg-emerald-500/20 p-2.5 rounded-lg text-emerald-400">
-                               {copied ? <FaCheckCircle className="text-sm" /> : <FaRegCopy className="text-sm" />}
+                            <p className="text-xl font-black tracking-wider flex-1 truncate">{payment.rekening}</p>
+                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center group-hover/number:bg-blue-500 transition-all">
+                               {copied ? <FaCheckCircle className="text-xs" /> : <FaCopy className="text-xs" />}
                             </div>
                          </motion.div>
                          <AnimatePresence>
@@ -530,14 +605,14 @@ const ShopPage = () => {
                                initial={{ opacity: 0, y: -10 }}
                                animate={{ opacity: 1, y: 0 }}
                                exit={{ opacity: 0 }}
-                               className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest"
+                               className="text-[10px] font-bold text-blue-200 uppercase tracking-widest"
                              >
-                               ✓ Copied to clipboard!
+                               ✓ Copied!
                              </motion.span>
                            )}
                          </AnimatePresence>
-                         <div className="bg-white/5 inline-block px-4 py-2 rounded-lg mt-2">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{payment.atasNama}</p>
+                         <div className="bg-black/20 backdrop-blur-md rounded-xl px-4 py-2 mt-2 border border-white/5">
+                            <p className="text-[10px] font-bold text-blue-100/60 uppercase tracking-widest leading-tight">{payment.atasNama}</p>
                          </div>
                       </div>
                   </motion.div>
@@ -591,7 +666,74 @@ const ShopPage = () => {
               <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 md:p-12 shadow-2xl">
                  <h2 className="text-3xl font-black uppercase tracking-widest mb-10 text-center bg-gradient-to-r from-gray-900 to-[#079108] bg-clip-text text-transparent">Checkout Order</h2>
                  
-                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
+                 {/* Order Review Section */}
+                 <div className="mb-12 space-y-4">
+                    <div className="flex items-center gap-3 mb-6">
+                       <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center">
+                          <FaShoppingCart className="text-white text-sm" />
+                       </div>
+                       <h3 className="text-lg font-black uppercase tracking-widest">Review Items</h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                       <AnimatePresence mode="popLayout">
+                       {cart.map(item => (
+                          <motion.div 
+                            key={item.id} 
+                            layout
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="flex gap-4 p-4 bg-gray-50/50 backdrop-blur-sm rounded-2xl border border-gray-100 hover:border-blue-200 transition-all group"
+                          >
+                             <div className="w-16 h-16 rounded-xl bg-gray-200 overflow-hidden flex-shrink-0 shadow-inner">
+                                <img src={item.image} alt="" className="w-full h-full object-cover" />
+                             </div>
+                             <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between">
+                                   <h4 className="text-xs font-black uppercase truncate pr-2">{item.name}</h4>
+                                   <button 
+                                     type="button"
+                                     onClick={() => removeFromCart(item.id)}
+                                     className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                   >
+                                      <FaTrash className="text-[10px]" />
+                                   </button>
+                                </div>
+                                <p className="text-[10px] text-gray-500 font-bold mb-3">IDR {item.price.toLocaleString()}</p>
+                                <div className="flex items-center gap-3">
+                                   <button 
+                                     type="button"
+                                     onClick={() => updateQuantity(item.id, -1)}
+                                     className="w-7 h-7 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+                                   >
+                                      <FaMinus className="text-[8px]" />
+                                   </button>
+                                   <span className="text-xs font-black w-6 text-center">{item.quantity}</span>
+                                   <button 
+                                     type="button"
+                                     onClick={() => updateQuantity(item.id, 1)}
+                                     className="w-7 h-7 rounded-lg bg-gray-900 flex items-center justify-center text-white hover:bg-black transition-colors shadow-md"
+                                   >
+                                      <FaPlus className="text-[8px]" />
+                                   </button>
+                                </div>
+                             </div>
+                          </motion.div>
+                       ))}
+                       </AnimatePresence>
+                    </div>
+                    {cart.length === 0 && (
+                       <div className="text-center py-8 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Cart is empty</p>
+                          <button type="button" onClick={() => setStep(1)} className="text-[#079108] text-[10px] font-black uppercase mt-2 hover:underline">Go back to shop</button>
+                       </div>
+                    )}
+                 </div>
+
+                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 pt-10 border-t-2 border-dashed border-gray-100 relative">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white px-6">
+                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">Form Pemesanan</span>
+                    </div>
                     <div className="space-y-6">
                         {/* Nama */}
                         <div className="space-y-2">
@@ -717,8 +859,69 @@ const ShopPage = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                       {/* Upload Area with Preview */}
+                     <div className="space-y-6">
+                        {/* Payment Information Card */}
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-blue-500 ml-2">Pembayaran via BCA</label>
+                           <motion.div 
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="bg-gradient-to-br from-[#4A90B5] to-[#2B5D7A] p-6 rounded-[2rem] text-white shadow-2xl relative overflow-hidden group border border-white/10"
+                           >
+                              {/* Abstract Shapes */}
+                              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
+                              <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-blue-400/20 rounded-full blur-xl animate-pulse"></div>
+                              
+                              <div className="relative z-10 space-y-5">
+                                 <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-xl flex items-center justify-center border border-white/20 shadow-inner">
+                                          <FaUniversity className="text-lg" />
+                                       </div>
+                                       <span className="font-black tracking-[0.3em] text-[10px] uppercase opacity-90">BCA TRANSFER</span>
+                                    </div>
+                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
+                                       <span className="text-[8px] font-black tracking-widest uppercase">Verified</span>
+                                    </div>
+                                 </div>
+
+                                 <div 
+                                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 flex items-center justify-between group/number hover:bg-white/20 transition-all cursor-pointer active:scale-95 shadow-lg"
+                                    onClick={() => {
+                                       navigator.clipboard.writeText('8162015779');
+                                       toast.info(
+                                          <div className="flex items-center gap-3">
+                                             <FaCopy className="text-blue-400" />
+                                             <span className="font-bold text-xs uppercase tracking-widest">Account Copied!</span>
+                                          </div>,
+                                          { 
+                                            position: "bottom-center", 
+                                            autoClose: 2000, 
+                                            className: "!bg-gray-900 !text-white !rounded-full !border !border-white/10",
+                                            hideProgressBar: true,
+                                            closeButton: false
+                                          }
+                                       );
+                                    }}
+                                 >
+                                    <div>
+                                       <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Account Number</p>
+                                       <p className="text-2xl sm:text-3xl font-black tracking-widest">8162015779</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover/number:bg-blue-500 group-hover/number:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all">
+                                       <FaCopy className="text-sm" />
+                                    </div>
+                                 </div>
+
+                                 <div className="inline-block px-5 py-3 bg-black/20 backdrop-blur-md rounded-2xl border border-white/5">
+                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Account Holder</p>
+                                    <p className="text-xs sm:text-sm font-black uppercase tracking-[0.1em] text-blue-100">REYHAN ALFA SUKMAJATI</p>
+                                 </div>
+                              </div>
+                           </motion.div>
+                        </div>
+
+                        {/* Upload Area with Preview */}
                        <div className="space-y-2">
                           <label className="text-[10px] font-black uppercase tracking-widest text-[#079108] ml-2">Bukti Transfer</label>
                           <div 
@@ -762,7 +965,7 @@ const ShopPage = () => {
                              whileHover={{ scale: submitting ? 1 : 1.02 }}
                              whileTap={{ scale: submitting ? 1 : 0.98 }}
                              disabled={submitting}
-                             className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-white py-3.5 sm:py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:from-[#079108] hover:to-emerald-600 transition-all disabled:opacity-70 flex items-center justify-center gap-3"
+                             className="w-full bg-gradient-to-r from-[#4A90B5] to-[#3B7A9E] text-white py-3.5 sm:py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:from-[#3B7A9E] hover:to-[#2B5D7A] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
                           >
                              {submitting ? (
                                <>
@@ -814,8 +1017,6 @@ const ShopPage = () => {
            </motion.div>
         )}
       </main>
-
-      <Footer />
     </div>
   )
 }
