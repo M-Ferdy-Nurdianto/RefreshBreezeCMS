@@ -18,41 +18,23 @@ const HomePage = () => {
   const [openFaq, setOpenFaq] = useState(null)
 
   // ---------------------------------------------------------------------------
-  // HERO IMAGE CALIBRATION TOOL
+  // HERO DATA
   // ---------------------------------------------------------------------------
-  const [showCalibration, setShowCalibration] = useState(false)
-  const [activeMemberId, setActiveMemberId] = useState(null)
-  const [saveStatus, setSaveStatus] = useState('')
 
   const initialMembers = [
     { id: 'cally', name: 'CALLY', color: 'bg-[#9BBF9B]', photo: getAssetPath('/images/hero/cally.webp?v=32'), posX: 27, posY: 28, scale: 1.8, translateX: 18, translateY: 0 },
-    { id: 'yanyee', name: 'YANYEE', color: 'bg-[#7EAE7E]', photo: getAssetPath('/images/hero/yanyee.webp?v=32'), posX: 50, posY: 32, scale: 2, translateX: -22, translateY: -10 },
-    { id: 'channie', name: 'CHANNIE', color: 'bg-[#6A9F6A]', photo: getAssetPath('/images/hero/channie.webp?v=32'), posX: 39, posY: 31, scale: 1.2, translateX: -8, translateY: 8 },
+    { id: 'yanyee', name: 'YANYEE', color: 'bg-[#7EAE7E]', photo: getAssetPath('/images/hero/yanyee.webp?v=32'), posX: 50, posY: 32, scale: 2, translateX: -26, translateY: -10 },
+    { id: 'channie', name: 'CHANNIE', color: 'bg-[#6A9F6A]', photo: getAssetPath('/images/hero/channie.webp?v=32'), posX: 39, posY: 30, scale: 2.1, translateX: -8, translateY: 8 },
     { id: 'aca', name: 'ACA', color: 'bg-[#4A90B5]', photo: getAssetPath('/images/hero/aca.webp?v=32'), posX: 0, posY: 23, scale: 2.1, translateX: 18, translateY: 0 },
     { id: 'cissi', name: 'CISSI', color: 'bg-[#5A8F5A]', photo: getAssetPath('/images/hero/cissi.webp?v=32'), posX: 26, posY: 25, scale: 2.1, translateX: -27, translateY: 5 },
-    { id: 'sinta', name: 'SINTA', color: 'bg-[#4C804C]', photo: getAssetPath('/images/hero/sinta.webp?v=32'), posX: 48, posY: 31, scale: 2.1, translateX: 18, translateY: -4 },
+    { id: 'sinta', name: 'SINTA', color: 'bg-[#4C804C]', photo: getAssetPath('/images/hero/sinta.webp?v=32'), posX: 48, posY: 31, scale: 2, translateX: 18, translateY: 6 },
     { id: 'piya', name: 'PIYA', color: 'bg-[#3E723E]', photo: getAssetPath('/images/hero/piya.webp?v=32'), posX: 50, posY: 30, scale: 2.1, translateX: 5, translateY: 9 },
   ]
 
-  const [members, setMembers] = useState(() => {
-    const saved = localStorage.getItem('rb_hero_config')
-    return saved ? JSON.parse(saved) : initialMembers
-  })
+  const members = initialMembers
 
-  // Keep localStorage in sync or use a save button
-  const handleSaveConfig = () => {
-    const config = JSON.stringify(members, null, 2)
-    localStorage.setItem('rb_hero_config', config)
-    navigator.clipboard.writeText(config)
-    setSaveStatus('Config Saved & Copied!')
-    setTimeout(() => setSaveStatus(''), 3000)
-  }
 
-  const updateMember = (id, field, value) => {
-    setMembers(prev => prev.map(m => 
-      m.id === id ? { ...m, [field]: parseFloat(value) } : m
-    ))
-  }
+
 
   const getMemberStyle = (member) => ({
     objectPosition: `${member.posX}% ${member.posY}%`,
@@ -623,88 +605,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CALIBRATION TOOL */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 pointer-events-auto">
-        <button 
-          onClick={() => setShowCalibration(!showCalibration)}
-          className="bg-red-600 text-white p-3 rounded-full shadow-lg font-bold text-xs hover:scale-110 active:scale-95 transition-transform"
-        >
-          {showCalibration ? 'CLOSE' : 'EDIT'}
-        </button>
-        
-        {showCalibration && (
-          <div className="bg-black/95 p-4 rounded-xl text-white w-80 max-h-[50vh] overflow-y-auto border border-white/20 shadow-2xl">
-            <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-[#079108] border-b border-white/10 pb-2">Hero Config</h3>
-            <div className="space-y-6">
-              {members.map(m => (
-                <div key={m.id} className="border-b border-white/10 pb-4 last:border-0">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-black text-xs text-accent-yellow">{m.name}</span>
-                    <span className="text-[9px] text-gray-500 font-mono">Scale: {m.scale}</span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                     {/* Pos X/Y */}
-                     <div className="grid grid-cols-2 gap-3">
-                       <label className="text-[9px] font-bold text-gray-400">
-                          Pos X (%)
-                          <input type="range" min="0" max="100" value={m.posX} onChange={(e) => updateMember(m.id, 'posX', e.target.value)} className="w-full accent-[#079108] h-1 mt-1" />
-                       </label>
-                       <label className="text-[9px] font-bold text-gray-400">
-                          Pos Y (%)
-                          <input type="range" min="0" max="100" value={m.posY} onChange={(e) => updateMember(m.id, 'posY', e.target.value)} className="w-full accent-[#079108] h-1 mt-1" />
-                       </label>
-                     </div>
 
-                     {/* Translate X/Y */}
-                     <div className="grid grid-cols-2 gap-3">
-                       <label className="text-[9px] font-bold text-gray-400">
-                          Trans X (px)
-                          <input type="range" min="-100" max="100" value={m.translateX} onChange={(e) => updateMember(m.id, 'translateX', e.target.value)} className="w-full accent-blue-500 h-1 mt-1" />
-                       </label>
-                       <label className="text-[9px] font-bold text-gray-400">
-                          Trans Y (px)
-                          <input type="range" min="-100" max="100" value={m.translateY} onChange={(e) => updateMember(m.id, 'translateY', e.target.value)} className="w-full accent-blue-500 h-1 mt-1" />
-                       </label>
-                     </div>
-                     
-                     {/* Scale */}
-                     <label className="text-[9px] font-bold text-gray-400 block">
-                        Scale (1-3)
-                        <input type="range" min="1" max="3" step="0.1" value={m.scale} onChange={(e) => updateMember(m.id, 'scale', e.target.value)} className="w-full accent-red-500 h-1 mt-1" />
-                     </label>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Save & Copy Button */}
-            <div className="mt-4 space-y-2">
-              <button 
-                onClick={handleSaveConfig}
-                className="w-full py-3 bg-[#079108] text-white font-black text-[10px] uppercase tracking-widest rounded shadow-lg hover:bg-[#068007] transition-all active:scale-95"
-              >
-                {saveStatus || 'SAVE & COPY CONFIG'}
-              </button>
-              
-              <div className="pt-2 border-t border-white/20">
-                  <p className="text-[9px] text-[#079108] mb-1 font-bold uppercase">Config JSON:</p>
-                  <textarea 
-                    className="w-full h-24 bg-black text-[9px] font-mono text-green-400 p-2 rounded border border-white/10 focus:outline-none select-text pointer-events-auto"
-                    onClick={(e) => e.target.select()}
-                    value={JSON.stringify(members.map(m => ({
-                      id: m.id, 
-                      name: m.name, 
-                      color: m.color, 
-                      photo: m.photo, 
-                      posX: m.posX, posY: m.posY, scale: m.scale, translateX: m.translateX, translateY: m.translateY
-                    })), null, 2)}
-                    onChange={() => {}}
-                  />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
       <Footer />
     </div>
