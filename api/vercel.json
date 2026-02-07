@@ -1,14 +1,7 @@
 {
-  "installCommand": "npm install",
-  "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "backend/**"
-    }
-  },
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Credentials", "value": "true" },
         { "key": "Access-Control-Allow-Origin", "value": "https://refresh-breeze-web.vercel.app" },
@@ -20,11 +13,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/index.js"
     }
   ]
 }

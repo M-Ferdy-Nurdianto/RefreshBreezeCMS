@@ -11,13 +11,42 @@ import uploadRoutes from '../backend/routes/upload.js'
 
 const app = express()
 
-// Middleware - CORS configuration (allow all origins for Vercel deployment)
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'https://refresh-breeze-web.vercel.app',
+  'https://refresh-breeze.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean)
+
+// Middleware - CORS configuration
 app.use(cors({
-  origin: true, // Reflect the request origin, as CORS headers will be set to the request origin
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+    if (!origin) return callback(null, true)
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, origin)
+    }
+    
+    // Allow all vercel.app subdomains for preview deployments
+    if (origin && origin.endsWith('.vercel.app')) {
+      return callback(null, origin)
+    }
+    
+    // Reject other origins
+    return callback(null, false)
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }))
+
+// Handle preflight requests explicitly
+app.options('*', cors())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
