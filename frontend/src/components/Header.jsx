@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { FaBars, FaTimes, FaShoppingCart, FaHome, FaUsers, FaMusic, FaCalendarAlt, FaCamera, FaStore, FaInfoCircle, FaInstagram, FaTwitter, FaYoutube, FaTiktok } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getAssetPath } from '../lib/pathUtils'
 
 const Header = ({ cartCount = 0, onCartClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -38,7 +39,7 @@ const Header = ({ cartCount = 0, onCartClick }) => {
             className="flex items-center gap-2 group"
           >
             <div data-aos="zoom-in-right" data-aos-duration="1000">
-              <img src="/images/logos/logo.webp" alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-sm" />
+              <img src={getAssetPath('/images/logos/logo.webp')} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-sm" />
             </div>
             <span className="text-sm sm:text-xl font-black text-gray-900 tracking-widest group-hover:text-[#079108] transition-colors line-clamp-1">
               REFRESH BREEZE
@@ -122,7 +123,7 @@ const Header = ({ cartCount = 0, onCartClick }) => {
               {/* Header */}
               <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <img src="/images/logos/logo.webp" alt="Logo" className="w-8 h-8 object-contain" />
+                  <img src={getAssetPath('/images/logos/logo.webp')} alt="Logo" className="w-8 h-8 object-contain" />
                   <span className="font-black text-sm tracking-widest text-gray-900">MENU</span>
                 </div>
                 <button

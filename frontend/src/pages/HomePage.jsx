@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import api from '../lib/api'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { getAssetPath } from '../lib/pathUtils'
 
 const HomePage = () => {
   const navigate = useNavigate()
@@ -24,13 +25,13 @@ const HomePage = () => {
   const [saveStatus, setSaveStatus] = useState('')
 
   const initialMembers = [
-    { id: 'cally', name: 'CALLY', color: 'bg-[#9BBF9B]', photo: '/images/hero/cally.webp?v=32', posX: 27, posY: 28, scale: 1.8, translateX: 18, translateY: 0 },
-    { id: 'yanyee', name: 'YANYEE', color: 'bg-[#7EAE7E]', photo: '/images/hero/yanyee.webp?v=32', posX: 50, posY: 32, scale: 2, translateX: -22, translateY: -10 },
-    { id: 'channie', name: 'CHANNIE', color: 'bg-[#6A9F6A]', photo: '/images/hero/channie.webp?v=32', posX: 39, posY: 31, scale: 1.2, translateX: -8, translateY: 8 },
-    { id: 'aca', name: 'ACA', color: 'bg-[#4A90B5]', photo: '/images/hero/aca.webp?v=32', posX: 0, posY: 23, scale: 2.1, translateX: 18, translateY: 0 },
-    { id: 'cissi', name: 'CISSI', color: 'bg-[#5A8F5A]', photo: '/images/hero/cissi.webp?v=32', posX: 26, posY: 25, scale: 2.1, translateX: -27, translateY: 5 },
-    { id: 'sinta', name: 'SINTA', color: 'bg-[#4C804C]', photo: '/images/hero/sinta.webp?v=32', posX: 48, posY: 31, scale: 2.1, translateX: 18, translateY: -4 },
-    { id: 'piya', name: 'PIYA', color: 'bg-[#3E723E]', photo: '/images/hero/piya.webp?v=32', posX: 50, posY: 30, scale: 2.1, translateX: 5, translateY: 9 },
+    { id: 'cally', name: 'CALLY', color: 'bg-[#9BBF9B]', photo: getAssetPath('/images/hero/cally.webp?v=32'), posX: 27, posY: 28, scale: 1.8, translateX: 18, translateY: 0 },
+    { id: 'yanyee', name: 'YANYEE', color: 'bg-[#7EAE7E]', photo: getAssetPath('/images/hero/yanyee.webp?v=32'), posX: 50, posY: 32, scale: 2, translateX: -22, translateY: -10 },
+    { id: 'channie', name: 'CHANNIE', color: 'bg-[#6A9F6A]', photo: getAssetPath('/images/hero/channie.webp?v=32'), posX: 39, posY: 31, scale: 1.2, translateX: -8, translateY: 8 },
+    { id: 'aca', name: 'ACA', color: 'bg-[#4A90B5]', photo: getAssetPath('/images/hero/aca.webp?v=32'), posX: 0, posY: 23, scale: 2.1, translateX: 18, translateY: 0 },
+    { id: 'cissi', name: 'CISSI', color: 'bg-[#5A8F5A]', photo: getAssetPath('/images/hero/cissi.webp?v=32'), posX: 26, posY: 25, scale: 2.1, translateX: -27, translateY: 5 },
+    { id: 'sinta', name: 'SINTA', color: 'bg-[#4C804C]', photo: getAssetPath('/images/hero/sinta.webp?v=32'), posX: 48, posY: 31, scale: 2.1, translateX: 18, translateY: -4 },
+    { id: 'piya', name: 'PIYA', color: 'bg-[#3E723E]', photo: getAssetPath('/images/hero/piya.webp?v=32'), posX: 50, posY: 30, scale: 2.1, translateX: 5, translateY: 9 },
   ]
 
   const [members, setMembers] = useState(() => {
@@ -291,7 +292,7 @@ const HomePage = () => {
                 >
                   <div className="absolute inset-0 bg-white/10 z-20 mix-blend-overlay pointer-events-none"></div> {/* Texture Overlay (Removed blur) */}
                   <img 
-                    src="/images/members/group.webp" 
+                    src={getAssetPath('/images/members/group.webp')} 
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
                     onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=1200&q=80'} 
@@ -444,7 +445,7 @@ const HomePage = () => {
                     className="sm:col-span-2 lg:col-span-2 bg-[#0a0f1d] rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-8 md:p-12 relative overflow-hidden group cursor-pointer text-white h-[280px] sm:h-[350px] md:h-[400px] flex flex-col justify-end"
                  >
                     <img 
-                        src="/images/members/group.webp" 
+                        src={getAssetPath('/images/members/group.webp')} 
                         loading="lazy"
                         className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-700"
                     />
@@ -478,8 +479,8 @@ const HomePage = () => {
 
                     <div className="relative h-48 w-full">
                          {/* Stacked Images Effect */}
-                        <img src="/images/members/cally.webp" loading="lazy" className="absolute bottom-0 right-0 w-32 h-40 object-cover rounded-xl shadow-lg transform rotate-6 group-hover:rotate-12 transition-transform duration-500 z-10" />
-                        <img src="/images/members/aca.webp" loading="lazy" className="absolute bottom-2 right-12 w-30 h-36 object-cover rounded-xl shadow-lg transform -rotate-6 group-hover:-rotate-12 transition-transform duration-500" />
+                        <img src={getAssetPath('/images/members/cally.webp')} loading="lazy" className="absolute bottom-0 right-0 w-32 h-40 object-cover rounded-xl shadow-lg transform rotate-6 group-hover:rotate-12 transition-transform duration-500 z-10" />
+                        <img src={getAssetPath('/images/members/aca.webp')} loading="lazy" className="absolute bottom-2 right-12 w-30 h-36 object-cover rounded-xl shadow-lg transform -rotate-6 group-hover:-rotate-12 transition-transform duration-500" />
                     </div>
 
                     <div className="flex items-center gap-2 text-dark font-black text-xs uppercase tracking-widest group-hover:text-[#079108] transition-colors">
@@ -501,7 +502,7 @@ const HomePage = () => {
 
       {/* GALLERY PREVIEW */}
       <section className="py-12 sm:py-16 md:py-24 bg-[#079108]/5 text-dark overflow-hidden relative">
-         <div className="absolute top-0 left-0 w-full h-full bg-[url('/noise.png')] opacity-5"></div>
+         <div className={`absolute top-0 left-0 w-full h-full bg-[url('${getAssetPath('/noise.png')}')] opacity-5`}></div>
          <div className="container mx-auto max-w-7xl px-4 relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-dark">

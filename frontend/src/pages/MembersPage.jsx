@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaHeart, FaArrowLeft, FaBirthdayCake, FaInstagram, FaPalette, FaQuoteLeft } from 'react-icons/fa'
+import { getAssetPath } from '../lib/pathUtils'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import api from '../lib/api'
@@ -139,8 +140,8 @@ const MembersPage = () => {
   // Profile images from /images/members/
   const getProfileImage = (name) => {
     const clean = sanitizeName(name)
-    if (clean === 'acaa' || clean === 'aca') return '/images/members/aca.webp'
-    return `/images/members/${clean}.webp`
+    if (clean === 'acaa' || clean === 'aca') return getAssetPath('/images/members/aca.webp')
+    return getAssetPath(`/images/members/${clean}.webp`)
   }
 
   return (
@@ -172,7 +173,7 @@ const MembersPage = () => {
                 className="relative rounded-[2rem] overflow-hidden h-64 md:h-80"
               >
                 <img 
-                  src="/images/members/group.webp" 
+                  src={getAssetPath('/images/members/group.webp')} 
                   alt="Refresh Breeze Members" 
                   className="w-full h-full object-cover"
                 />
@@ -423,7 +424,7 @@ const MembersPage = () => {
 
                       <div className="grid grid-cols-3 gap-3 md:gap-5">
                         {[1, 2, 3].map((num, idx) => {
-                          const imgSrc = `/images/members/gallery/${folderName}/${folderName}${num}.webp`
+                          const imgSrc = getAssetPath(`/images/members/gallery/${folderName}/${folderName}${num}.webp`)
                           return (
                             <motion.div 
                               key={num}

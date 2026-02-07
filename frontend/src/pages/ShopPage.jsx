@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaShoppingCart, FaPlus, FaMinus, FaChevronRight, FaCamera, FaCheckCircle, FaRegCopy, FaTicketAlt, FaInfoCircle, FaSpinner, FaUniversity } from 'react-icons/fa'
+import { getAssetPath } from '../lib/pathUtils'
 import api from '../lib/api'
 import Skeleton from '../components/Skeleton'
 import Header from '../components/Header'
@@ -40,8 +41,8 @@ const ShopPage = () => {
 
   const getMemberImage = (name) => {
     const clean = sanitizeName(name)
-    if (clean === 'acaa' || clean === 'aca') return '/images/shop/aca.webp'
-    return `/images/shop/${clean}.webp`
+    if (clean === 'acaa' || clean === 'aca') return getAssetPath('/images/shop/aca.webp')
+    return getAssetPath(`/images/shop/${clean}.webp`)
   }
 
   // getMemberColor is now imported from memberUtils
@@ -118,7 +119,7 @@ const ShopPage = () => {
   // Cart Logic
   const addToCart = (type, member = null) => {
     const isGroup = type === 'group'
-    const imageUrl = isGroup ? '/images/members/group.webp' : getMemberImage(member.nama_panggung)
+    const imageUrl = isGroup ? getAssetPath('/images/members/group.webp') : getMemberImage(member.nama_panggung)
     
     const item = {
       id: isGroup ? 'group' : member.id,
