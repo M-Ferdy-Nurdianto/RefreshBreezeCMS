@@ -16,6 +16,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true)
   const [faqs, setFaqs] = useState([])
   const [openFaq, setOpenFaq] = useState(null)
+  const [activeMemberId, setActiveMemberId] = useState(null)
 
   // ---------------------------------------------------------------------------
   // HERO DATA
