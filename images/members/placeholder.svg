@@ -1,0 +1,33 @@
+<!-- Placeholder: Member Photo -->
+<!-- 
+  Ukuran: 800x1000px (rasio 4:5)
+  Format: JPG recommended
+  
+  Ganti foto member:
+  1. Siapkan foto 800x1000px
+  2. Rename sesuai member_id (contoh: sinta.jpg)
+  3. Copy ke folder ini
+  4. Refresh browser (Ctrl+F5)
+-->
+
+<svg width="800" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c3e3a3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#079108;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#grad)"/>
+  
+  <!-- Placeholder icon -->
+  <circle cx="400" cy="350" r="120" fill="white" opacity="0.3"/>
+  <path d="M 400 280 L 400 380 M 350 330 L 450 330" stroke="white" stroke-width="20" stroke-linecap="round" opacity="0.5"/>
+  
+  <!-- Text -->
+  <text x="400" y="600" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">MEMBER PHOTO</text>
+  <text x="400" y="660" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle" opacity="0.8">800 x 1000 px</text>
+  <text x="400" y="700" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" opacity="0.6">Ratio 4:5</text>
+</svg>

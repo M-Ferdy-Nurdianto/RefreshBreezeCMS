@@ -1,0 +1,172 @@
+{
+  "members": [
+    {
+      "id": "1",
+      "member_id": "yanyee",
+      "nama_panggung": "YanYee 🪽",
+      "nama_lengkap": "Ho Yan Yee",
+      "tagline": "Anggun, Hangat, Cerah",
+      "instagram": "@ho_yan.yee",
+      "image_url": "/images/members/yanyee.webp",
+      "jiko": "\"manis, lembut, dan selalu siap membuat harimu jadi lebih hangat seperti cookies yang baru matang🍪. haloo semuaa, aku yan yee!🪽\"",
+      "details": {
+        "Tanggal Lahir": "22 November",
+        "Hobi": "Makeup, dance, baking"
+      },
+      "gallery": [
+        "/images/members/gallery/yanyee/yanyee1.webp",
+        "/images/members/gallery/yanyee/yanyee2.webp",
+        "/images/members/gallery/yanyee/yanyee3.webp"
+      ],
+      "is_active": true,
+      "order": 1
+    },
+    {
+      "id": "2",
+      "member_id": "sinta",
+      "nama_panggung": "Sinta 💚",
+      "nama_lengkap": "Sinta Amelia",
+      "tagline": "Pemalu, Penasaran",
+      "instagram": "@sii_ntaa",
+      "image_url": "/images/members/sinta.webp",
+      "jiko": "\"Si pemalu tetapi suka hal-hal baru, haloo aku Sintaa\"",
+      "details": {
+        "Tanggal Lahir": "12 Oktober",
+        "Hobi": "Memasak, menyanyi, menari, nonton anime, tidur"
+      },
+      "gallery": [
+        "/images/members/gallery/sinta/sinta1.webp",
+        "/images/members/gallery/sinta/sinta2.webp",
+        "/images/members/gallery/sinta/sinta3.webp"
+      ],
+      "is_active": true,
+      "order": 2
+    },
+    {
+      "id": "3",
+      "member_id": "cissi",
+      "nama_panggung": "Cissi 🦋",
+      "nama_lengkap": "Cissi",
+      "tagline": "Imajinatif, Penari",
+      "instagram": "@bakedciz",
+      "image_url": "/images/members/cissi.webp",
+      "jiko": "\"Aiyaiya, i'm your little butterfly~ Kupu-kupu yang suka menari dan bisa membuatmu bahagia, halo halo semuanya aku Cissi\"",
+      "details": {
+        "Tanggal Lahir": "22 Agustus",
+        "Hobi": "Dance dan melamun"
+      },
+      "gallery": [
+        "/images/members/gallery/cissi/cissi1.webp",
+        "/images/members/gallery/cissi/cissi2.webp",
+        "/images/members/gallery/cissi/cissi3.webp"
+      ],
+      "is_active": true,
+      "order": 3
+    },
+    {
+      "id": "4",
+      "member_id": "channie",
+      "nama_panggung": "Channie ✨",
+      "nama_lengkap": "Channie",
+      "tagline": "Kreatif, Menghibur",
+      "instagram": "@zzuchannie",
+      "image_url": "/images/members/channie.webp",
+      "jiko": "\"Semungil bintang yang akan menerangi hatimu seperti bulan, halo semuanya aku Channie!\"",
+      "details": {
+        "Tanggal Lahir": "8 September",
+        "Hobi": "Dance, bikin koreo, nulis, makan gorengan"
+      },
+      "gallery": [
+        "/images/members/gallery/channie/channie1.webp",
+        "/images/members/gallery/channie/channie2.webp",
+        "/images/members/gallery/channie/channie3.webp"
+      ],
+      "is_active": true,
+      "order": 4
+    },
+    {
+      "id": "5",
+      "member_id": "acaa",
+      "nama_panggung": "Acaa 💙",
+      "nama_lengkap": "Acaa",
+      "tagline": "Ceria, Usil, Lincah",
+      "instagram": "@caafoxy",
+      "image_url": "/images/members/aca.webp",
+      "jiko": "\"Citcitcutcuit dengarlah kicauanku yang akan meramaikan hatimuuu\"",
+      "details": {
+        "Tanggal Lahir": "25 Agustus",
+        "Hobi": "Nyanyi, turu, main emel, berak, repeat"
+      },
+      "gallery": [
+        "/images/members/gallery/acaa/acaa1.webp",
+        "/images/members/gallery/acaa/acaa2.webp",
+        "/images/members/gallery/acaa/acaa3.webp"
+      ],
+      "is_active": true,
+      "order": 5
+    },
+    {
+      "id": "6",
+      "member_id": "cally",
+      "nama_panggung": "Cally 🪼",
+      "nama_lengkap": "Callista Regina",
+      "tagline": "Lembut, Weirdo",
+      "instagram": "@calismilikitiw",
+      "image_url": "/images/members/cally.webp",
+      "jiko": "\"Mengapung lembut dihatimu seperti ubur ubur yang menari di laut🪼~ Hallo aku Cally!!!\"",
+      "details": {
+        "Tanggal Lahir": "5 September",
+        "Hobi": "Menonton film, mempertanyakan eksistensi diri sendiri, menyanyi"
+      },
+      "gallery": [
+        "/images/members/gallery/cally/cally1.webp",
+        "/images/members/gallery/cally/cally2.webp",
+        "/images/members/gallery/cally/cally3.webp"
+      ],
+      "is_active": true,
+      "order": 6
+    },
+    {
+      "id": "7",
+      "member_id": "piya",
+      "nama_panggung": "Piya 🐰",
+      "nama_lengkap": "Piya",
+      "tagline": "Periang, Lucu",
+      "instagram": "@matcvie_",
+      "image_url": "/images/members/piya.webp",
+      "jiko": "\"Pyon! pyon! seperti kelinci yang melompat tinggi aku akan melompat ke posisi tertinggi di hatimu 🐰 ~ Hallo aku Piya !!\"",
+      "details": {
+        "Tanggal Lahir": "1 Januari",
+        "Hobi": "Gambar dan main rosbloz"
+      },
+      "gallery": [
+        "/images/members/gallery/piya/piya1.webp",
+        "/images/members/gallery/piya/piya2.webp",
+        "/images/members/gallery/piya/piya3.webp"
+      ],
+      "is_active": true,
+      "order": 7
+    },
+    {
+      "id": "group",
+      "member_id": "group",
+      "nama_panggung": "Group Cheki",
+      "nama_lengkap": "Refresh Breeze",
+      "tagline": "Kompak & Ceria",
+      "instagram": "@refreshbreeze_official",
+      "image_url": "/images/members/group.webp",
+      "jiko": "Grup idola asal Tulungagung yang siap membawa hembusan angin segar untukmu!",
+      "details": {
+        "Asal": "Tulungagung, Jawa Timur",
+        "Slogan": "Kompak, Ceria, Menyegarkan!",
+        "Debut": "2023"
+      },
+      "gallery": [
+        "/images/members/gallery/group/group1.webp",
+        "/images/members/gallery/group/group2.webp"
+      ],
+      "is_active": true,
+      "order": 999
+    }
+  ]
+}

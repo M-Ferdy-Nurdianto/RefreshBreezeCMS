@@ -1,0 +1,14 @@
+<!-- Placeholder: Logo Refresh Breeze -->
+<!-- Ukuran: 512x512px, PNG dengan transparent background -->
+<!-- 
+  Untuk mengganti logo:
+  1. Siapkan file logo.png (512x512px, transparent)
+  2. Copy ke folder public/images/logos/
+  3. Refresh browser
+-->
+
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#079108" rx="64"/>
+  <text x="256" y="276" font-family="Arial, sans-serif" font-size="180" font-weight="bold" fill="white" text-anchor="middle">RB</text>
+  <text x="256" y="400" font-family="Arial, sans-serif" font-size="48" fill="#c3e3a3" text-anchor="middle">REFRESH BREEZE</text>
+</svg>
