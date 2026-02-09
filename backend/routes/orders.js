@@ -366,20 +366,37 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     const memberStats = {}
     const paidOrders = orders.filter(o => o.status === 'checked' || o.status === 'completed')
 
+    let totalPolaroid = 0
+    // Helper to strip emojis and special symbols (cause grouping issues)
+    const stripEmoji = (text) => String(text || '').replace(/[^a-zA-Z0-9\s()]/gu, '').trim()
+
     paidOrders.forEach(order => {
       order.order_items.forEach(item => {
-        let name = item.item_name
+        // Count polaroid usage from original item name (ONLY for completed orders)
+        if (order.status === 'completed') {
+          const isPaperUsed = item.item_name.toLowerCase().includes('cheki') || item.item_name.toLowerCase().includes('polaroid')
+          if (isPaperUsed) {
+            totalPolaroid += item.quantity
+          }
+        }
+
+        let name = stripEmoji(item.item_name
           .replace('Cheki ', '')
           .replace(' (Pre-Order)', '')
-          .trim()
+        )
 
         if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) {
           name = 'All Member (Group)'
         }
 
-        if (!memberStats[name]) memberStats[name] = { qty: 0, revenue: 0 }
+        if (!memberStats[name]) memberStats[name] = { qty: 0, qtyPO: 0, qtyOTS: 0, revenue: 0 }
 
         memberStats[name].qty += item.quantity
+        if (order.is_ots) {
+          memberStats[name].qtyOTS += item.quantity
+        } else {
+          memberStats[name].qtyPO += item.quantity
+        }
         memberStats[name].revenue += (item.price * item.quantity)
       })
     })
@@ -395,35 +412,49 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     titleRow.eachCell(cell => cell.font = { bold: true, color: { argb: 'FFFFFFFF' } })
 
     // Summary Headers
-    const summaryHeader = worksheet.addRow(['Member / Item', 'Total Qty', 'Total Rupiah', '', '', '', '', '', '', ''])
+    const summaryHeader = worksheet.addRow(['Member / Item', 'Qty PO', 'Qty OTS', 'Total Qty', 'Total Rupiah', '', '', '', '', ''])
     summaryHeader.font = { bold: true }
-    summaryHeader.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }
-    summaryHeader.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }
-    summaryHeader.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }
+    for (let i = 1; i <= 5; i++) {
+      summaryHeader.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }
+      summaryHeader.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    }
 
     let totalQty = 0
+    let totalPO = 0
+    let totalOTS = 0
     let totalRev = 0
 
     // Sort stats: Group last, others alpha or by value? Let's do alphabetical for members
     const sortedKeys = Object.keys(memberStats).sort()
 
     sortedKeys.forEach(key => {
-      const { qty, revenue } = memberStats[key]
+      const { qty, qtyPO, qtyOTS, revenue } = memberStats[key]
       totalQty += qty
+      totalPO += qtyPO
+      totalOTS += qtyOTS
       totalRev += revenue
 
-      const row = worksheet.addRow([key, qty, `Rp ${revenue.toLocaleString('id-ID')}`, '', '', '', '', '', '', ''])
-      row.getCell(1).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      row.getCell(2).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      row.getCell(3).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      const row = worksheet.addRow([key, qtyPO, qtyOTS, qty, `Rp ${revenue.toLocaleString('id-ID')}`, '', '', '', '', ''])
+      for (let i = 1; i <= 5; i++) {
+        row.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      }
     })
 
     // Grand Total Row
-    const grandTotalRow = worksheet.addRow(['GRAND TOTAL', totalQty, `Rp ${totalRev.toLocaleString('id-ID')}`, '', '', '', '', '', '', ''])
+    const grandTotalRow = worksheet.addRow(['GRAND TOTAL (Items)', totalPO, totalOTS, totalQty, `Rp ${totalRev.toLocaleString('id-ID')}`, '', '', '', '', ''])
     grandTotalRow.font = { bold: true }
-    grandTotalRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } } // Light green
-    grandTotalRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }
-    grandTotalRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }
+    for (let i = 1; i <= 5; i++) {
+      grandTotalRow.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } } // Light green
+      grandTotalRow.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    }
+
+    // Polaroid Summary Row
+    const polaroidRow = worksheet.addRow(['TOTAL POLAROID', totalPolaroid, 'lembar', '', '', '', '', '', '', ''])
+    polaroidRow.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+    polaroidRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } } // Green
+    polaroidRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } }
+    polaroidRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } }
+
 
     // Set response headers
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

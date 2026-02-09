@@ -299,7 +299,6 @@ const MembersPage = () => {
               {(() => {
                 const data = getMemberData(selectedMember.nama_panggung)
                 const clean = sanitizeName(selectedMember.nama_panggung)
-                const folderName = (clean === 'aca' || clean === 'acaa') ? 'aca' : clean
                 
                 return (
                   <>
@@ -364,7 +363,7 @@ const MembersPage = () => {
                           </div>
                           
                           <h1 
-                            className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9] mb-8"
+                            className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-8 flex items-center gap-3 flex-wrap"
                             style={{ color: data.color }}
                           >
                             {data.namaPanggung}
@@ -437,7 +436,8 @@ const MembersPage = () => {
 
                       <div className="grid grid-cols-3 gap-3 md:gap-5">
                         {[1, 2, 3].map((num, idx) => {
-                          const imgSrc = getAssetPath(`/images/members/gallery/${folderName}/${folderName}${num}.webp`)
+                          const fileBase = clean === 'acaa' ? 'aca' : clean
+                          const imgSrc = getAssetPath(`/images/members/gallery/${clean}/${fileBase} (${num}).webp`)
                           return (
                             <motion.div 
                               key={num}
@@ -454,7 +454,6 @@ const MembersPage = () => {
                                 src={imgSrc} 
                                 alt={`Gallery ${num}`}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                onError={(e) => e.target.style.display = 'none'}
                               />
                             </motion.div>
                           )

@@ -1,69 +1,73 @@
 import { motion } from 'framer-motion'
-import { FaMusic, FaInstagram, FaTwitter, FaYoutube, FaTiktok } from 'react-icons/fa'
+import { FaMusic, FaInstagram, FaTwitter, FaYoutube, FaTiktok, FaPlayCircle } from 'react-icons/fa'
 import Header from '../components/Header'
+import { getAssetPath } from '../lib/pathUtils'
 
 const MusicPage = () => {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-dark overflow-x-hidden relative">
+      <div className="noise-bg opacity-10"></div>
       <Header />
       
-      <main className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center min-h-[80vh]">
+      <main className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center min-h-[90vh] relative z-10">
         <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-8"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center space-y-12"
         >
-          {/* Animated Icon */}
-          <motion.div 
-            animate={{ 
-              scale: [1, 1.1, 1],
-              rotate: [0, 5, -5, 0]
-            }}
-            transition={{ 
-              duration: 4, 
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="w-24 h-24 bg-[#079108]/10 rounded-full flex items-center justify-center mx-auto text-[#079108] mb-8 shadow-[0_0_30px_rgba(7,145,8,0.2)]"
-          >
-            <FaMusic className="text-4xl" />
-          </motion.div>
-
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-black tracking-widest text-dark uppercase">
-              DISKOGRAFI
-            </h1>
-            <div className="w-32 h-1.5 bg-[#079108] mx-auto rounded-full shadow-[0_0_15px_rgba(7,145,8,0.4)]"></div>
+          {/* Decorative Icon Wrapper */}
+          <div className="relative inline-block">
+             <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-8 border-2 border-dashed border-[#079108]/20 rounded-full"
+             ></motion.div>
+             <motion.div 
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="w-32 h-32 bg-gradient-to-br from-[#079108] to-[#4A90B5] rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl relative z-10"
+             >
+               <FaMusic className="text-5xl" />
+             </motion.div>
           </div>
 
-          <div className="max-w-xl mx-auto space-y-6">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black mb-4 tracking-widest animate-pulse uppercase">
-              Discography Update in Progress
+          <div className="space-y-6">
+            <div className="flex flex-col items-center gap-2">
+                <span className="text-[#079108] font-black tracking-[0.5em] text-xs uppercase">COLLECTION</span>
+                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-dark uppercase leading-none">
+                  OUR <span className="text-[#079108]">MUSIC</span>
+                </h1>
             </div>
-            <h2 className="text-3xl font-black text-gray-800 uppercase tracking-tight">UNDER MAINTENANCE</h2>
-            <p className="text-gray-500 text-lg leading-relaxed font-light">
-              Halaman Music sedang dalam pembaruan konten. Kami akan segera kembali dengan fitur-fitur baru yang menarik.
+            <div className="w-24 h-2 bg-dark mx-auto rounded-full"></div>
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-8">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-dark text-white text-[10px] font-black tracking-[0.3em] uppercase shadow-xl">
+               <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+               COMING SOON
+            </div>
+            <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed italic">
+              "Harmoni kesegaran sedang kami racik. Segera hadir daftar lagu dan rilisan resmi dari Refresh Breeze."
             </p>
           </div>
 
           {/* Social Links to stay updated */}
-          <div className="pt-12 space-y-8">
-            <h3 className="text-xs font-black tracking-[0.4em] text-gray-400 uppercase">Stay Updated</h3>
-            <div className="flex justify-center gap-6 sm:gap-8">
+          <div className="pt-12 space-y-10">
+            <h3 className="text-[10px] font-black tracking-[0.5em] text-gray-300 uppercase">Follow Our Beats</h3>
+            <div className="flex justify-center gap-6">
               {[
-                { icon: <FaInstagram />, href: 'https://instagram.com/refbreeze', label: 'Instagram' },
-                { icon: <FaTwitter />, href: 'https://twitter.com/ref_breeze', label: 'Twitter' },
-                { icon: <FaYoutube />, href: 'https://youtube.com/@RefreshBreeze', label: 'YouTube' },
-                { icon: <FaTiktok />, href: 'https://tiktok.com/@refbreeze', label: 'TikTok' },
+                { icon: <FaInstagram />, href: 'https://instagram.com/refbreeze' },
+                { icon: <FaTwitter />, href: 'https://twitter.com/ref_breeze' },
+                { icon: <FaYoutube />, href: 'https://youtube.com/@RefreshBreeze' },
+                { icon: <FaTiktok />, href: 'https://tiktok.com/@refbreeze' },
               ].map((social, idx) => (
                 <motion.a
                   key={idx}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ y: -5, scale: 1.1 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-xl text-gray-400 hover:text-[#079108] hover:bg-[#079108]/5 transition-all shadow-sm hover:shadow-lg"
-                  aria-label={social.label}
+                  whileHover={{ y: -8, scale: 1.1 }}
+                  className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-2xl text-gray-400 hover:text-white hover:bg-dark transition-all shadow-sm hover:shadow-2xl"
                 >
                   {social.icon}
                 </motion.a>
@@ -72,10 +76,13 @@ const MusicPage = () => {
           </div>
         </motion.div>
 
-        {/* Decorative elements */}
-        <div className="fixed top-1/2 left-0 w-64 h-64 bg-[#079108] rounded-full blur-[120px] opacity-5 -translate-x-1/2 pointer-events-none"></div>
-        <div className="fixed bottom-0 right-0 w-96 h-96 bg-[#079108] rounded-full blur-[150px] opacity-5 translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+        {/* Decorative Background Elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-full h-full max-w-4xl opacity-20 pointer-events-none">
+            <div className="absolute top-0 left-0 w-64 h-64 bg-[#079108] rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#4A90B5] rounded-full blur-[150px]"></div>
+        </div>
       </main>
+      
     </div>
   )
 }

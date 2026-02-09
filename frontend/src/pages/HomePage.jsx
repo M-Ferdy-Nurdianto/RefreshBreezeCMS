@@ -211,173 +211,201 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section id="about" className="py-16 md:py-32 container mx-auto max-w-7xl px-4 relative z-40">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center space-y-8"
-        >
-          <div className="flex flex-col items-center">
-             <div className="flex items-center gap-4 mb-4">
-               <div className="w-8 h-1 bg-[#079108]"></div>
-               <span className="text-[#079108] font-black tracking-[0.4em] text-xs uppercase">ABOUT US</span>
-               <div className="w-8 h-1 bg-[#079108]"></div>
-             </div>
-             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-dark uppercase mb-6">
-               OUR <span className="text-[#079108]">STORY</span>
-             </h2>
+      <section id="about" className="py-20 md:py-40 container mx-auto max-w-7xl px-4 relative z-40 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          {/* Left Side: Visual with Vertical Text */}
+          <div className="relative group order-2 lg:order-1">
+            {/* Vertical Branding Text - Positioned to be ~30% covered by photo */}
+            <div className="absolute -left-12 md:-left-20 top-1/2 -translate-y-1/2 z-0 opacity-[0.07] select-none pointer-events-none">
+              <span className="vertical-rl text-orientation-mixed font-black text-6xl md:text-9xl tracking-[0.3em] text-[#079108] whitespace-nowrap">
+                REFRESH BREEZE
+              </span>
+            </div>
+            
+            {/* Photo Container */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="relative z-10 rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] md:aspect-auto border-4 border-white"
+            >
+              <img 
+                src={getAssetPath('/images/members/group.webp')} 
+                alt="Refresh Breeze Group"
+                className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            </motion.div>
+            
+            {/* Decorative Badge */}
+            <motion.div 
+              initial={{ rotate: -10, opacity: 0 }}
+              whileInView={{ rotate: 12, opacity: 1 }}
+              viewport={{ once: true }}
+              className="absolute -bottom-6 -right-6 w-24 h-24 bg-[#079108] rounded-full flex items-center justify-center z-20 shadow-xl border-4 border-white"
+            >
+              <span className="text-white font-black text-[10px] tracking-tighter text-center leading-tight">
+                EST.<br/>2023
+              </span>
+            </motion.div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl border-2 border-dashed border-[#079108]/30 p-8 md:p-12 rounded-[2.5rem] shadow-2xl space-y-6 relative overflow-hidden">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black tracking-widest animate-pulse uppercase">
-              Update in Progress
+          {/* Right Side: Content */}
+          <div className="space-y-8 order-1 lg:order-2">
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-1 bg-[#079108]"></div>
+                <span className="text-[#079108] font-black tracking-[0.5em] text-xs uppercase text-left">ABOUT US</span>
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tight text-dark leading-none text-left">
+                OUR <span className="text-[#079108]">STORY</span>
+              </h2>
             </div>
-            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight">UNDER MAINTENANCE</h3>
-            <p className="text-gray-500 text-lg leading-relaxed font-light max-w-2xl mx-auto">
-              Kami sedang memperbarui rangkuman perjalanan Refresh Breeze untuk memberikan Anda pengalaman yang lebih berkesan. Halaman "Our Story" akan segera kembali dengan konten yang lebih segar!
-            </p>
-            <button 
-              onClick={() => navigate('/story')}
-              className="px-10 py-4 bg-gradient-to-r from-[#079108] to-emerald-500 text-white font-black tracking-[0.2em] text-xs uppercase rounded-full hover:shadow-2xl hover:scale-105 transition-all"
-            >
-              See Maintenance Status
-            </button>
+            
+            <div className="space-y-6 text-gray-500 text-lg leading-relaxed text-left">
+              <p className="font-medium text-dark">
+                <span className="text-[#079108] font-black">Refresh Breeze</span> adalah grup idola bergaya Jepang asal Tulungagung yang membawa semangat "Breeze" — kesegaran yang menginspirasi.
+              </p>
+              <p>
+                Berdiri dengan visi menyebarkan energi positif, kami hadir lewat penampilan yang penuh warna, koreografi yang enerjik, dan interaksi yang hangat dengan para penggemar.
+              </p>
+              <p>
+                Kami percaya bahwa setiap pertemuan adalah sebuah momen berharga yang patut dirayakan dengan senyuman dan keceriaan bersama.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              {[
+                { label: 'Energy', icon: '⚡' },
+                { label: 'Fresh', icon: '🍃' },
+                { label: 'Youth', icon: '✨' },
+                { label: 'Together', icon: '🤝' }
+              ].map((point, idx) => (
+                <motion.div 
+                  key={idx}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-3 p-4 bg-[#079108]/5 rounded-2xl border border-[#079108]/10"
+                >
+                  <span className="text-xl">{point.icon}</span>
+                  <span className="font-black text-[10px] uppercase tracking-widest text-[#079108]">{point.label}</span>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="pt-6 flex justify-start">
+              <button 
+                onClick={() => navigate('/story')}
+                className="group flex items-center gap-4 px-8 py-4 bg-[#4A90B5] text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-[#3a718f] transition-all shadow-xl hover:shadow-[#4A90B5]/30"
+              >
+                Read Full History
+                <FaArrowRight className="group-hover:translate-x-2 transition-transform" />
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* SCHEDULE SECTION */}
-      <section className="py-12 sm:py-16 md:py-24 bg-[#079108]/5 relative overflow-hidden">
+      <section className="py-20 md:py-32 bg-white relative overflow-hidden">
         <div className="container mx-auto max-w-7xl px-4 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 sm:mb-16 gap-6 md:gap-8 text-center md:text-left">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 sm:mb-20 gap-6 md:gap-8 text-center md:text-left">
                 <div className="w-full">
-                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-dark tracking-tighter uppercase mb-2 sm:mb-4">
-                        Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#079108] to-[#a3e635]">Live</span>
+                     <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
+                        <div className="w-8 h-1 bg-[#079108]"></div>
+                        <span className="text-[#079108] font-black tracking-[0.4em] text-xs uppercase">SCHEDULE</span>
+                     </div>
+                     <h2 className="text-4xl md:text-6xl font-black text-dark tracking-tighter uppercase mb-4">
+                        Upcoming <span className="text-[#079108]">Events</span>
                      </h2>
-                     <p className="text-gray-500 font-bold max-w-lg uppercase tracking-[0.1em] opacity-80 mx-auto md:mx-0 text-xs sm:text-sm">
+                     <p className="text-gray-400 font-medium max-w-lg mx-auto md:mx-0">
                         Jangan lewatkan penampilan seru kami di event terdekat!
                      </p>
                 </div>
                 <button 
                   onClick={() => navigate('/schedule')}
-                  className="w-full md:w-auto px-8 py-4 md:py-3 rounded-full border-2 border-[#4A90B5]/20 text-[#4A90B5] font-black text-xs uppercase tracking-widest hover:bg-[#4A90B5] hover:text-white hover:border-[#4A90B5] transition-all"
+                  className="w-full md:w-auto px-10 py-4 rounded-full border-2 border-gray-100 text-[#4A90B5] font-black text-xs uppercase tracking-widest hover:border-[#4A90B5] hover:bg-[#4A90B5]/5 transition-all"
                 >
                     View Full Schedule
                 </button>
             </div>
 
             {events.length > 0 ? (
-                <div className="grid lg:grid-cols-2 gap-8">
-                    {/* Featured Event (First One) */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="bg-[#0a0f1d] text-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 md:p-12 relative overflow-hidden group cursor-pointer border border-[#079108]/30 hover:border-[#079108] hover:shadow-[0_0_50px_rgba(7,145,8,0.3)] transition-all"
-                        onClick={() => navigate('/schedule')}
-                    >
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#079108] blur-[100px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                <div className="grid gap-8">
+                    {events.map((event, idx) => {
+                        const isSpecial = event.is_special || event.nama.toLowerCase().includes('valentine');
+                        const themeColor = isSpecial ? (event.theme_color || '#FF6B9D') : '#079108';
                         
-                        <div className="relative z-10">
-                            <div className="flex flex-wrap gap-3 mb-6">
-                                <div className="inline-block px-4 py-2 bg-[#079108] rounded-full text-[10px] font-black tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(7,145,8,0.5)]">
-                                    NEXT STAGE
-                                </div>
-                                {(events[0].is_special || events[0].nama.toLowerCase().includes('valentine')) && (
-                                    <div className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF6B9D] to-[#FFD700] rounded-full text-[10px] font-black tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(255,107,157,0.4)]">
-                                        PO ONLY
-                                    </div>
-                                )}
-                            </div>
-                            <h3 className="text-3xl md:text-5xl font-black leading-tight mb-6 tracking-tight">
-                                {events[0].nama}
-                            </h3>
-                            <div className="space-y-4 mb-10">
-                                <div className="flex items-center gap-3 sm:gap-4 text-gray-400 group-hover:text-white transition-colors">
-                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#079108] shrink-0">
-                                        <FaCalendarAlt size={16} />
-                                    </div>
-                                    <span className="font-bold tracking-wide text-sm sm:text-base">{events[0].tanggal} {events[0].bulan} {events[0].tahun}</span>
-                                </div>
-                                <div className="flex items-center gap-3 sm:gap-4 text-gray-400 group-hover:text-white transition-colors">
-                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#079108] shrink-0">
-                                        <FaClock size={16} />
-                                    </div>
-                                    <span className="font-bold tracking-wide text-sm sm:text-base">{events[0].event_time}</span>
-                                </div>
-                                <div className="flex items-center gap-3 sm:gap-4 text-gray-400 group-hover:text-white transition-colors">
-                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#079108] shrink-0">
-                                        <FaMapMarkerAlt size={16} />
-                                    </div>
-                                    <span className="font-bold tracking-wide text-sm sm:text-base line-clamp-1">{events[0].lokasi}</span>
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-4 text-[#a3e635] font-black text-xs uppercase tracking-[0.3em] group-hover:translate-x-2 transition-transform">
-                                VIEW DETAILS <FaArrowRight />
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Other Events List */}
-                    <div className="space-y-6">
-                        {events.slice(1).map((event, idx) => {
-                            const isSpecial = event.nama.toLowerCase().includes('valentine') || event.is_special;
-                            return (
-                                <motion.div 
-                                    key={event.id}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    className={`p-1 rounded-[2.5rem] transition-all duration-500 overflow-hidden ${
-                                        isSpecial 
-                                        ? 'bg-gradient-to-r from-[#FF6B9D] via-pink-400 to-[#FFD700] p-[2px] shadow-[0_0_30px_rgba(255,107,157,0.2)]' 
-                                        : 'bg-[#0a0f1d]/50 hover:bg-[#0a0f1d]'
-                                    }`}
+                        return (
+                            <motion.div 
+                                key={event.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1 }}
+                                className={`p-5 sm:p-6 rounded-[2rem] md:rounded-[3rem] flex flex-col md:flex-row items-center gap-6 sm:gap-8 hover:shadow-xl transition-all group bg-white border-2 cursor-pointer ${
+                                  isSpecial ? 'border-theme/20' : 'border-gray-50'
+                                }`}
+                                style={{ 
+                                  borderColor: isSpecial ? `${themeColor}33` : '#F9FAFB',
+                                  background: isSpecial ? `linear-gradient(135deg, ${themeColor}05 0%, white 50%)` : 'white'
+                                }}
+                                onClick={() => navigate('/schedule')}
+                            >
+                                {/* Date Badge */}
+                                <div 
+                                  className="text-white w-20 h-20 sm:w-28 sm:h-28 rounded-[1.5rem] sm:rounded-[2rem] flex flex-col items-center justify-center shadow-lg group-hover:scale-105 transition-transform shrink-0"
+                                  style={{ backgroundColor: themeColor }}
                                 >
-                                    <div 
-                                        className={`bg-[#0a0f1d] p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.4rem] border border-white/5 hover:border-[#079108]/50 transition-all cursor-pointer group flex items-center gap-4 sm:gap-6`}
-                                        onClick={() => navigate('/schedule')}
-                                    >
-                                        <div className="text-center min-w-[50px] sm:min-w-[70px] relative">
-                                            {isSpecial && (
-                                                <div className="absolute -inset-4 bg-pink-500/20 blur-xl rounded-full"></div>
-                                            )}
-                                            <span className={`block text-2xl sm:text-3xl font-black relative ${isSpecial ? 'text-[#FF6B9D]' : 'text-[#079108]'}`}>{event.tanggal}</span>
-                                            <span className="block text-[8px] sm:text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] relative">{event.bulan}</span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
-                                                {isSpecial && (
-                                                    <div className="flex gap-1.5 flex-wrap">
-                                                        <span className="text-[7px] sm:text-[8px] font-black bg-gradient-to-r from-[#FF6B9D] to-[#FFD700] text-white px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg shadow-pink-500/30">SPECIAL</span>
-                                                        <span className="text-[7px] sm:text-[8px] font-black bg-white/10 text-[#FF6B9D] border border-[#FF6B9D]/30 px-2 py-0.5 rounded-full uppercase tracking-widest">PO ONLY</span>
-                                                    </div>
-                                                )}
-                                                <h4 className="text-base sm:text-xl font-black text-white group-hover:text-[#079108] transition-colors truncate">
-                                                    {event.nama}
-                                                </h4>
-                                            </div>
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-[0.1em] sm:tracking-[0.2em] truncate">{event.lokasi}</p>
-                                        </div>
-                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 shrink-0 ${isSpecial ? 'bg-pink-500/10 text-[#FF6B9D]' : 'bg-white/5 text-gray-500'} group-hover:bg-[#079108] group-hover:text-white group-hover:shadow-[0_0_15px_rgba(7,145,8,0.5)]`}>
-                                            <FaArrowRight className="-rotate-45 group-hover:rotate-0 transition-transform size-4 sm:size-5" />
-                                        </div>
+                                  <span className="block text-2xl sm:text-4xl font-black leading-none">{event.tanggal}</span>
+                                  <span className="block text-[8px] sm:text-xs font-black tracking-widest uppercase mt-1">{event.bulan}</span>
+                                </div>
+
+                                {/* Event Info */}
+                                <div className="flex-1 space-y-3 text-center md:text-left min-w-0">
+                                  <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
+                                    <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-dark tracking-tight truncate max-w-full">
+                                      {event.nama}
+                                    </h3>
+                                    {isSpecial && (
+                                      <span 
+                                        className="px-3 py-1 rounded-full text-white text-[8px] font-black uppercase tracking-widest shadow-sm"
+                                        style={{ backgroundColor: themeColor }}
+                                      >
+                                        🎀 SPECIAL
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex flex-wrap justify-center md:justify-start gap-4 sm:gap-6 text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                                    <div className="flex items-center gap-2">
+                                      <FaMapMarkerAlt style={{ color: themeColor }} />
+                                      <span>{event.lokasi}</span>
                                     </div>
-                                </motion.div>
-                            );
-                        })}
-                        {events.length === 1 && (
-                             <div className="h-full bg-[#0a0f1d]/30 border-2 border-dashed border-white/5 rounded-[2.5rem] flex items-center justify-center p-12">
-                                <p className="text-gray-600 font-bold text-sm tracking-widest uppercase opacity-50">More events coming soon</p>
-                             </div>
-                        )}
-                    </div>
+                                    {event.event_time && (
+                                      <div className="flex items-center gap-2">
+                                        <FaClock style={{ color: themeColor }} />
+                                        <span>{event.event_time}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Arrow Button */}
+                                <div 
+                                    className="hidden md:flex w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-50 items-center justify-center text-gray-300 group-hover:text-white group-hover:bg-theme group-hover:rotate-45 transition-all shadow-inner group-hover:shadow-lg"
+                                >
+                                    <FaArrowRight size={20} className="group-hover:text-white" />
+                                </div>
+                                <style dangerouslySetInnerHTML={{ __html: `
+                                    .group:hover .group-hover\\:bg-theme { background-color: ${themeColor} !important; }
+                                `}} />
+                            </motion.div>
+                        );
+                    })}
                 </div>
             ) : (
-                <div className="text-center py-20 bg-white rounded-[3rem] border border-gray-100">
+                <div className="text-center py-20 bg-gray-50 rounded-[3rem] border border-dashed border-gray-200">
                     <p className="text-gray-400 font-black tracking-widest uppercase opacity-50">No upcoming events scheduled</p>
                 </div>
             )}

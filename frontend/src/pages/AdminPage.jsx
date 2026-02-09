@@ -45,6 +45,9 @@ import {
   FaChartBar
 } from 'react-icons/fa'
 
+// Helper to strip emojis and special symbols (cause grouping issues)
+const stripEmoji = (text) => String(text || '').replace(/[^a-zA-Z0-9\s()]/gu, '').trim()
+
 const AdminPage = () => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('orders')
@@ -425,8 +428,16 @@ const AdminPage = () => {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      const suffix = scope === 'event' ? `Event_${value}` : scope === 'month' ? `Month_${value}` : 'Filtered'
-      a.download = `RefreshBreeze_Orders_${suffix}_${new Date().toISOString().split('T')[0]}.xlsx`
+      const safeSuffix = (() => {
+        if (scope === 'event' && value) {
+          const ev = events.find(e => e.id === value)
+          return ev ? `${ev.nama}_${ev.tanggal}_${ev.bulan}_${ev.tahun}` : `Event_${value}`
+        }
+        if (scope === 'month') return `Bulan_${value}`
+        return 'Filtered'
+      })().replace(/[^a-zA-Z0-9_\-]/g, '_')
+
+      a.download = `RefreshBreeze_Orders_${safeSuffix}_${new Date().toISOString().split('T')[0]}.xlsx`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -467,9 +478,6 @@ const AdminPage = () => {
         throw new Error('Tidak ada data untuk diexport.')
       }
 
-      // Helper to strip emojis (cause PDF encoding issues)
-      const stripEmoji = (text) => String(text || '').replace(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim()
-
       // Get Event Name if exporting by event
       let eventName = ''
       if (scope === 'event' && value) {
@@ -491,12 +499,28 @@ const AdminPage = () => {
           totalItems += item.quantity || 0
           
           let name = stripEmoji(item.item_name.replace('Cheki ', '').replace(' (Pre-Order)', ''))
-          if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) name = 'Group'
+          if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) name = 'All Member (Group)'
           
-          if (!memberStats[name]) memberStats[name] = 0
-          memberStats[name] += item.quantity || 0
+          if (!memberStats[name]) memberStats[name] = { total: 0, po: 0, ots: 0 }
+          memberStats[name].total += item.quantity || 0
+          if (order.is_ots) {
+            memberStats[name].ots += item.quantity || 0
+          } else {
+            memberStats[name].po += item.quantity || 0
+          }
         })
       })
+
+      // Calculate Polaroid Paper Usage (specifically from items containing 'Cheki' or 'Polaroid' in COMPLETED orders only)
+      const totalPolaroid = paidOrders
+        .filter(o => o.status === 'completed')
+        .reduce((sum, order) => {
+          return sum + (order.order_items?.reduce((pSum, item) => {
+            const isCheki = item.item_name.toLowerCase().includes('cheki') || item.item_name.toLowerCase().includes('polaroid')
+            return pSum + (isCheki ? (item.quantity || 0) : 0)
+          }, 0) || 0)
+        }, 0)
+
 
       // Generate PDF
       const doc = new jsPDF()
@@ -541,21 +565,26 @@ const AdminPage = () => {
       doc.setTextColor(0, 0, 0)
       doc.text(`Total Omzet: Rp ${totalRevenue.toLocaleString('id-ID')}`, 20, 65)
       doc.text(`Order Terbayar: ${paidOrders.length} dari ${orders.length}`, 100, 65)
-      doc.text(`Total Cheki: ${totalItems} pcs`, 20, 72)
+      doc.text(`Total Polaroid: ${totalPolaroid} pcs`, 20, 72)
       
       // Member Stats Table
       const memberBody = Object.entries(memberStats)
-        .sort((a, b) => b[1] - a[1])
-        .map(([name, qty]) => [stripEmoji(name), `${qty} pcs`])
+        .sort((a, b) => b[1].total - a[1].total)
+        .map(([name, stats]) => [stripEmoji(name), `${stats.po} pcs`, `${stats.ots} pcs`, `${stats.total} pcs`])
       
       autoTable(doc, {
         startY: 85,
-        head: [['Member', 'Qty Terjual']],
+        head: [['Member', 'PO', 'OTS', 'Total']],
         body: memberBody,
         theme: 'striped',
         headStyles: { fillColor: [34, 197, 94], textColor: 255 },
-        styles: { fontSize: 9, cellPadding: 2 },
-        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: { 
+          0: { cellWidth: 50 }, 
+          1: { cellWidth: 15 },
+          2: { cellWidth: 15 },
+          3: { cellWidth: 20 }
+        },
         tableWidth: 100,
         margin: { left: 14 }
       })
@@ -598,8 +627,16 @@ const AdminPage = () => {
       })
 
       // Save with readable name
-      const safeName = scopeLabel.replace(/[^a-zA-Z0-9 ]/g, '').replace(/ /g, '_')
-      doc.save(`Laporan_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`)
+      const safeSuffix = (() => {
+        if (scope === 'event' && value) {
+          const ev = events.find(e => e.id === value)
+          return ev ? `${ev.nama}_${ev.tanggal}_${ev.bulan}_${ev.tahun}` : `Event_${value}`
+        }
+        if (scope === 'month') return `Month_${value}`
+        return 'Filtered'
+      })().replace(/[^a-zA-Z0-9_\-]/g, '_')
+
+      doc.save(`RefreshBreeze_Orders_${safeSuffix}_${new Date().toISOString().slice(0, 10)}.pdf`)
 
       Swal.fire({ icon: 'success', title: 'PDF Berhasil Dibuat!', timer: 1500, showConfirmButton: false })
       
@@ -875,28 +912,31 @@ const AdminPage = () => {
   }
 
   const renderRecap = () => {
-    // 0. Filter by Event for Recap
-    const filteredRecapOrders = recapEventFilter === 'all' 
+    // 0. Filter by Event and STATUS (Only checked/completed for charts/revenue)
+    const filteredRecapOrders = (recapEventFilter === 'all' 
       ? orders 
-      : orders.filter(o => o.event_id === recapEventFilter)
+      : orders.filter(o => o.event_id === recapEventFilter))
+      .filter(o => o.status === 'checked' || o.status === 'completed')
 
     // 1. Calculate Statistics
     const totalRevenue = filteredRecapOrders.reduce((sum, order) => sum + (order.total_harga || 0), 0)
+    
+    // Calculate Polaroid Paper Usage (specifically from items containing 'Cheki' or 'Polaroid' in COMPLETED orders only)
+    const totalPolaroidRecap = filteredRecapOrders
+      .filter(o => o.status === 'completed')
+      .reduce((sum, order) => {
+        return sum + (order.order_items?.reduce((pSum, item) => {
+          const isCheki = item.item_name.toLowerCase().includes('cheki') || item.item_name.toLowerCase().includes('polaroid')
+          return pSum + (isCheki ? (item.quantity || 0) : 0)
+        }, 0) || 0)
+      }, 0)
     
     // Process Member Sales (Quantity & Revenue)
     const memberStats = {}
     
     filteredRecapOrders.forEach(order => {
-      // Only count completed/checked orders for revenue? Usually yes, but user said "Total Penjualan".
-      // Let's include everything or maybe filter by status if requested. For now, all orders.
-      // Actually strictly "Penjualan" implies successful ones. Let's use all for now to match "Total Orders" count.
-      
       order.order_items?.forEach(item => {
-        // Try to identify member from item name if unique ID not available directly
-        // But since we have consistent naming "Cheki [Name]", we can use that.
-        // Or if we have member_id in item (from OTS). PO items might not have it.
-        // Let's rely on item.name cleaning.
-        let memberName = item.item_name.replace('Cheki ', '').replace(' (Pre-Order)', '').trim()
+        let memberName = stripEmoji(item.item_name.replace('Cheki ', '').replace(' (Pre-Order)', ''))
         
         // Handle "All Member" group
         if (memberName.toLowerCase().includes('all member') || memberName.toLowerCase().includes('group')) {
@@ -904,19 +944,23 @@ const AdminPage = () => {
         }
 
         if (!memberStats[memberName]) {
-          memberStats[memberName] = { quantity: 0, revenue: 0 }
+          memberStats[memberName] = { quantity: 0, revenue: 0, poQty: 0, otsQty: 0 }
         }
         
         memberStats[memberName].quantity += item.quantity || 0
         memberStats[memberName].revenue += (item.price || 0) * (item.quantity || 0)
         
-        // Fallback if price is not in item (older POs might rely on order total)
-        // ideally item.price should exist.
+        if (order.is_ots) {
+          memberStats[memberName].otsQty += item.quantity || 0
+        } else {
+          memberStats[memberName].poQty += item.quantity || 0
+        }
       })
     })
 
     const labels = Object.keys(memberStats)
-    const quantityData = labels.map(name => memberStats[name].quantity)
+    const poData = labels.map(name => memberStats[name].poQty)
+    const otsData = labels.map(name => memberStats[name].otsQty)
     const revenueData = labels.map(name => memberStats[name].revenue)
 
     // Chart Options
@@ -935,10 +979,17 @@ const AdminPage = () => {
       labels,
       datasets: [
         {
-          label: 'Jumlah Cheki Terjual',
-          data: quantityData,
-          backgroundColor: 'rgba(53, 162, 235, 0.7)',
-          borderColor: 'rgb(53, 162, 235)',
+          label: 'Pre-Order',
+          data: poData,
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgb(54, 162, 235)',
+          borderWidth: 1,
+        },
+        {
+          label: 'OTS',
+          data: otsData,
+          backgroundColor: 'rgba(255, 159, 64, 0.7)',
+          borderColor: 'rgb(255, 159, 64)',
           borderWidth: 1,
         }
       ]
@@ -988,6 +1039,7 @@ const AdminPage = () => {
             { label: 'Pre-Order', value: filteredRecapOrders.filter(o => !o.is_ots).length, color: 'bg-blue-600', icon: <span className="text-xl">📦</span> },
             { label: 'Unchecked', value: filteredRecapOrders.filter(o => o.status === 'pending').length, color: 'bg-gray-400', icon: <span className="text-xl">⏳</span> },
             { label: 'Completed', value: filteredRecapOrders.filter(o => o.status === 'completed').length, color: 'bg-green-600', icon: <FaCheck /> },
+            { label: 'Total Polaroid', value: `${totalPolaroidRecap} pcs`, color: 'bg-emerald-600', icon: <span className="text-xl">📸</span> },
             { label: 'Total Pemasukan', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, color: 'bg-custom-green', icon: <span className="text-xl font-bold">Rp</span>, wide: true }
           ].map((stat, index) => (
             <div key={index} className={`bg-white p-4 rounded-xl shadow-md ${stat.wide ? 'col-span-2 md:col-span-1 lg:col-span-1' : ''}`}>
