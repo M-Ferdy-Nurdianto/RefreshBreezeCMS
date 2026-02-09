@@ -1097,6 +1097,21 @@ const AdminPage = () => {
     }
   }
 
+  const isEventPast = (event) => {
+    if (event.is_past) return true
+    
+    const months = {
+      'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+      'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+    }
+    
+    const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    return eventDate < today
+  }
+
   const renderEvents = () => (
     <div className="space-y-6">
       {/* Header */}
@@ -1130,40 +1145,42 @@ const AdminPage = () => {
                   <td colSpan="6" className="text-center py-8 text-gray-400">Belum ada event</td>
                 </tr>
               ) : (
-                events.map((event) => (
-                  <tr key={event.id} className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-800">{event.nama}</span>
-                        {event.is_special && (
-                          <span 
-                            className="px-2 py-0.5 rounded-full text-white text-[10px] font-bold"
-                            style={{ backgroundColor: event.theme_color || '#FF6B9D' }}
-                          >
-                            {event.theme_name || 'Special'}
-                          </span>
-                        )}
-                      </div>
-                      {event.event_time && <p className="text-xs text-gray-500">{event.event_time}</p>}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {event.tanggal} {event.bulan} {event.tahun}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{event.lokasi}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{event.event_lineup?.length || 0} member</td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleTogglePast(event.id, event.is_past)}
-                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                          event.is_past 
-                            ? 'bg-gray-200 text-gray-600 hover:bg-green-100 hover:text-green-700' 
-                            : 'bg-green-100 text-green-700 hover:bg-gray-200 hover:text-gray-600'
-                        }`}
-                        title={event.is_past ? 'Klik untuk aktifkan' : 'Klik untuk tandai selesai'}
-                      >
-                        {event.is_past ? '✓ Selesai' : '● Aktif'}
-                      </button>
-                    </td>
+                events.map((event) => {
+                  const past = isEventPast(event)
+                  return (
+                    <tr key={event.id} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-gray-800">{event.nama}</span>
+                          {event.is_special && (
+                            <span 
+                              className="px-2 py-0.5 rounded-full text-white text-[10px] font-bold"
+                              style={{ backgroundColor: event.theme_color || '#FF6B9D' }}
+                            >
+                              {event.theme_name || 'Special'}
+                            </span>
+                          )}
+                        </div>
+                        {event.event_time && <p className="text-xs text-gray-500">{event.event_time}</p>}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {event.tanggal} {event.bulan} {event.tahun}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{event.lokasi}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{event.event_lineup?.length || 0} member</td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => handleTogglePast(event.id, event.is_past)}
+                          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                            past 
+                              ? 'bg-gray-200 text-gray-600 hover:bg-green-100 hover:text-green-700' 
+                              : 'bg-green-100 text-green-700 hover:bg-gray-200 hover:text-gray-600'
+                          }`}
+                          title={past ? 'Klik untuk aktifkan' : 'Klik untuk tandai selesai'}
+                        >
+                          {past ? '✓ Selesai' : '● Aktif'}
+                        </button>
+                      </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -1183,7 +1200,8 @@ const AdminPage = () => {
                       </div>
                     </td>
                   </tr>
-                ))
+                  )
+                })
               )}
             </tbody>
           </table>
