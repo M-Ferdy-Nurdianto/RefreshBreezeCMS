@@ -38,3 +38,5 @@ lerna-debug.log*
 # Database dumps
 *.sql.backup
 *.dump
+
+vercel-env-import.txt
