@@ -30,14 +30,38 @@ router.get('/', async (req, res) => {
         )
       `)
       .order('tahun', { ascending: false })
-      .order('bulan', { ascending: false })
+      // Cannot sort by bulan string because 'Februari' > 'April' alphabetically
+      // We will sort in JS below
       .order('tanggal', { ascending: false })
 
     if (is_past !== undefined) {
       query = query.eq('is_past', is_past === 'true')
     }
 
-    const { data, error } = await query
+    let { data, error } = await query
+
+    if (error) throw error
+
+    // Custom Sort for Month Names
+    const monthMap = {
+      'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+      'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+    }
+
+    if (data) {
+      data.sort((a, b) => {
+        // 1. Year (Desc)
+        if (b.tahun !== a.tahun) return b.tahun - a.tahun
+        
+        // 2. Month (Desc)
+        const monthA = monthMap[a.bulan] !== undefined ? monthMap[a.bulan] : -1
+        const monthB = monthMap[b.bulan] !== undefined ? monthMap[b.bulan] : -1
+        if (monthB !== monthA) return monthB - monthA
+        
+        // 3. Date (Desc)
+        return b.tanggal - a.tanggal
+      })
+    }
 
     if (error) throw error
 
