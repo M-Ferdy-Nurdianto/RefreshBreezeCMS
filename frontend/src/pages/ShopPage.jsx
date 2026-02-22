@@ -1356,11 +1356,11 @@ const ShopPage = () => {
               {/* Receipt Preview */}
               {receiptData && (
                 <div className="mb-8 flex flex-col items-center">
-                   <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+                   <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-200" style={{ maxWidth: '350px', width: '100%' }}>
                       <canvas 
                         id="receipt-canvas"
-                        className="max-w-full h-auto bg-white"
-                        style={{ maxWidth: '350px' }}
+                        className="bg-white"
+                        style={{ width: '100%', display: 'block' }}
                       />
                    </div>
                    <p className="text-[10px] text-gray-400 mt-2 italic">Preview nota otomatis di-generate</p>
@@ -1375,13 +1375,15 @@ const ShopPage = () => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="mb-8 text-center"
+                className="mb-8"
               >
-                <p className="text-[11px] text-gray-400 mb-2">
-                  Bagikan notamu ke IGS dan tag{' '}
-                  <a href="https://www.instagram.com/refreshbreeze" target="_blank" rel="noopener noreferrer" className="font-black text-[#079108] hover:text-emerald-700 transition-colors">@refreshbreeze</a>
-                  {' '}— bantu Refresh Breeze makin dikenal! 💚
-                </p>
+                <div className="bg-gradient-to-r from-emerald-500 to-[#079108] rounded-2xl px-6 py-4 shadow-lg shadow-[#079108]/20">
+                  <p className="text-sm text-white font-bold text-center leading-relaxed">
+                    📸 Bagikan notamu ke IGS & tag{' '}
+                    <a href="https://www.instagram.com/refreshbreeze" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 font-black hover:opacity-80 transition-opacity">@refreshbreeze</a>
+                    {' '}— bantu Refresh Breeze makin dikenal! 💚
+                  </p>
+                </div>
               </motion.div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1660,11 +1662,11 @@ const ShopPage = () => {
             {/* Receipt Preview */}
             {merchReceiptData && (
               <div className="mb-8 flex flex-col items-center">
-                <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+                <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-200" style={{ maxWidth: '350px', width: '100%' }}>
                   <canvas
                     id="merch-receipt-canvas"
-                    className="max-w-full h-auto bg-white"
-                    style={{ maxWidth: '350px' }}
+                    className="bg-white"
+                    style={{ width: '100%', display: 'block' }}
                   />
                 </div>
                 <p className="text-[10px] text-gray-400 mt-2 italic">Preview nota otomatis di-generate</p>
@@ -1677,13 +1679,15 @@ const ShopPage = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="mb-8 text-center"
+              className="mb-8"
             >
-              <p className="text-[11px] text-gray-400 mb-2">
-                Bagikan notamu ke IGS dan tag{' '}
-                <a href="https://www.instagram.com/refreshbreeze" target="_blank" rel="noopener noreferrer" className="font-black text-[#079108] hover:text-emerald-700 transition-colors">@refreshbreeze</a>
-                {' '}— bantu Refresh Breeze makin dikenal! 💚
-              </p>
+              <div className="bg-gradient-to-r from-emerald-500 to-[#079108] rounded-2xl px-6 py-4 shadow-lg shadow-[#079108]/20">
+                <p className="text-sm text-white font-bold text-center leading-relaxed">
+                  📸 Bagikan notamu ke IGS & tag{' '}
+                  <a href="https://www.instagram.com/refreshbreeze" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 font-black hover:opacity-80 transition-opacity">@refreshbreeze</a>
+                  {' '}— bantu Refresh Breeze makin dikenal! 💚
+                </p>
+              </div>
             </motion.div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1934,8 +1938,6 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       const scale = 1080 / W
       canvas.width = 1080
       canvas.height = Math.round(H * scale)
-      canvas.style.width = W + 'px'
-      canvas.style.height = H + 'px'
       ctx.scale(scale, scale)
 
       ctx.fillStyle = '#FFFFFF'
@@ -1989,6 +1991,36 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       drawText(rd.createdAt, pad, 12, '#000000', 'left', 'normal')
       drawText('Admin', W - pad, 12, '#000000', 'right', 'normal')
       y += lineH
+
+      drawDashedLine()
+
+      // CUSTOMER INFO (top)
+      drawText('Nama    :', pad, 12, '#000000', 'left', 'normal')
+      drawText(rd.nama || '-', pad + 90, 12, '#000000', 'left', 'bold')
+      y += lineH
+      drawText('WhatsApp:', pad, 12, '#000000', 'left', 'normal')
+      drawText(rd.whatsapp || '-', pad + 90, 12, '#000000', 'left', 'normal')
+      y += lineH
+      drawText('Instagram:', pad, 12, '#000000', 'left', 'normal')
+      drawText(rd.instagram || '-', pad + 90, 12, '#000000', 'left', 'normal')
+      y += lineH
+      if (rd.catatan) {
+        drawText('Catatan  :', pad, 12, '#000000', 'left', 'normal')
+        y += lineH
+        const cwords = rd.catatan.split(' ')
+        let cline = ''
+        cwords.forEach(word => {
+          if (ctx.measureText(cline + word).width > W - (pad * 2)) {
+            drawText(cline, pad, 12, '#000000', 'left', 'italic')
+            cline = word + ' '
+            y += lineH
+          } else {
+            cline += word + ' '
+          }
+        })
+        drawText(cline, pad, 12, '#000000', 'left', 'italic')
+        y += lineH
+      }
 
       drawDashedLine()
 
@@ -2098,37 +2130,6 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       drawText('NATASYA ANGELINA PUTRI', W - pad, 12, '#000000', 'right', 'normal')
       y += lineH
 
-      drawDashedLine()
-
-      // CUSTOMER INFO
-      drawText('Nama    :', pad, 12, '#000000', 'left', 'normal')
-      drawText(rd.nama || '-', pad + 90, 12, '#000000', 'left', 'bold')
-      y += lineH
-      drawText('WhatsApp:', pad, 12, '#000000', 'left', 'normal')
-      drawText(rd.whatsapp || '-', pad + 90, 12, '#000000', 'left', 'normal')
-      y += lineH
-      drawText('Instagram:', pad, 12, '#000000', 'left', 'normal')
-      drawText(rd.instagram || '-', pad + 90, 12, '#000000', 'left', 'normal')
-      y += lineH
-
-      if (rd.catatan) {
-        drawText('Catatan  :', pad, 12, '#000000', 'left', 'normal')
-        y += lineH
-        const words = rd.catatan.split(' ')
-        let line = ''
-        words.forEach(word => {
-          if (ctx.measureText(line + word).width > W - (pad * 2)) {
-            drawText(line, pad, 12, '#000000', 'left', 'italic')
-            line = word + ' '
-            y += lineH
-          } else {
-            line += word + ' '
-          }
-        })
-        drawText(line, pad, 12, '#000000', 'left', 'italic')
-        y += lineH
-      }
-
       // ONGKIR NOTE
       drawDashedLine()
       drawText('⚠️ Ongkos kirim ditanggung pembeli.', W / 2, 11, '#b45309', 'center', 'bold')
@@ -2176,8 +2177,6 @@ const ReceiptDrawer = ({ receiptData }) => {
       const scale = 1080 / W
       canvas.width = 1080
       canvas.height = Math.round(H * scale)
-      canvas.style.width = W + 'px'
-      canvas.style.height = H + 'px'
       ctx.scale(scale, scale)
 
       ctx.fillStyle = '#FFFFFF'
