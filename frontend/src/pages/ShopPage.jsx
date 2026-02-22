@@ -1371,20 +1371,49 @@ const ShopPage = () => {
               )}
 
               {/* IGS Callout */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mb-8"
-              >
-                <div className="bg-gradient-to-r from-emerald-500 to-[#079108] rounded-2xl px-6 py-4 shadow-lg shadow-[#079108]/20">
-                  <p className="text-sm text-white font-bold text-center leading-relaxed">
-                    📸 Bagikan notamu ke IGS & tag{' '}
-                    <a href="https://www.instagram.com/refreshbreeze" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 font-black hover:opacity-80 transition-opacity">@refreshbreeze</a>
-                    {' '}— bantu Refresh Breeze makin dikenal! 💚
-                  </p>
-                </div>
-              </motion.div>
+              {/* IGS Callout */}
+              {(() => {
+                const memberIgMap = [
+                  { keywords: ['yanyee', 'yan yee', 'yy'], ig: 'ho_yan.yee', display: '@ho_yan.yee' },
+                  { keywords: ['sinta'], ig: 'sii_ntaa', display: '@sii_ntaa' },
+                  { keywords: ['cissi'], ig: 'bakedciz', display: '@bakedciz' },
+                  { keywords: ['channie'], ig: 'zzuchannie', display: '@zzuchannie' },
+                  { keywords: ['acaa', 'aca'], ig: 'caafoxy', display: '@caafoxy' },
+                  { keywords: ['cally', 'callista'], ig: 'calismilikitiw', display: '@calismilikitiw' },
+                  { keywords: ['piya'], ig: 'matcvie_', display: '@matcvie_' },
+                ]
+                const itemNames = (receiptData?.items || []).map(i => i.name.toLowerCase())
+                const matchedMembers = memberIgMap.filter(m =>
+                  m.keywords.some(kw => itemNames.some(n => n.includes(kw)))
+                )
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="mb-8"
+                  >
+                    <div className="bg-gradient-to-r from-emerald-500 to-[#079108] rounded-2xl px-6 py-5 shadow-lg shadow-[#079108]/20 space-y-2">
+                      <p className="text-sm text-white font-bold text-center leading-relaxed">
+                        📸 Bagikan notamu ke IGS & tag oshi kamu!
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-2 pt-1">
+                        {matchedMembers.map(m => (
+                          <a key={m.ig} href={`https://www.instagram.com/${m.ig}`} target="_blank" rel="noopener noreferrer"
+                            className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-3 py-1.5 rounded-full transition-all border border-white/30">
+                            {m.display}
+                          </a>
+                        ))}
+                        <a href="https://www.instagram.com/refreshbreeze" target="_blank" rel="noopener noreferrer"
+                          className="bg-white/20 hover:bg-white/30 text-white text-xs font-black px-3 py-1.5 rounded-full transition-all border border-white/30">
+                          @refreshbreeze
+                        </a>
+                      </div>
+                      <p className="text-[11px] text-white/70 text-center">bantu Refresh Breeze makin dikenal! 💚</p>
+                    </div>
+                  </motion.div>
+                )
+              })()}
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 {receiptData && (
