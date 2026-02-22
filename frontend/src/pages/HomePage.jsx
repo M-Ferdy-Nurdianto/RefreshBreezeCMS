@@ -44,6 +44,7 @@ const HomePage = () => {
 
 
   const [events, setEvents] = useState([])
+  const [merchPreview, setMerchPreview] = useState([])
 
   useEffect(() => {
     AOS.init({
@@ -67,6 +68,13 @@ const HomePage = () => {
             }
             if (faqsRes.data.success) {
                 setFaqs(faqsRes.data.data)
+            }
+            // Merch fetched separately so it doesn't break if table doesn't exist yet
+            try {
+                const merchRes = await api.get('/merchandise?available=true')
+                if (merchRes.data.success) setMerchPreview(merchRes.data.data.slice(0, 4))
+            } catch (_) {
+                // Table not created yet, ignore
             }
         } catch (error) {
             console.error('Failed to fetch home data:', error)
@@ -518,6 +526,57 @@ const HomePage = () => {
                     Visit Store
                  </button>
              </div>
+
+             {/* Merch Products Grid */}
+             {merchPreview.length > 0 && (
+             <div className="mt-16 sm:mt-20">
+               <div className="flex items-center gap-4 mb-8">
+                 <div className="w-10 h-10 bg-[#079108] rounded-xl flex items-center justify-center shadow-lg shadow-[#079108]/20">
+                   <FaShoppingCart className="text-white" />
+                 </div>
+                 <div>
+                   <h3 className="text-2xl font-black uppercase tracking-wide">Merchandise</h3>
+                   <p className="text-xs text-gray-400 font-semibold mt-0.5">Merchandise resmi Refresh Breeze – tersedia sekarang!</p>
+                 </div>
+               </div>
+
+               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                 {merchPreview.map((item, idx) => (
+                   <motion.div
+                     key={item.id}
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ delay: idx * 0.1 }}
+                     whileHover={{ y: -6 }}
+                     onClick={() => navigate('/shop')}
+                     className="group bg-white rounded-[1.5rem] shadow-lg hover:shadow-2xl hover:shadow-emerald-200/50 transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100"
+                   >
+                     <div className="aspect-square bg-gradient-to-br from-emerald-50 to-gray-100 overflow-hidden flex items-center justify-center p-2">
+                       {item.gambar_url ? (
+                         <img src={item.gambar_url} alt={item.nama} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center text-5xl text-emerald-200">📦</div>
+                       )}
+                     </div>
+                     <div className="p-4">
+                       <h4 className="font-black text-sm uppercase tracking-tight text-gray-900 leading-tight truncate">{item.nama}</h4>
+                       {item.deskripsi && <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1">{item.deskripsi}</p>}
+                       <p className="text-base font-black text-[#079108] mt-2">IDR {item.harga.toLocaleString()}</p>
+                     </div>
+                   </motion.div>
+                 ))}
+               </div>
+
+               <div className="text-center mt-10">
+                 <button
+                   onClick={() => navigate('/shop')}
+                   className="px-10 py-4 bg-[#079108] text-white rounded-full font-black text-xs uppercase tracking-widest hover:bg-[#068007] transition-all shadow-xl shadow-[#079108]/20 hover:scale-105"
+                 >
+                   Lihat Semua Merch
+                 </button>
+               </div>
+             </div>
+             )}
         </div>
       </section>
 

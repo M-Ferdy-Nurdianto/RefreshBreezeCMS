@@ -94,5 +94,46 @@ router.post('/payment-proof', upload.single('file'), handleMulterError, async (r
   }
 })
 
+// POST: Upload merch image to Supabase Storage with auto-compression
+router.post('/merch-image', upload.single('file'), handleMulterError, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No file uploaded.' })
+    }
+
+    console.log('🛍️ Merch image upload:', {
+      name: req.file.originalname,
+      size: `${(req.file.size / 1024).toFixed(2)} KB`,
+      mimetype: req.file.mimetype
+    })
+
+    // Compress image
+    const compressedBuffer = await sharp(req.file.buffer)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 85, progressive: true })
+      .toBuffer()
+
+    console.log('✅ Merch image compressed:', {
+      originalSize: `${(req.file.size / 1024).toFixed(2)} KB`,
+      compressedSize: `${(compressedBuffer.length / 1024).toFixed(2)} KB`,
+    })
+
+    const fileName = `merch_${Date.now()}_${req.file.originalname.replace(/\.[^/.]+$/, '')}.jpg`
+    const result = await uploadToSupabaseStorage(
+      compressedBuffer,
+      fileName,
+      'image/jpeg'
+    )
+
+    res.json({
+      success: true,
+      data: { url: result.url }
+    })
+  } catch (error) {
+    console.error('Error uploading merch image:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
 export default router
 

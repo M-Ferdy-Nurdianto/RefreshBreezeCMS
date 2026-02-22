@@ -43,7 +43,9 @@ import {
   FaTimes,
   FaImage,
   FaChartBar,
-  FaDownload
+  FaDownload,
+  FaBox,
+  FaCloudUploadAlt
 } from 'react-icons/fa'
 
 // Helper to strip emojis and special symbols (cause grouping issues)
@@ -83,12 +85,28 @@ const AdminPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [editingEvent, setEditingEvent] = useState(null) // For edit mode
 
+  // Merch State
+  const [merch, setMerch] = useState([])
+  const [merchOrders, setMerchOrders] = useState([])
+  const [showMerchForm, setShowMerchForm] = useState(false)
+  const [editingMerch, setEditingMerch] = useState(null)
+  const [merchForm, setMerchForm] = useState({ nama: '', deskripsi: '', harga: '', stok: '', available: true })
+  const [merchImageFile, setMerchImageFile] = useState(null)
+  const [merchImagePreview, setMerchImagePreview] = useState('')
+  const [merchSaving, setMerchSaving] = useState(false)
+  const merchFileInputRef = React.useRef(null)
+  const [merchOrderStatusFilter, setMerchOrderStatusFilter] = useState('all')
+  const [merchOrderSearch, setMerchOrderSearch] = useState('')
+  const [loadingMerchOrders, setLoadingMerchOrders] = useState(false)
+
   useEffect(() => {
     checkAuth()
     fetchOrders()
     fetchMembers()
     fetchEvents()
     fetchConfig()
+    fetchMerch()
+    fetchMerchOrders()
 
     // Realtime Subscription for Orders
     const subscription = supabase
@@ -215,6 +233,81 @@ const AdminPage = () => {
       }
     } catch (error) {
       console.error('Error fetching config:', error)
+    }
+  }
+
+  const fetchMerch = async () => {
+    try {
+      const res = await api.get('/merchandise')
+      setMerch(res.data.data || [])
+    } catch (error) {
+      console.error('Error fetching merch:', error)
+    }
+  }
+
+  const fetchMerchOrders = async () => {
+    try {
+      setLoadingMerchOrders(true)
+      const params = {}
+      if (merchOrderStatusFilter !== 'all') params.status = merchOrderStatusFilter
+      if (merchOrderSearch) params.search = merchOrderSearch
+      const res = await api.get('/merch-orders', { params })
+      setMerchOrders(res.data.data || [])
+    } catch (error) {
+      console.error('Error fetching merch orders:', error)
+    } finally {
+      setLoadingMerchOrders(false)
+    }
+  }
+
+  const handleDeleteMerch = async (id, nama) => {
+    const result = await Swal.fire({
+      title: `Hapus "${nama}"?`,
+      text: 'Data merchandise ini akan dihapus permanen.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal'
+    })
+    if (!result.isConfirmed) return
+    try {
+      await api.delete(`/merchandise/${id}`)
+      Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Merchandise berhasil dihapus', timer: 1500, showConfirmButton: false })
+      fetchMerch()
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Gagal!', text: error.response?.data?.error || 'Gagal menghapus' })
+    }
+  }
+
+  const handleMerchOrderStatusChange = async (orderId, newStatus) => {
+    try {
+      await api.patch(`/merch-orders/${orderId}/status`, { status: newStatus })
+      fetchMerchOrders()
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Gagal update status' })
+    }
+  }
+
+  const handleDeleteMerchOrder = async (id) => {
+    const result = await Swal.fire({
+      title: 'Hapus Order Merch?',
+      text: 'Order ini akan dihapus permanen.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal'
+    })
+    if (!result.isConfirmed) return
+    try {
+      await api.delete(`/merch-orders/${id}`)
+      Swal.fire({ icon: 'success', title: 'Berhasil!', timer: 1500, showConfirmButton: false })
+      fetchMerchOrders()
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Gagal menghapus' })
     }
   }
 
@@ -739,6 +832,18 @@ const AdminPage = () => {
                 ✨ Special
               </span>
             </button>
+            <button
+              onClick={() => { setOrderSubTab('merch'); fetchMerchOrders() }}
+              className={`flex-1 min-w-[120px] px-4 py-4 font-semibold transition-colors ${
+                orderSubTab === 'merch'
+                  ? 'bg-custom-green text-white border-b-4 border-green-700'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <FaBox /> Merch
+              </span>
+            </button>
           </div>
         </div>
 
@@ -890,7 +995,7 @@ const AdminPage = () => {
             </button>
             <button
               onClick={() => setShowBulkDeleteModal(true)}
-              className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+              className="bg-[#dc2626] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#b91c1c] transition-colors flex items-center gap-2"
             >
               <FaTrash /> Hapus Data
             </button>
@@ -947,6 +1052,117 @@ const AdminPage = () => {
             onDelete={handleDeleteOrder}
             onStatusChange={handleStatusChange}
           />
+        )}
+
+        {/* Merch Orders Table */}
+        {orderSubTab === 'merch' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center flex-wrap gap-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><FaBox className="text-custom-green" /> Order Merch</h3>
+              <button onClick={fetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2 text-sm">🔄 Refresh</button>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow-md flex flex-wrap gap-3">
+              <input
+                type="text"
+                placeholder="Cari nama / WA / order..."
+                value={merchOrderSearch}
+                onChange={e => setMerchOrderSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && fetchMerchOrders()}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green flex-1 min-w-[180px]"
+              />
+              <select
+                value={merchOrderStatusFilter}
+                onChange={e => setMerchOrderStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
+              >
+                <option value="all">Semua Status</option>
+                <option value="pending">Pending</option>
+                <option value="checked">Checked</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <button onClick={fetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">Cari</button>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-custom-green text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-bold uppercase">Order</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold uppercase">Pembeli</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold uppercase">Items</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold uppercase">Total</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold uppercase">Catatan</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold uppercase">Status</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold uppercase">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loadingMerchOrders ? (
+                      <tr><td colSpan="7" className="text-center py-10 text-gray-400">Loading...</td></tr>
+                    ) : merchOrders.length === 0 ? (
+                      <tr><td colSpan="7" className="text-center py-10 text-gray-400">Belum ada order merch</td></tr>
+                    ) : (
+                      merchOrders.map((order) => (
+                        <tr key={order.id} className={`border-b hover:bg-gray-50 transition-colors ${
+                          order.status === 'pending' ? '' : order.status === 'checked' ? 'bg-blue-50/30' : order.status === 'completed' ? 'bg-green-50/30' : 'bg-red-50/30'
+                        }`}>
+                          <td className="px-4 py-3">
+                            <p className="font-bold text-gray-800 text-sm">{order.order_number}</p>
+                            <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString('id-ID')}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="font-semibold text-gray-800 text-sm">{order.nama_lengkap || '-'}</p>
+                            <p className="text-xs text-gray-500">📱 {order.whatsapp}</p>
+                            {order.instagram && <p className="text-xs text-gray-500">📷 {order.instagram}</p>}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="space-y-0.5">
+                              {order.merch_order_items?.map((item, i) => (
+                                <p key={i} className="text-xs text-gray-600">{item.item_name} <span className="font-bold text-custom-green">x{item.quantity}</span></p>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 font-bold text-custom-green">Rp {order.total_harga.toLocaleString('id-ID')}</td>
+                          <td className="px-4 py-3 text-xs text-gray-600 max-w-[150px]">
+                            <p className="truncate" title={order.catatan}>{order.catatan || '-'}</p>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <select
+                              value={order.status}
+                              onChange={e => handleMerchOrderStatusChange(order.id, e.target.value)}
+                              className={`px-2 py-1 rounded-full text-xs font-bold border border-gray-200 focus:ring-2 focus:ring-custom-green ${
+                                order.status === 'pending' ? 'bg-white text-gray-600' :
+                                order.status === 'checked' ? 'bg-blue-100 text-blue-700' :
+                                order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                'bg-red-100 text-red-700'
+                              }`}
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="checked">Checked</option>
+                              <option value="completed">Completed</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-center gap-2">
+                              {order.payment_proof_url && (
+                                <a href={order.payment_proof_url} target="_blank" rel="noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg"
+                                  title="Lihat Bukti Bayar"
+                                ><FaEye /></a>
+                              )}
+                              <button onClick={() => handleDeleteMerchOrder(order.id)} className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
   
       </div>
@@ -1252,6 +1468,393 @@ const AdminPage = () => {
     </div>
   )
 
+  // Merch form helpers
+  const parseHarga = (input) => {
+    if (!input) return ''
+    let str = String(input).trim().toLowerCase()
+    // Strip rp/idr prefix
+    str = str.replace(/^(rp\.?\s*|idr\.?\s*)/i, '')
+    // Remove dots/commas used as thousand separators (but keep decimal dots like 1.5)
+    // If pattern is like 135.000 → thousand separator
+    if (/^\d{1,3}(\.\d{3})+$/.test(str)) {
+      str = str.replace(/\./g, '')
+    }
+    // Replace comma with dot for decimal (1,5jt → 1.5jt)
+    str = str.replace(',', '.')
+    // Parse multiplier suffixes
+    let multiplier = 1
+    if (/k$/i.test(str)) { multiplier = 1000; str = str.replace(/k$/i, '') }
+    else if (/rb$/i.test(str)) { multiplier = 1000; str = str.replace(/rb$/i, '') }
+    else if (/ribu$/i.test(str)) { multiplier = 1000; str = str.replace(/ribu$/i, '') }
+    else if (/jt$/i.test(str)) { multiplier = 1000000; str = str.replace(/jt$/i, '') }
+    else if (/juta$/i.test(str)) { multiplier = 1000000; str = str.replace(/juta$/i, '') }
+    const num = parseFloat(str)
+    if (isNaN(num)) return ''
+    return Math.round(num * multiplier)
+  }
+
+  const [merchHargaRaw, setMerchHargaRaw] = useState('')
+
+  const handleHargaChange = (val) => {
+    setMerchHargaRaw(val)
+    const parsed = parseHarga(val)
+    if (parsed !== '') {
+      setMerchForm(f => ({...f, harga: parsed}))
+    } else if (val === '') {
+      setMerchForm(f => ({...f, harga: ''}))
+    }
+  }
+
+  const openMerchForm = (item = null) => {
+    if (item) {
+      setEditingMerch(item)
+      setMerchForm({ nama: item.nama, deskripsi: item.deskripsi || '', harga: item.harga, stok: item.stok ?? '', available: item.available })
+      setMerchHargaRaw(String(item.harga))
+      setMerchImagePreview(item.gambar_url || '')
+    } else {
+      setEditingMerch(null)
+      setMerchForm({ nama: '', deskripsi: '', harga: '', stok: '', available: true })
+      setMerchHargaRaw('')
+      setMerchImagePreview('')
+    }
+    setMerchImageFile(null)
+    setShowMerchForm(true)
+  }
+
+  const closeMerchForm = () => {
+    setShowMerchForm(false)
+    setEditingMerch(null)
+    setMerchImageFile(null)
+    setMerchImagePreview('')
+  }
+
+  const handleMerchImageChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setMerchImageFile(file)
+    setMerchImagePreview(URL.createObjectURL(file))
+  }
+
+  const handleMerchSubmit = async (e) => {
+    e.preventDefault()
+    if (!merchForm.nama || !merchForm.harga) return alert('Nama dan harga wajib diisi')
+    setMerchSaving(true)
+    try {
+      let gambar_url = editingMerch?.gambar_url || ''
+
+      // Upload image if new file selected
+      if (merchImageFile) {
+        const formData = new FormData()
+        formData.append('file', merchImageFile)
+        const uploadRes = await api.post('/upload/merch-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        gambar_url = uploadRes.data.data.url
+      }
+
+      const payload = {
+        nama: merchForm.nama,
+        deskripsi: merchForm.deskripsi || null,
+        harga: parseInt(merchForm.harga),
+        stok: merchForm.stok !== '' ? parseInt(merchForm.stok) : 0,
+        gambar_url: gambar_url || null,
+        available: merchForm.available,
+      }
+
+      if (editingMerch) {
+        await api.put(`/merchandise/${editingMerch.id}`, payload)
+      } else {
+        await api.post('/merchandise', payload)
+      }
+      closeMerchForm()
+      fetchMerch()
+    } catch (error) {
+      alert(error.response?.data?.error || 'Gagal menyimpan merchandise')
+    } finally {
+      setMerchSaving(false)
+    }
+  }
+
+  const renderMerch = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Manajemen Merchandise</h2>
+        {!showMerchForm && (
+          <button
+            onClick={() => openMerchForm()}
+            className="bg-custom-green text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+          >
+            <FaPlus /> Tambah Merch
+          </button>
+        )}
+      </div>
+
+      {/* Inline Add/Edit Form */}
+      {showMerchForm && (
+        <div className="bg-white rounded-xl shadow-lg border-2 border-custom-green/30 overflow-hidden">
+          <div className="bg-custom-green/10 px-6 py-4 border-b border-custom-green/20 flex justify-between items-center">
+            <h3 className="text-lg font-bold text-gray-800">{editingMerch ? '✏️ Edit Merchandise' : '➕ Tambah Merchandise Baru'}</h3>
+            <button onClick={closeMerchForm} className="text-gray-400 hover:text-gray-600 p-1"><FaTimes size={18} /></button>
+          </div>
+          <form onSubmit={handleMerchSubmit} className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left: Info */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Produk *</label>
+                  <input required value={merchForm.nama} onChange={e => setMerchForm({...merchForm, nama: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:outline-none"
+                    placeholder="Contoh: Kaos Refresh Breeze"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Deskripsi</label>
+                  <textarea value={merchForm.deskripsi} onChange={e => setMerchForm({...merchForm, deskripsi: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:outline-none resize-none"
+                    placeholder="Deskripsi produk (opsional)" rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Harga (Rp) *</label>
+                    <input required value={merchHargaRaw} onChange={e => handleHargaChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:outline-none"
+                      placeholder='135k, rp150, 75rb, 1.5jt'
+                    />
+                    {merchForm.harga && merchHargaRaw && !/^\d+$/.test(merchHargaRaw) && (
+                      <p className="text-xs text-custom-green mt-1 font-semibold">= Rp {Number(merchForm.harga).toLocaleString('id-ID')}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Stok <span className="text-xs text-gray-400">(opsional)</span></label>
+                    <input type="number" min="0" value={merchForm.stok} onChange={e => setMerchForm({...merchForm, stok: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:outline-none"
+                      placeholder="Kosongkan jika PO"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="merch-available" checked={merchForm.available}
+                    onChange={e => setMerchForm({...merchForm, available: e.target.checked})}
+                    className="w-4 h-4 accent-custom-green"
+                  />
+                  <label htmlFor="merch-available" className="text-sm font-semibold text-gray-700">Tampilkan di Shop (Aktif)</label>
+                </div>
+              </div>
+              {/* Right: Image Upload */}
+              <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Foto Produk</label>
+                <div
+                  onClick={() => merchFileInputRef.current?.click()}
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-custom-green hover:bg-green-50/30 transition-all min-h-[200px] flex flex-col items-center justify-center gap-3"
+                >
+                  {merchImagePreview ? (
+                    <img src={merchImagePreview} alt="Preview" className="max-h-[200px] max-w-full object-contain rounded-lg" />
+                  ) : (
+                    <>
+                      <FaCloudUploadAlt className="text-4xl text-gray-300" />
+                      <p className="text-sm text-gray-400">Klik untuk upload foto</p>
+                      <p className="text-xs text-gray-300">JPG, PNG (max 10MB)</p>
+                    </>
+                  )}
+                </div>
+                <input ref={merchFileInputRef} type="file" accept="image/*" onChange={handleMerchImageChange} className="hidden" />
+                {merchImagePreview && (
+                  <button type="button" onClick={() => { setMerchImageFile(null); setMerchImagePreview(''); if (merchFileInputRef.current) merchFileInputRef.current.value = '' }}
+                    className="text-xs text-red-500 hover:text-red-700 font-semibold"
+                  >✕ Hapus Foto</button>
+                )}
+              </div>
+            </div>
+            {/* Submit Buttons */}
+            <div className="flex gap-3 mt-6 pt-4 border-t">
+              <button type="button" onClick={closeMerchForm} className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">Batal</button>
+              <button type="submit" disabled={merchSaving}
+                className="px-6 py-2 bg-custom-green text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-60 flex items-center gap-2"
+              >
+                {merchSaving ? 'Menyimpan...' : (editingMerch ? '💾 Update' : '➕ Tambah')}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Products Table */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Produk</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Harga</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Stok</th>
+                <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Tersedia</th>
+                <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {merch.length === 0 ? (
+                <tr><td colSpan="5" className="text-center py-10 text-gray-400">Belum ada merchandise. Klik &quot;Tambah Merch&quot; untuk menambahkan.</td></tr>
+              ) : (
+                merch.map((item) => (
+                  <tr key={item.id} className="border-b hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-green-50 overflow-hidden flex-shrink-0 flex items-center justify-center border border-green-100">
+                          {item.gambar_url ? <img src={item.gambar_url} alt={item.nama} className="w-full h-full object-cover" /> : <span className="text-green-300 text-xl">📦</span>}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800">{item.nama}</p>
+                          {item.deskripsi && <p className="text-xs text-gray-500 max-w-xs truncate">{item.deskripsi}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-custom-green">Rp {item.harga.toLocaleString('id-ID')}</td>
+                    <td className="px-4 py-3">
+                      <span className={`font-bold ${!item.stok ? 'text-gray-400' : item.stok <= 5 ? 'text-orange-500' : 'text-gray-700'}`}>
+                        {!item.stok ? 'PO' : item.stok}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={async () => {
+                          await api.put(`/merchandise/${item.id}`, { available: !item.available })
+                          fetchMerch()
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                          item.available ? 'bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-700' : 'bg-red-100 text-red-700 hover:bg-green-100 hover:text-green-700'
+                        }`}
+                      >
+                        {item.available ? '● Aktif' : '✗ Nonaktif'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => openMerchForm(item)} className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
+                        <button onClick={() => handleDeleteMerch(item.id, item.nama)} className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderMerchOrders = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <h2 className="text-2xl font-bold">Order Merch</h2>
+        <button onClick={fetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2 text-sm">🔄 Refresh</button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-xl shadow-md flex flex-wrap gap-3">
+        <input
+          type="text"
+          placeholder="Cari nama / WA / order..."
+          value={merchOrderSearch}
+          onChange={e => { setMerchOrderSearch(e.target.value) }}
+          onKeyDown={e => e.key === 'Enter' && fetchMerchOrders()}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green flex-1 min-w-[200px]"
+        />
+        <select
+          value={merchOrderStatusFilter}
+          onChange={e => setMerchOrderStatusFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
+        >
+          <option value="all">Semua Status</option>
+          <option value="pending">Pending</option>
+          <option value="checked">Checked</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button onClick={fetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">Cari</button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Order</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Pembeli</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Items</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Total</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Catatan</th>
+                <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loadingMerchOrders ? (
+                <tr><td colSpan="7" className="text-center py-10 text-gray-400">Loading...</td></tr>
+              ) : merchOrders.length === 0 ? (
+                <tr><td colSpan="7" className="text-center py-10 text-gray-400">Belum ada order merch</td></tr>
+              ) : (
+                merchOrders.map((order) => (
+                  <tr key={order.id} className={`border-b hover:bg-gray-50 transition-colors ${
+                    order.status === 'pending' ? 'bg-white' : order.status === 'checked' ? 'bg-blue-50/30' : order.status === 'completed' ? 'bg-green-50/30' : 'bg-red-50/30'
+                  }`}>
+                    <td className="px-4 py-3">
+                      <p className="font-bold text-gray-800 text-sm">{order.order_number}</p>
+                      <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString('id-ID')}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-800 text-sm">{order.nama_lengkap || '-'}</p>
+                      <p className="text-xs text-gray-500">📱 {order.whatsapp}</p>
+                      {order.instagram && <p className="text-xs text-gray-500">📷 {order.instagram}</p>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-0.5">
+                        {order.merch_order_items?.map((item, i) => (
+                          <p key={i} className="text-xs text-gray-600">{item.item_name} <span className="font-bold">x{item.quantity}</span></p>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-custom-green">Rp {order.total_harga.toLocaleString('id-ID')}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 max-w-[150px]">
+                      <p className="truncate" title={order.catatan}>{order.catatan || '-'}</p>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <select
+                        value={order.status}
+                        onChange={e => handleMerchOrderStatusChange(order.id, e.target.value)}
+                        className={`px-2 py-1 rounded-full text-xs font-bold border-0 focus:ring-2 focus:ring-custom-green ${
+                          order.status === 'pending' ? 'bg-gray-100 text-gray-700' :
+                          order.status === 'checked' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="checked">Checked</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        {order.payment_proof_url && (
+                          <a href={order.payment_proof_url} target="_blank" rel="noreferrer"
+                            className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg"
+                            title="Lihat Bukti Bayar"
+                          ><FaEye /></a>
+                        )}
+                        <button onClick={() => handleDeleteMerchOrder(order.id)} className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+
   const renderSettings = () => {
     const handleSaveSettings = () => {
       updateConfig({
@@ -1368,6 +1971,7 @@ const AdminPage = () => {
               { id: 'orders', label: 'Orders', icon: FaShoppingCart },
               { id: 'recap', label: 'Rekap', icon: FaChartBar },
               { id: 'events', label: 'Events', icon: FaCalendar },
+              { id: 'merch', label: 'Merch', icon: FaBox },
               { id: 'settings', label: 'Settings', icon: FaEdit }
             ].map((tab) => (
               <button
@@ -1391,6 +1995,7 @@ const AdminPage = () => {
         {activeTab === 'orders' && renderOrders()}
         {activeTab === 'recap' && renderRecap()}
         {activeTab === 'events' && renderEvents()}
+        {activeTab === 'merch' && renderMerch()}
         {activeTab === 'settings' && renderSettings()}
       </main>
 
@@ -1428,6 +2033,14 @@ const AdminPage = () => {
         />
       )}
 
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExport}
+        events={events}
+      />
+
       {/* Event Modal */}
       {showEventModal && (
         <EventModal
@@ -1444,6 +2057,8 @@ const AdminPage = () => {
           }}
         />
       )}
+
+
     </div>
   )
 }
@@ -2535,21 +3150,19 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
             </button>
             <button
               onClick={handleSubmit}
-              className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 flex items-center justify-center gap-2"
+              className="flex-1 bg-[#dc2626] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#b91c1c] flex items-center justify-center gap-2"
             >
               <FaTrash /> Hapus Data
             </button>
           </div>
         </div>
       </div>
-      <ExportModal 
-        isOpen={showExportModal}
-        onClose={() => setShowExportModal(false)}
-        onExport={handleExport}
-        events={events}
-      />
     </div>
   )
 }
+
+// ─────────────────────────────────────────────────
+// MERCH FORM MODAL (Add / Edit)
+// ─────────────────────────────────────────────────
 
 export default AdminPage
