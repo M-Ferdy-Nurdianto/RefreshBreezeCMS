@@ -1905,8 +1905,12 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       fixedLines += 4  // ongkir note + footer
 
       const H = 120 + (pad * 2) + (fixedLines * lineH) + (rd.items.length * itemBlockH) + 80
-      canvas.width = W
-      canvas.height = H
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = W * dpr
+      canvas.height = H * dpr
+      canvas.style.width = W + 'px'
+      canvas.style.height = H + 'px'
+      ctx.scale(dpr, dpr)
 
       ctx.fillStyle = '#FFFFFF'
       ctx.fillRect(0, 0, W, H)
@@ -2143,8 +2147,12 @@ const ReceiptDrawer = ({ receiptData }) => {
       let itemLines = rd.items.length * 2
       let catatanLines = rd.catatan ? 2 : 0
       const H = 340 + (itemLines * lineH) + (16 * lineH) + (catatanLines * lineH) + 100
-      canvas.width = W
-      canvas.height = H
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = W * dpr
+      canvas.height = H * dpr
+      canvas.style.width = W + 'px'
+      canvas.style.height = H + 'px'
+      ctx.scale(dpr, dpr)
 
       ctx.fillStyle = '#FFFFFF'
       ctx.fillRect(0, 0, W, H)
