@@ -90,11 +90,16 @@ const AdminPage = () => {
   const [merchOrders, setMerchOrders] = useState([])
   const [showMerchForm, setShowMerchForm] = useState(false)
   const [editingMerch, setEditingMerch] = useState(null)
-  const [merchForm, setMerchForm] = useState({ nama: '', deskripsi: '', harga: '', stok: '', available: true })
+  const [merchForm, setMerchForm] = useState({ nama: '', deskripsi: '', harga: '', stok: '', available: true, sizes: [], size_chart_urls: [] })
   const [merchImageFile, setMerchImageFile] = useState(null)
   const [merchImagePreview, setMerchImagePreview] = useState('')
+  const [merchSizeChartFiles, setMerchSizeChartFiles] = useState([null])
+  const [merchSizeChartPreviews, setMerchSizeChartPreviews] = useState([''])
+  const [availableSizes, setAvailableSizes] = useState('')
   const [merchSaving, setMerchSaving] = useState(false)
   const merchFileInputRef = React.useRef(null)
+  const sizeChart1InputRef = React.useRef(null)
+  const sizeChart2InputRef = React.useRef(null)
   const [merchOrderStatusFilter, setMerchOrderStatusFilter] = useState('all')
   const [merchOrderSearch, setMerchOrderSearch] = useState('')
   const [loadingMerchOrders, setLoadingMerchOrders] = useState(false)
@@ -103,10 +108,10 @@ const AdminPage = () => {
     checkAuth()
     fetchOrders()
     fetchMembers()
-    fetchEvents()
-    fetchConfig()
-    fetchMerch()
-    fetchMerchOrders()
+      fetchEvents()
+      fetchConfig()
+      fetchMerch()
+      fetchMerchOrders()
 
     // Realtime Subscription for Orders
     const subscription = supabase
@@ -337,8 +342,8 @@ const AdminPage = () => {
     }
   }
 
-  const handleLogout = () => {
-    Swal.fire({
+  const handleLogout = async () => {
+    const result = await Swal.fire({
       title: 'Logout?',
       text: 'Anda yakin ingin keluar?',
       icon: 'warning',
@@ -347,13 +352,13 @@ const AdminPage = () => {
       cancelButtonColor: '#d33',
       confirmButtonText: 'Ya, Logout',
       cancelButtonText: 'Batal'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        localStorage.removeItem('admin_token')
-        localStorage.removeItem('admin_user')
-        navigate('/admin/login')
-      }
     })
+
+    if (result.isConfirmed) {
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user')
+      navigate('/admin/login')
+    }
   }
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -382,7 +387,7 @@ const AdminPage = () => {
   }
 
   const handleDeleteOrder = async (orderId) => {
-    Swal.fire({
+    const result = await Swal.fire({
       title: 'Hapus Order?',
       text: 'Data tidak bisa dikembalikan!',
       icon: 'warning',
@@ -391,17 +396,17 @@ const AdminPage = () => {
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await api.delete(`/orders/${orderId}`)
-          Swal.fire('Deleted!', 'Order telah dihapus.', 'success')
-          fetchOrders()
-        } catch (error) {
-          Swal.fire('Error!', error.message, 'error')
-        }
-      }
     })
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/orders/${orderId}`)
+        Swal.fire('Deleted!', 'Order telah dihapus.', 'success')
+        fetchOrders()
+      } catch (error) {
+        Swal.fire('Error!', error.message, 'error')
+      }
+    }
   }
 
   const handleBulkDelete = async (deleteType, params = {}) => {
@@ -434,7 +439,7 @@ const AdminPage = () => {
   }
 
   const handleDeleteEvent = async (eventId, eventName) => {
-    Swal.fire({
+    const result = await Swal.fire({
       title: 'Hapus Event?',
       text: `Apakah Anda yakin ingin menghapus event "${eventName}"? Semua order terkait akan kehilangan referensi event.`,
       icon: 'warning',
@@ -443,27 +448,27 @@ const AdminPage = () => {
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await api.delete(`/events/${eventId}`)
-          
-          Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Event berhasil dihapus',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000
-          })
-          
-          fetchEvents()
-        } catch (error) {
-          Swal.fire('Error!', error.response?.data?.error || error.message, 'error')
-        }
-      }
     })
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/events/${eventId}`)
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Event berhasil dihapus',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000
+        })
+        
+        fetchEvents()
+      } catch (error) {
+        Swal.fire('Error!', error.response?.data?.error || error.message, 'error')
+      }
+    }
   }
 
   const viewOrderDetail = (order) => {
@@ -543,6 +548,187 @@ const AdminPage = () => {
     } catch (error) {
       console.error('Error exporting:', error)
       Swal.fire({ icon: 'error', title: 'Export Gagal', text: error.message })
+    }
+  }
+
+  const generateMerchExcel = async () => {
+    try {
+      const params = {}
+      if (merchOrderStatusFilter !== 'all') params.status = merchOrderStatusFilter
+      if (merchOrderSearch) params.search = merchOrderSearch
+
+      const queryString = new URLSearchParams(params).toString()
+      const token = localStorage.getItem('admin_token')
+      const apiUrl = import.meta.env.MODE === 'production' ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
+      
+      Swal.fire({ title: 'Downloading Merch Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
+
+      const response = await fetch(`${apiUrl}/merch-orders/export/excel?${queryString}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) throw new Error('Export gagal')
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `RefreshBreeze_Merch_Orders_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      Swal.fire({ icon: 'success', title: 'Excel Merch berhasil didownload!', timer: 2000, showConfirmButton: false })
+    } catch (error) {
+      console.error('Error exporting merch:', error)
+      Swal.fire({ icon: 'error', title: 'Export Gagal', text: error.message })
+    }
+  }
+
+  const generateMerchPDF = async () => {
+    try {
+      Swal.fire({ title: 'Generating Merch PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
+      
+      const params = {}
+      if (merchOrderStatusFilter !== 'all') params.status = merchOrderStatusFilter
+      if (merchOrderSearch) params.search = merchOrderSearch
+
+      const res = await api.get('/merch-orders', { params })
+      const orders = res.data.data
+      
+      if (!orders || orders.length === 0) throw new Error('Tidak ada data untuk diexport.')
+
+      const doc = new jsPDF()
+      doc.setFillColor(7, 145, 8)
+      doc.rect(0, 0, 210, 24, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text('REFRESH BREEZE - LAPORAN MERCHANDISE', 105, 16, { align: 'center' })
+      
+      doc.setTextColor(0, 0, 0)
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`Tanggal Export: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, 14, 35)
+
+      const tableBody = orders.map((order, index) => [
+        index + 1,
+        order.order_number,
+        order.nama_lengkap || '-',
+        `WA: ${order.whatsapp}${order.instagram ? '\nIG: ' + order.instagram : ''}`,
+        order.merch_order_items?.map(i => `${i.item_name}${i.size ? ' (' + i.size + ')' : ''} x${i.quantity}`).join('\n') || '-',
+        `Rp ${order.total_harga.toLocaleString('id-ID')}`,
+        order.status
+      ])
+
+      const itemSummary = {} // { name: { qty: 0, revenue: 0, sizes: {} } }
+      const globalSizeSummary = {} // { M: 5 }
+      let totalQty = 0
+      let totalRevenue = 0
+
+      orders.forEach(order => {
+        totalRevenue += order.total_harga
+        order.merch_order_items?.forEach(item => {
+          const name = item.item_name
+          const size = item.size || 'No Size'
+          const qty = item.quantity
+          
+          if (!itemSummary[name]) itemSummary[name] = { qty: 0, revenue: 0, sizes: {} }
+          itemSummary[name].qty += qty
+          itemSummary[name].revenue += (qty * item.harga)
+          if (!itemSummary[name].sizes[size]) itemSummary[name].sizes[size] = 0
+          itemSummary[name].sizes[size] += qty
+
+          if (size !== 'No Size') {
+            if (!globalSizeSummary[size]) globalSizeSummary[size] = 0
+            globalSizeSummary[size] += qty
+          }
+          totalQty += qty
+        })
+      })
+
+      autoTable(doc, {
+        startY: 45,
+        head: [['#', 'Order #', 'Nama', 'Kontak', 'Items', 'Total', 'Status']],
+        body: tableBody,
+        theme: 'grid',
+        headStyles: { fillColor: [7, 145, 8], textColor: 255 },
+        styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+        columnStyles: { 0: { cellWidth: 10 }, 4: { cellWidth: 50 }, 5: { halign: 'right' } }
+      })
+
+      let currentY = doc.lastAutoTable.finalY + 15
+
+      // 1. GLOBAL SIZE RECAP
+      if (Object.keys(globalSizeSummary).length > 0) {
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.text('REKAP TOTAL PER UKURAN (SIZE)', 14, currentY)
+        
+        const sizeBody = Object.entries(globalSizeSummary).sort().map(([size, qty]) => [
+          `Ukuran ${size}`,
+          `${qty} pcs`
+        ])
+
+        autoTable(doc, {
+          startY: currentY + 5,
+          head: [['Ukuran', 'Total Terjual']],
+          body: sizeBody,
+          theme: 'grid',
+          headStyles: { fillColor: [30, 41, 59], textColor: 255 },
+          styles: { fontSize: 9 },
+          tableWidth: 80,
+          margin: { left: 14 }
+        })
+        currentY = doc.lastAutoTable.finalY + 15
+      }
+
+      // 2. PRODUCT SUMMARY
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('RINGKASAN PENJUALAN PER PRODUK', 14, currentY)
+
+      const summaryRows = []
+      Object.keys(itemSummary).forEach(name => {
+        const product = itemSummary[name]
+        // Header Product
+        summaryRows.push([
+          { content: name, styles: { fontStyle: 'bold', fillColor: [248, 250, 252] } },
+          { content: product.qty, styles: { fontStyle: 'bold', fillColor: [248, 250, 252], halign: 'center' } },
+          { content: `Rp ${product.revenue.toLocaleString('id-ID')}`, styles: { fontStyle: 'bold', fillColor: [248, 250, 252], halign: 'right' } }
+        ])
+        // Sub-rows Sizes
+        Object.entries(product.sizes).sort().forEach(([size, qty]) => {
+          summaryRows.push([
+            { content: `   • Ukuran ${size}`, styles: { fontStyle: 'italic', textColor: [100, 116, 139] } },
+            { content: qty, styles: { halign: 'center', textColor: [100, 116, 139] } },
+            ''
+          ])
+        })
+      })
+
+      // Add Grand Total
+      summaryRows.push([
+        { content: 'TOTAL KESELURUHAN', styles: { fontStyle: 'bold', fillColor: [255, 255, 0] } },
+        { content: totalQty, styles: { fontStyle: 'bold', fillColor: [255, 255, 0], halign: 'center' } },
+        { content: `Rp ${totalRevenue.toLocaleString('id-ID')}`, styles: { fontStyle: 'bold', fillColor: [255, 255, 0], halign: 'right' } }
+      ])
+
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Nama Produk', 'Terjual', 'Total Rupiah']],
+        body: summaryRows,
+        theme: 'grid',
+        headStyles: { fillColor: [50, 50, 50], textColor: 255 },
+        styles: { fontSize: 9 },
+        columnStyles: { 1: { cellWidth: 30 }, 2: { cellWidth: 40 } }
+      })
+
+      doc.save(`RefreshBreeze_Merch_Orders_${new Date().toISOString().slice(0, 10)}.pdf`)
+      Swal.fire({ icon: 'success', title: 'PDF Merch Berhasil!', timer: 1500, showConfirmButton: false })
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Gagal PDF Merch', text: error.message })
     }
   }
 
@@ -805,7 +991,7 @@ const AdminPage = () => {
               }`}
             >
               <span className="flex items-center justify-center gap-2">
-                🏪 OTS
+                OTS
               </span>
             </button>
             <button
@@ -817,7 +1003,7 @@ const AdminPage = () => {
               }`}
             >
               <span className="flex items-center justify-center gap-2">
-                📦 PO
+                PO
               </span>
             </button>
             <button
@@ -829,7 +1015,7 @@ const AdminPage = () => {
               }`}
             >
               <span className="flex items-center justify-center gap-2">
-                ✨ Special
+                Special
               </span>
             </button>
             <button
@@ -1009,7 +1195,7 @@ const AdminPage = () => {
           <RenderTable 
             data={specialOrders} 
             title="Special Event Orders" 
-            icon={<span className="text-xl">✨</span>}
+            icon={<span className="text-xl"></span>}
             emptyMessage="Tidak ada order special event"
             loading={loading}
             onView={viewOrderDetail}
@@ -1023,7 +1209,7 @@ const AdminPage = () => {
           <RenderTable 
             data={otsOrders} 
             title="Order OTS (On The Spot)" 
-            icon={<span className="text-xl">🏪</span>}
+            icon={<span className="text-xl"></span>}
             emptyMessage="Tidak ada data OTS"
             loading={loading}
             onView={viewOrderDetail}
@@ -1045,7 +1231,7 @@ const AdminPage = () => {
           <RenderTable 
             data={poOrders} 
             title="Pre-Order (Online)" 
-            icon={<span className="text-xl">📦</span>}
+            icon={<span className="text-xl"></span>}
             emptyMessage="Tidak ada data Pre-Order"
             loading={loading}
             onView={viewOrderDetail}
@@ -1058,8 +1244,28 @@ const AdminPage = () => {
         {orderSubTab === 'merch' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-3">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><FaBox className="text-custom-green" /> Order Merch</h3>
-              <button onClick={fetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2 text-sm">🔄 Refresh</button>
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">Order Merch</h3>
+              <div className="flex gap-2">
+                <button 
+                  onClick={async () => {
+                    const { value: format } = await Swal.fire({
+                      title: 'Export Merch Data',
+                      input: 'radio',
+                      inputOptions: { 'excel': '📊 Excel', 'pdf': '📄 PDF' },
+                      inputValidator: v => !v && 'Pilih format!',
+                      confirmButtonText: 'Download',
+                      confirmButtonColor: '#079108',
+                      showCancelButton: true
+                    })
+                    if (format === 'excel') await generateMerchExcel()
+                    else if (format === 'pdf') await generateMerchPDF()
+                  }}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 flex items-center gap-2 text-sm"
+                >
+                  <FaFileExcel /> Export Merch
+                </button>
+                <button onClick={fetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2 text-sm">Refresh</button>
+              </div>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-md flex flex-wrap gap-3">
               <input
@@ -1113,8 +1319,8 @@ const AdminPage = () => {
                           </td>
                           <td className="px-4 py-3">
                             <p className="font-semibold text-gray-800 text-sm">{order.nama_lengkap || '-'}</p>
-                            <p className="text-xs text-gray-500">📱 {order.whatsapp}</p>
-                            {order.instagram && <p className="text-xs text-gray-500">📷 {order.instagram}</p>}
+                            <p className="text-xs text-gray-500">WA: {order.whatsapp}</p>
+                            {order.instagram && <p className="text-xs text-gray-500">IG: {order.instagram}</p>}
                           </td>
                           <td className="px-4 py-3">
                             <div className="space-y-0.5">
@@ -1508,16 +1714,31 @@ const AdminPage = () => {
   const openMerchForm = (item = null) => {
     if (item) {
       setEditingMerch(item)
-      setMerchForm({ nama: item.nama, deskripsi: item.deskripsi || '', harga: item.harga, stok: item.stok ?? '', available: item.available })
+      setMerchForm({ 
+        nama: item.nama, 
+        deskripsi: item.deskripsi || '', 
+        harga: item.harga, 
+        stok: item.stok ?? '', 
+        available: item.available,
+        sizes: item.sizes || [],
+        size_chart_urls: item.size_chart_urls || []
+      })
       setMerchHargaRaw(String(item.harga))
       setMerchImagePreview(item.gambar_url || '')
+      setAvailableSizes(Array.isArray(item.sizes) ? item.sizes.join(', ') : '')
+      setMerchSizeChartPreviews([
+        item.size_chart_urls?.[0] || ''
+      ])
     } else {
       setEditingMerch(null)
-      setMerchForm({ nama: '', deskripsi: '', harga: '', stok: '', available: true })
+      setMerchForm({ nama: '', deskripsi: '', harga: '', stok: '', available: true, sizes: [], size_chart_urls: [] })
       setMerchHargaRaw('')
       setMerchImagePreview('')
+      setAvailableSizes('')
+      setMerchSizeChartPreviews([''])
     }
     setMerchImageFile(null)
+    setMerchSizeChartFiles([null])
     setShowMerchForm(true)
   }
 
@@ -1526,6 +1747,9 @@ const AdminPage = () => {
     setEditingMerch(null)
     setMerchImageFile(null)
     setMerchImagePreview('')
+    setMerchSizeChartFiles([null, null])
+    setMerchSizeChartPreviews([''])
+    setAvailableSizes('')
   }
 
   const handleMerchImageChange = (e) => {
@@ -1533,6 +1757,27 @@ const AdminPage = () => {
     if (!file) return
     setMerchImageFile(file)
     setMerchImagePreview(URL.createObjectURL(file))
+  }
+
+  const handleToggleSize = (size) => {
+    const currentSizes = availableSizes.split(',').map(s => s.trim()).filter(s => s !== '')
+    if (currentSizes.includes(size)) {
+      setAvailableSizes(currentSizes.filter(s => s !== size).join(', '))
+    } else {
+      setAvailableSizes([...currentSizes, size].join(', '))
+    }
+  }
+
+  const handleSizeChartChange = (e, index) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const newFiles = [...merchSizeChartFiles]
+    newFiles[index] = file
+    setMerchSizeChartFiles(newFiles)
+    
+    const newPreviews = [...merchSizeChartPreviews]
+    newPreviews[index] = URL.createObjectURL(file)
+    setMerchSizeChartPreviews(newPreviews)
   }
 
   // Compress image on frontend so it stays under Vercel's 4.5MB body limit
@@ -1562,14 +1807,30 @@ const AdminPage = () => {
     setMerchSaving(true)
     try {
       let gambar_url = editingMerch?.gambar_url || ''
+      let size_chart_urls = [...(editingMerch?.size_chart_urls || [null, null])]
+      if (size_chart_urls.length < 2) size_chart_urls = [size_chart_urls[0] || null, size_chart_urls[1] || null]
 
-      // Upload image if new file selected
+      // Upload main image if new file selected
       if (merchImageFile) {
         const compressed = await compressMerchImage(merchImageFile)
         const formData = new FormData()
         formData.append('file', compressed, 'merch.jpg')
         const uploadRes = await api.post('/upload/merch-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
         gambar_url = uploadRes.data.data.url
+      }
+
+      // Upload size chart images if new files selected
+      if (merchSizeChartFiles[0]) {
+        const compressed = await compressMerchImage(merchSizeChartFiles[0])
+        const formData = new FormData()
+        formData.append('file', compressed, `size_chart.jpg`)
+        const uploadRes = await api.post('/upload/merch-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        size_chart_urls[0] = uploadRes.data.data.url
+      }
+
+      // Clean size_chart_urls if they were removed (preview is empty string)
+      if (merchSizeChartPreviews[0] === '' && !merchSizeChartFiles[0]) {
+        size_chart_urls[0] = null
       }
 
       const payload = {
@@ -1579,6 +1840,8 @@ const AdminPage = () => {
         stok: merchForm.stok !== '' ? parseInt(merchForm.stok) : 0,
         gambar_url: gambar_url || null,
         available: merchForm.available,
+        sizes: availableSizes.split(',').map(s => s.trim()).filter(s => s !== ''),
+        size_chart_urls: size_chart_urls.filter(url => url !== null)
       }
 
       if (editingMerch) {
@@ -1660,6 +1923,33 @@ const AdminPage = () => {
                   />
                   <label htmlFor="merch-available" className="text-sm font-semibold text-gray-700">Tampilkan di Shop (Aktif)</label>
                 </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Ukuran Tersedia</label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {['S', 'M', 'L', 'XL', 'XXL'].map(sz => {
+                      const isActive = availableSizes.split(',').map(s => s.trim()).includes(sz)
+                      return (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => handleToggleSize(sz)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2 ${
+                            isActive 
+                              ? 'bg-custom-green border-custom-green text-white shadow-md' 
+                              : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'
+                          }`}
+                        >
+                          {sz}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <input value={availableSizes} onChange={e => setAvailableSizes(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:outline-none"
+                    placeholder="Atau ketik sendiri (dipisahkan koma)"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1 italic">Toggles di atas akan menambah/menghapus dari input ini.</p>
+                </div>
               </div>
               {/* Right: Image Upload */}
               <div className="space-y-3">
@@ -1684,6 +1974,36 @@ const AdminPage = () => {
                     className="text-xs text-red-500 hover:text-red-700 font-semibold"
                   >✕ Hapus Foto</button>
                 )}
+
+                {/* Size Chart Upload */}
+                <div className="pt-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Foto Size Chart <span className="text-xs text-gray-400">(Opsional)</span></label>
+                  <div className="space-y-2">
+                    <div
+                      onClick={() => sizeChart1InputRef.current?.click()}
+                      className="border border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-custom-green hover:bg-green-50/30 transition-all min-h-[120px] flex flex-col items-center justify-center gap-1"
+                    >
+                      {merchSizeChartPreviews[0] ? (
+                        <img src={merchSizeChartPreviews[0]} alt="Size Chart" className="max-h-[100px] max-w-full object-contain rounded" />
+                      ) : (
+                        <>
+                          <FaImage className="text-2xl text-gray-300" />
+                          <p className="text-xs text-gray-400">Upload Size Chart</p>
+                        </>
+                      )}
+                    </div>
+                    {merchSizeChartPreviews[0] && (
+                      <button type="button" onClick={() => {
+                        setMerchSizeChartPreviews([''])
+                        setMerchSizeChartFiles([null])
+                        if (sizeChart1InputRef.current) sizeChart1InputRef.current.value = ''
+                      }}
+                        className="text-xs text-red-500 hover:text-red-700 font-semibold w-full text-center"
+                      >✕ Hapus Size Chart</button>
+                    )}
+                  </div>
+                  <input ref={sizeChart1InputRef} type="file" accept="image/*" onChange={(e) => handleSizeChartChange(e, 0)} className="hidden" />
+                </div>
               </div>
             </div>
             {/* Submit Buttons */}
@@ -1725,7 +2045,7 @@ const AdminPage = () => {
                         </div>
                         <div>
                           <p className="font-bold text-gray-800">{item.nama}</p>
-                          {item.deskripsi && <p className="text-xs text-gray-500 max-w-xs truncate">{item.deskripsi}</p>}
+                          {item.deskripsi && <p className="text-xs text-gray-500 max-w-xs truncate whitespace-pre-line">{item.deskripsi}</p>}
                         </div>
                       </div>
                     </td>
@@ -1831,7 +2151,9 @@ const AdminPage = () => {
                     <td className="px-4 py-3">
                       <div className="space-y-0.5">
                         {order.merch_order_items?.map((item, i) => (
-                          <p key={i} className="text-xs text-gray-600">{item.item_name} <span className="font-bold">x{item.quantity}</span></p>
+                          <p key={i} className="text-xs text-gray-600">
+                            {item.item_name} {item.size && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">({item.size})</span>} <span className="font-bold">x{item.quantity}</span>
+                          </p>
                         ))}
                       </div>
                     </td>
@@ -2170,98 +2492,114 @@ const RenderTable = ({ data, title, icon, emptyMessage, action, loading, onView,
                   </td>
                 </tr>
               ) : (
-                data.map((order) => (
-                  <tr 
-                    key={order.id} 
-                    className="border-b hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-sm font-mono">
-                      {order.order_number}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="font-semibold">{order.nama_lengkap}</div>
-                      <div className="text-xs text-blue-600 font-medium">{order.whatsapp && order.whatsapp !== '-' ? `WA: ${order.whatsapp}` : order.instagram && order.instagram !== '-' ? `IG: ${order.instagram}` : ''}</div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="space-y-1">
-                        {order.order_items?.map((item, idx) => (
-                          <div key={idx} className="text-xs">
-                            <span className="font-medium">{item.item_name}</span>
-                            <span className="text-gray-500"> x{item.quantity}</span>
-                          </div>
-                        )) || <span className="text-gray-400">No items</span>}
-                        {order.catatan && (
-                          <div className="mt-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 max-w-[250px] truncate" title={order.catatan}>
-                            📝 {order.catatan}
+                data.map((order) => {
+                  const isSpecial = order.events?.type === 'special' || !!order.events?.theme_color;
+                  const themeColor = isSpecial ? order.events?.theme_color : order.is_merch ? '#079108' : null;
+                  
+                  return (
+                    <tr 
+                      key={order.id} 
+                      className="border-b hover:bg-gray-50 transition-colors"
+                      style={themeColor ? { borderLeft: `4px solid ${themeColor}` } : {}}
+                    >
+                      <td className="px-4 py-3 text-sm font-mono">
+                        {order.order_number}
+                        {isSpecial && (
+                          <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: themeColor }}>
+                            Special
                           </div>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {!order.is_ots && order.payment_proof_url ? (
-                        <a 
-                          href={order.payment_proof_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs"
+                        {order.is_merch && (
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-green-600">
+                            Merch
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="font-semibold">{order.nama_lengkap}</div>
+                        <div className="text-xs text-blue-600 font-medium">{order.whatsapp && order.whatsapp !== '-' ? `WA: ${order.whatsapp}` : order.instagram && order.instagram !== '-' ? `IG: ${order.instagram}` : ''}</div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="space-y-1">
+                          {order.order_items?.map((item, idx) => (
+                            <div key={idx} className="text-xs">
+                              <span className="font-medium">{item.item_name}</span>
+                              <span className="text-gray-500"> x{item.quantity}</span>
+                            </div>
+                          )) || <span className="text-gray-400">No items</span>}
+                          {order.catatan && (
+                            <div className="mt-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 max-w-[250px] truncate" title={order.catatan}>
+                              📝 {order.catatan}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {!order.is_ots && order.payment_proof_url ? (
+                          <a 
+                            href={order.payment_proof_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs"
+                          >
+                            <FaImage /> Lihat
+                          </a>
+                        ) : order.is_ots ? (
+                           <span className={`text-xs font-bold px-2 py-1 rounded ${
+                             order.payment_proof_url === 'QR' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                           }`}>
+                             {order.payment_proof_url || 'Cash'}
+                           </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-bold text-custom-green">
+                        Rp {order.total_harga?.toLocaleString('id-ID')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={order.status}
+                          onChange={(e) => onStatusChange(order.id, e.target.value)}
+                          className={`px-3 py-1 rounded-full text-xs font-bold border-2 cursor-pointer ${
+                            order.status === 'pending' ? 'bg-white text-gray-600 border-gray-300' :
+                            order.status === 'checked' ? 'bg-blue-100 text-blue-700 border-blue-400' :
+                            'bg-green-100 text-green-700 border-green-400'
+                          }`}
                         >
-                          <FaImage /> Lihat
-                        </a>
-                      ) : order.is_ots ? (
-                         <span className={`text-xs font-bold px-2 py-1 rounded ${
-                           order.payment_proof_url === 'QR' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                         }`}>
-                           {order.payment_proof_url || 'Cash'}
-                         </span>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-bold text-custom-green">
-                      Rp {order.total_harga?.toLocaleString('id-ID')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={order.status}
-                        onChange={(e) => onStatusChange(order.id, e.target.value)}
-                        className={`px-3 py-1 rounded-full text-xs font-bold border-2 cursor-pointer ${
-                          order.status === 'pending' ? 'bg-white text-gray-600 border-gray-300' :
-                          order.status === 'checked' ? 'bg-blue-100 text-blue-700 border-blue-400' :
-                          'bg-green-100 text-green-700 border-green-400'
-                        }`}
-                      >
-                        <option value="pending">Unchecked</option>
-                        <option value="checked">Checked</option>
-                        <option value="completed">Completed</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {new Date(order.created_at).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => onView(order)}
-                          className="text-blue-600 hover:text-blue-800 p-2"
-                          title="Detail"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() => onDelete(order.id)}
-                          className="text-red-600 hover:text-red-800 p-2"
-                          title="Delete"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          <option value="pending">Unchecked</option>
+                          <option value="checked">Checked</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {new Date(order.created_at).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => onView(order)}
+                            className="text-blue-600 hover:text-blue-800 p-2"
+                            title="Detail"
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            onClick={() => onDelete(order.id)}
+                            className="text-red-600 hover:text-red-800 p-2"
+                            title="Delete"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>

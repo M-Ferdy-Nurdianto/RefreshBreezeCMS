@@ -23,15 +23,14 @@ const AdminLogin = () => {
         localStorage.setItem('admin_token', response.data.token)
         localStorage.setItem('admin_user', JSON.stringify(response.data.user))
         
-        Swal.fire({
+        await Swal.fire({
           icon: 'success',
           title: 'Login Berhasil!',
           text: `Selamat datang, ${response.data.user.full_name || response.data.user.username}`,
           confirmButtonColor: '#079108',
           timer: 2000
-        }).then(() => {
-          navigate('/admin')
         })
+        navigate('/admin')
       }
     } catch (error) {
       console.error('Login error:', error)

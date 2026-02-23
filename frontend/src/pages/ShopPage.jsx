@@ -52,6 +52,21 @@ const ShopPage = () => {
   const [merchReceiptData, setMerchReceiptData] = useState(null)
   const merchFileInputRef = useRef(null)
   const [selectedMerch, setSelectedMerch] = useState(null)
+  const [selectedSize, setSelectedSize] = useState('')
+  const [activeSlide, setActiveSlide] = useState(0)
+  const [zoomImage, setZoomImage] = useState(null)
+  const [activeDropdownId, setActiveDropdownId] = useState(null)
+
+  // Click outside listener for custom dropdowns
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.custom-dropdown-container')) {
+        setActiveDropdownId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Helper functions
   const sanitizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -278,17 +293,18 @@ const ShopPage = () => {
   const totalHarga = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
   // ”—€ Merch Cart Logic ”—————————————————————————————————————€
-  const addToMerchCart = (item) => {
-    const existing = merchCart.find(i => i.id === item.id)
+  const addToMerchCart = (item, size = '') => {
+    const cartId = size ? `${item.id}-${size}` : item.id
+    const existing = merchCart.find(i => i.cartId === cartId)
     const newQty = existing ? existing.quantity + 1 : 1
-    const toastId = `merch-${item.id}`
+    const toastId = `merch-${cartId}`
     const toastContent = (
       <div className="flex items-center gap-4 px-6 py-3 bg-gray-900/95 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">🛍️</div>
         <div className="flex flex-col">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 leading-none mb-1.5">Added to Cart</p>
           <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-white whitespace-nowrap">{item.nama}</p>
+            <p className="text-sm font-black text-white whitespace-nowrap">{item.nama}{size ? ` (${size})` : ''}</p>
             <span className="text-white/40 text-[10px] font-bold">• {newQty}x</span>
           </div>
         </div>
@@ -299,21 +315,38 @@ const ShopPage = () => {
     else toast(toastContent, toastOptions)
 
     setMerchCart(prev => {
-      const ex = prev.find(i => i.id === item.id)
-      if (ex) return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i)
-      return [...prev, { ...item, quantity: 1 }]
+      const ex = prev.find(i => i.cartId === cartId)
+      if (ex) return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity + 1 } : i)
+      return [...prev, { ...item, quantity: 1, cartId, size }]
     })
   }
 
-  const updateMerchQuantity = (id, delta) => {
+  const updateMerchQuantity = (cartId, delta) => {
     setMerchCart(prev => {
-      const item = prev.find(i => i.id === id)
-      if (item && item.quantity === 1 && delta === -1) return prev.filter(i => i.id !== id)
-      return prev.map(i => i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i)
+      const item = prev.find(i => i.cartId === cartId)
+      if (item && item.quantity === 1 && delta === -1) return prev.filter(i => i.cartId !== cartId)
+      return prev.map(i => i.cartId === cartId ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i)
     })
   }
 
-  const removeFromMerchCart = (id) => setMerchCart(prev => prev.filter(i => i.id !== id))
+  const removeFromMerchCart = (cartId) => setMerchCart(prev => prev.filter(i => i.cartId !== cartId))
+  
+  const updateMerchSize = (cartId, newSize) => {
+    setMerchCart(prev => {
+      const existing = prev.find(i => i.cartId === cartId)
+      if (!existing) return prev
+      const newCartId = newSize ? `${existing.id}-${newSize}` : existing.id
+      const duplicate = prev.find(i => i.cartId === newCartId && i.cartId !== cartId)
+      if (duplicate) {
+        return prev.map(i => {
+          if (i.cartId === newCartId) return { ...i, quantity: i.quantity + existing.quantity }
+          return i
+        }).filter(i => i.cartId !== cartId)
+      }
+      return prev.map(i => i.cartId === cartId ? { ...i, cartId: newCartId, size: newSize } : i)
+    })
+  }
+
   const totalMerchHarga = merchCart.reduce((sum, i) => sum + (i.harga * i.quantity), 0)
 
   const handleMerchFileChange = (e) => {
@@ -341,7 +374,13 @@ const ShopPage = () => {
         whatsapp: merchForm.whatsapp,
         instagram: merchForm.instagram || null,
         catatan: merchForm.catatan || null,
-        items: merchCart.map(i => ({ merchandise_id: i.id, nama: i.nama, harga: i.harga, quantity: i.quantity })),
+        items: merchCart.map(i => ({ 
+          merchandise_id: i.id, 
+          nama: i.nama, 
+          harga: i.harga, 
+          quantity: i.quantity,
+          size: i.size || null
+        })),
         payment_proof_url: uploadRes.data.data.url
       }
 
@@ -349,7 +388,13 @@ const ShopPage = () => {
       if (orderRes.data.success) {
         setMerchReceiptData({
           orderNumber: orderRes.data.order.order_number,
-          items: merchCart.map(i => ({ name: i.nama, quantity: i.quantity, price: i.harga, image: i.gambar_url || null })),
+          items: merchCart.map(i => ({ 
+            name: i.nama, 
+            quantity: i.quantity, 
+            price: i.harga, 
+            image: i.gambar_url || null,
+            size: i.size || null
+          })),
           nama: merchForm.nama_lengkap,
           whatsapp: merchForm.whatsapp,
           instagram: merchForm.instagram || '-',
@@ -441,6 +486,8 @@ const ShopPage = () => {
           orderNumber: orderRes.data.order.order_number,
           eventName: selectedEvent?.nama || '-',
           eventDate: selectedEvent ? `${selectedEvent.tanggal} ${selectedEvent.bulan} ${selectedEvent.tahun}` : '-',
+          isSpecial: isEventSpecial,
+          themeColor: isEventSpecial ? (selectedEvent.theme_color || '#FF6B9D') : '#079108',
           items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
           nama: formData.nama_panggilan,
           kontak: formData.kontak,
@@ -476,6 +523,20 @@ const ShopPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 text-gray-900 overflow-x-hidden">
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          height: 4px;
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #079108;
+          border-radius: 10px;
+        }
+      `}</style>
       {/* Background decoration */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#079108]/5 rounded-full blur-3xl"></div>
@@ -531,7 +592,7 @@ const ShopPage = () => {
                           transition={{ delay: 0.2 }}
                           className="bg-gradient-to-r from-[#079108] to-emerald-500 text-white px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest mb-6 shadow-lg shadow-[#079108]/30"
                         >
-                           œ¨ Best Value
+                           ✨ Best Value
                         </motion.div>
                         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase tracking-tight mb-2 sm:mb-3 drop-shadow-2xl">
                            Group Cheki
@@ -699,17 +760,24 @@ const ShopPage = () => {
                           {/* Content */}
                           <div className="p-4 space-y-2">
                             <h4 className="font-black text-sm uppercase tracking-tight text-gray-900 leading-tight">{item.nama}</h4>
-                            {item.deskripsi && <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{item.deskripsi}</p>}
+                            {item.deskripsi && <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed whitespace-pre-line">{item.deskripsi}</p>}
                             <div className="flex items-center justify-between pt-1">
                               <span className="text-base font-black text-[#079108]">IDR {item.harga.toLocaleString()}</span>
                               {!habis && (
-                                <motion.div
-                                  whileTap={{ scale: 0.9 }}
-                                  className="w-8 h-8 rounded-full bg-[#079108] flex items-center justify-center text-white shadow-md cursor-pointer"
-                                  onClick={e => { e.stopPropagation(); addToMerchCart(item) }}
-                                >
-                                  <FaPlus className="text-xs" />
-                                </motion.div>
+                                  <motion.div
+                                    whileTap={{ scale: 0.9 }}
+                                    className="w-8 h-8 rounded-full bg-[#079108] flex items-center justify-center text-white shadow-md cursor-pointer"
+                                    onClick={e => { 
+                                      e.stopPropagation(); 
+                                      if (item.sizes && item.sizes.length > 0) {
+                                        setSelectedMerch(item);
+                                      } else {
+                                        addToMerchCart(item);
+                                      }
+                                    }}
+                                  >
+                                    <FaPlus className="text-xs" />
+                                  </motion.div>
                               )}
                             </div>
                             {(!item.stok || item.stok === 0) && (
@@ -892,8 +960,10 @@ const ShopPage = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between">
-                              <h4 className="text-xs font-black uppercase truncate">{item.nama}</h4>
-                              <button onClick={() => removeFromMerchCart(item.id)} className="p-1 text-gray-300 hover:text-red-500 transition-colors">
+                              <h4 className="text-xs font-black uppercase truncate">
+                                {item.nama} {item.size && <span className="text-[9px] text-emerald-600 font-bold ml-1">({item.size})</span>}
+                              </h4>
+                              <button onClick={() => removeFromMerchCart(item.cartId)} className="p-1 text-gray-300 hover:text-red-500 transition-colors">
                                 <FaTrash className="text-[10px]" />
                               </button>
                             </div>
@@ -1480,22 +1550,76 @@ const ShopPage = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {merchCart.map(item => (
-                    <div key={item.id} className="flex gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                    <div key={item.cartId} className="flex gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
                       <div className="w-16 h-16 rounded-xl bg-emerald-50 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
                         {item.gambar_url ? <img src={item.gambar_url} alt="" className="max-w-full max-h-full object-contain" /> : <FaBox className="text-2xl text-emerald-300" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <h4 className="text-xs font-black uppercase truncate pr-2">{item.nama}</h4>
-                          <button type="button" onClick={() => removeFromMerchCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors p-1">
+                         <div className="flex items-start justify-between">
+                          <div className="min-w-0 pr-2">
+                            <h4 className="text-xs font-black uppercase truncate leading-tight">{item.nama}</h4>
+                            {item.sizes && item.sizes.length > 0 ? (
+                              <div className="mt-2 flex items-center gap-2 custom-dropdown-container relative">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-[#079108]">Size:</span>
+                                
+                                {/* Custom Premium Dropdown */}
+                                <div className="relative">
+                                  <button 
+                                    type="button"
+                                    onClick={() => setActiveDropdownId(activeDropdownId === item.cartId ? null : item.cartId)}
+                                    className={`flex items-center justify-between gap-3 px-4 py-2 rounded-xl border-2 transition-all min-w-[85px] group/btn ${
+                                      activeDropdownId === item.cartId 
+                                        ? 'border-[#079108] bg-[#079108]/5 text-[#079108] shadow-lg scale-[1.02]' 
+                                        : 'border-gray-100 bg-white text-gray-700 hover:border-emerald-200 hover:bg-emerald-50/30 shadow-sm'
+                                    }`}
+                                  >
+                                    <span className="text-[11px] font-black uppercase tracking-tight">{item.size || 'Choose'}</span>
+                                    <FaChevronRight className={`text-[9px] transition-transform duration-500 ${activeDropdownId === item.cartId ? 'rotate-90' : 'group-hover/btn:translate-x-0.5'}`} />
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {activeDropdownId === item.cartId && (
+                                      <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                        className="absolute left-0 top-full mt-2 w-24 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-50 overflow-hidden"
+                                      >
+                                        {item.sizes.map(s => (
+                                          <button
+                                            key={s}
+                                            type="button"
+                                            onClick={() => {
+                                              updateMerchSize(item.cartId, s)
+                                              setActiveDropdownId(null)
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+                                              item.size === s 
+                                                ? 'bg-[#079108] text-white' 
+                                                : 'text-gray-600 hover:bg-emerald-50 hover:text-[#079108]'
+                                            }`}
+                                          >
+                                            {s}
+                                          </button>
+                                        ))}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              </div>
+                            ) : item.size && (
+                              <p className="text-[10px] text-emerald-600 font-bold mt-1.5">Size: {item.size}</p>
+                            )}
+                          </div>
+                          <button type="button" onClick={() => removeFromMerchCart(item.cartId)} className="text-gray-300 hover:text-red-500 transition-colors p-1 flex-shrink-0">
                             <FaTrash className="text-[10px]" />
                           </button>
                         </div>
                         <p className="text-[10px] text-gray-500 font-bold mb-2">IDR {item.harga.toLocaleString()}</p>
                         <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => updateMerchQuantity(item.id, -1)} className="w-7 h-7 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50 shadow-sm"><FaMinus className="text-[8px]" /></button>
+                          <button type="button" onClick={() => updateMerchQuantity(item.cartId, -1)} className="w-7 h-7 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50 shadow-sm"><FaMinus className="text-[8px]" /></button>
                           <span className="text-xs font-black w-6 text-center">{item.quantity}</span>
-                          <button type="button" onClick={() => updateMerchQuantity(item.id, 1)} className="w-7 h-7 rounded-lg bg-[#079108] flex items-center justify-center text-white hover:bg-green-700"><FaPlus className="text-[8px]" /></button>
+                          <button type="button" onClick={() => updateMerchQuantity(item.cartId, 1)} className="w-7 h-7 rounded-lg bg-[#079108] flex items-center justify-center text-white hover:bg-green-700"><FaPlus className="text-[8px]" /></button>
                         </div>
                       </div>
                     </div>
@@ -1783,63 +1907,154 @@ const ShopPage = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.88, y: 20 }}
               transition={{ type: 'spring', bounce: 0.3, duration: 0.4 }}
-              className="bg-white rounded-3xl overflow-hidden shadow-2xl w-full max-w-2xl flex flex-col sm:flex-row"
+              className="bg-white rounded-3xl overflow-hidden shadow-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col sm:flex-row relative"
               onClick={e => e.stopPropagation()}
             >
-              {/* LEFT — Image */}
-              <div className="relative bg-gray-50 sm:w-[45%] flex-shrink-0 aspect-square sm:aspect-auto sm:min-h-[380px]">
-                {selectedMerch.gambar_url ? (
-                  <img
-                    src={selectedMerch.gambar_url}
-                    alt={selectedMerch.nama}
-                    className="w-full h-full object-contain p-4"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <FaBox className="text-7xl text-emerald-200" />
-                  </div>
-                )}
+              {/* LEFT — Image Slider */}
+              <div className="relative bg-gray-50 w-full sm:w-[50%] flex-shrink-0 aspect-[4/3] sm:aspect-auto sm:min-h-[420px] overflow-hidden group">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeSlide}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full flex items-center justify-center p-4"
+                  >
+                    {(() => {
+                      const allImages = [
+                        selectedMerch.gambar_url,
+                        ...(selectedMerch.size_chart_urls || [])
+                      ].filter(Boolean)
+                      
+                      const currentImg = allImages[activeSlide]
+                      
+                      return currentImg ? (
+                        <img
+                          src={currentImg}
+                          alt={selectedMerch.nama}
+                          className="w-full h-full object-contain cursor-zoom-in"
+                          onClick={() => setZoomImage(currentImg)}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FaBox className="text-7xl text-emerald-200" />
+                        </div>
+                      )
+                    })()}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Slider Navigation Arrows */}
+                {(() => {
+                  const allImages = [selectedMerch.gambar_url, ...(selectedMerch.size_chart_urls || [])].filter(Boolean)
+                  if (allImages.length <= 1) return null
+                  return (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActiveSlide(prev => (prev === 0 ? allImages.length - 1 : prev - 1)) }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-800 shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+                      >
+                        <FaChevronRight className="rotate-180 text-xs" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActiveSlide(prev => (prev === allImages.length - 1 ? 0 : prev + 1)) }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-800 shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+                      >
+                        <FaChevronRight className="text-xs" />
+                      </button>
+                    </>
+                  )
+                })()}
+
+                {/* Slider Dots */}
+                {(() => {
+                  const allImages = [selectedMerch.gambar_url, ...(selectedMerch.size_chart_urls || [])].filter(Boolean)
+                  if (allImages.length <= 1) return null
+                  return (
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1 z-10">
+                      {allImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveSlide(idx)}
+                          className={`w-1 h-1 rounded-full transition-all ${
+                            activeSlide === idx ? 'bg-[#079108] w-3' : 'bg-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )
+                })()}
+
                 {(!selectedMerch.stok || selectedMerch.stok === 0) && (
-                  <span className="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">Pre-Order</span>
+                  <span className="absolute top-3 left-3 bg-emerald-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest z-10 shadow-lg">Pre-Order</span>
+                )}
+                {activeSlide > 0 && (
+                   <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-gray-900/80 text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-md tracking-wider backdrop-blur-sm z-10">Size Chart</span>
                 )}
               </div>
 
-              {/* RIGHT — Info */}
-              <div className="flex-1 flex flex-col p-6 gap-4 relative">
-                {/* Close */}
+              {/* RIGHT — Info (Scrollable on Mobile) */}
+              <div className="flex-1 flex flex-col p-4 sm:p-7 gap-3 sm:gap-4 relative overflow-y-auto custom-scrollbar min-h-0">
+                {/* Close Button — Absolute to modal on mobile to float over image if needed, but here we place it relative to right section on desktop */}
                 <button
-                  onClick={() => setSelectedMerch(null)}
-                  className="absolute top-3 right-3 w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full flex items-center justify-center transition-all"
+                  onClick={() => { setSelectedMerch(null); setActiveSlide(0); }}
+                  className="absolute top-4 right-4 z-50 w-7 h-7 sm:w-8 sm:h-8 bg-black/20 backdrop-blur-md hover:bg-black/40 text-white sm:bg-gray-100 sm:hover:bg-gray-200 sm:text-gray-600 rounded-full flex items-center justify-center transition-all"
                 >
-                  <FaTimes />
+                  <FaTimes className="text-xs" />
                 </button>
 
                 {/* Name + desc */}
-                <div className="pt-2 pr-8">
-                  <h3 className="text-xl font-black uppercase tracking-tight text-gray-900 leading-tight">{selectedMerch.nama}</h3>
+                <div className="sm:pt-2 pr-8">
+                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-gray-900 leading-tight">{selectedMerch.nama}</h3>
                   {selectedMerch.deskripsi && (
-                    <p className="text-sm text-gray-500 mt-2 leading-relaxed">{selectedMerch.deskripsi}</p>
+                    <p className="text-[11px] sm:text-sm text-gray-500 mt-1 sm:mt-2 leading-relaxed whitespace-pre-wrap">{selectedMerch.deskripsi}</p>
                   )}
                 </div>
 
                 {/* Price + stok warning */}
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-2xl font-black text-[#079108]">IDR {selectedMerch.harga.toLocaleString()}</span>
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <span className="text-xl sm:text-2xl font-black text-[#079108]">IDR {selectedMerch.harga.toLocaleString()}</span>
                   {selectedMerch.stok > 0 && selectedMerch.stok <= 10 && (
-                    <span className="text-xs text-orange-500 font-bold flex items-center gap-1"><FaExclamationTriangle className="text-[10px]" /> Sisa {selectedMerch.stok}</span>
+                    <span className="text-[10px] sm:text-xs text-orange-500 font-bold flex items-center gap-1"><FaExclamationTriangle className="text-[10px]" /> Sisa {selectedMerch.stok}</span>
                   )}
                 </div>
 
+                {/* Size Selection */}
+                {selectedMerch.sizes && selectedMerch.sizes.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Pilih Ukuran</p>
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      {selectedMerch.sizes.map(size => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all border-2 ${
+                            selectedSize === size
+                              ? 'bg-[#079108] border-[#079108] text-white shadow-lg shadow-[#079108]/20'
+                              : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+
+
                 {/* Cart quantity indicator */}
                 {(() => {
-                  const inCart = merchCart.find(i => i.id === selectedMerch.id)
+                  const cartId = selectedSize ? `${selectedMerch.id}-${selectedSize}` : selectedMerch.id
+                  const inCart = merchCart.find(i => i.cartId === cartId)
                   return inCart ? (
                     <div className="flex items-center gap-3 bg-emerald-50 rounded-2xl p-3">
                       <span className="text-xs font-bold text-emerald-700">Di cart: {inCart.quantity}x</span>
                       <div className="flex items-center gap-2 ml-auto">
-                        <button onClick={() => updateMerchQuantity(selectedMerch.id, -1)} className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50"><FaMinus className="text-[9px]" /></button>
+                        <button onClick={() => updateMerchQuantity(inCart.cartId, -1)} className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50"><FaMinus className="text-[9px]" /></button>
                         <span className="text-sm font-black w-5 text-center">{inCart.quantity}</span>
-                        <button onClick={() => updateMerchQuantity(selectedMerch.id, 1)} className="w-7 h-7 rounded-full bg-[#079108] flex items-center justify-center text-white hover:bg-green-700"><FaPlus className="text-[9px]" /></button>
+                        <button onClick={() => updateMerchQuantity(inCart.cartId, 1)} className="w-7 h-7 rounded-full bg-[#079108] flex items-center justify-center text-white hover:bg-green-700"><FaPlus className="text-[9px]" /></button>
                       </div>
                     </div>
                   ) : null
@@ -1853,8 +2068,16 @@ const ShopPage = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => { addToMerchCart(selectedMerch); setSelectedMerch(null) }}
-                    className="w-full bg-[#079108] text-white py-3 rounded-2xl font-black uppercase text-sm tracking-widest shadow-lg shadow-[#079108]/20 hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    onClick={() => { 
+                      if (selectedMerch.sizes?.length > 0 && !selectedSize) {
+                        return toast.error('Pilih ukuran terlebih dahulu!', { position: "bottom-center", autoClose: 2000 })
+                      }
+                      addToMerchCart(selectedMerch, selectedSize); 
+                      setSelectedMerch(null);
+                      setSelectedSize('');
+                      setActiveSlide(0);
+                    }}
+                    className="w-full bg-[#079108] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black uppercase text-xs sm:text-sm tracking-widest shadow-lg shadow-[#079108]/20 hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                   >
                     <FaPlus /> Tambah ke Cart
                   </motion.button>
@@ -1862,18 +2085,52 @@ const ShopPage = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => {
-                      addToMerchCart(selectedMerch)
+                      if (selectedMerch.sizes?.length > 0 && !selectedSize) {
+                        return toast.error('Pilih ukuran terlebih dahulu!', { position: "bottom-center", autoClose: 2000 })
+                      }
+                      addToMerchCart(selectedMerch, selectedSize)
                       setSelectedMerch(null)
+                      setSelectedSize('')
+                      setActiveSlide(0)
                       setStep(4)
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}
-                    className="w-full border-2 border-[#079108] text-[#079108] py-3 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
+                    className="w-full border-2 border-[#079108] text-[#079108] py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black uppercase text-xs sm:text-sm tracking-widest hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
                   >
                     <FaShoppingCart /> Langsung Checkout
                   </motion.button>
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Zoom Overlay */}
+      <AnimatePresence>
+        {zoomImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4 backdrop-blur-md"
+            onClick={() => setZoomImage(null)}
+          >
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center border border-white/20 transition-all"
+            >
+              <FaTimes className="text-xl" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              src={zoomImage}
+              alt="Zoomed"
+              className="max-w-full max-h-full object-contain shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -2015,14 +2272,20 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       drawText('REFRESH BREEZE', W / 2, 24, '#000000', 'center', 'bold')
       y += lineH + 5
       drawText('Official Merch Store', W / 2, 14, '#000000', 'center', 'normal')
-      y += lineH + 5
+      y += lineH + 15
 
-      ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 2
-      ctx.strokeRect((W - 320) / 2, y, 320, 34)
-      y += 24
-      drawText(rd.orderNumber, W / 2, 16, '#000000', 'center', 'bold')
-      y += lineH + 10
+      // Header Box - SOLID GREEN for Merch differentiator
+      const merchColor = '#079108'
+      ctx.fillStyle = merchColor
+      const boxW = 340
+      const boxH = 40
+      ctx.beginPath()
+      ctx.roundRect((W - boxW) / 2, y, boxW, boxH, 8)
+      ctx.fill()
+      
+      y += 26
+      drawText(rd.orderNumber, W / 2, 16, '#FFFFFF', 'center', 'bold')
+      y += lineH + 15
 
       drawDashedLine()
 
@@ -2068,25 +2331,26 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
         const itemStartY = y
         const blockH = itemBlockH
 
-        // Image box background
-        ctx.fillStyle = '#f0fdf4'
+        // Image box background + Border
+        ctx.fillStyle = '#f8fafc'
         ctx.beginPath()
-        ctx.roundRect(pad, itemStartY, imgSize, imgSize, 8)
+        ctx.roundRect(pad, itemStartY, imgSize, imgSize, 6)
         ctx.fill()
-        ctx.strokeStyle = '#d1fae5'
-        ctx.lineWidth = 1
+        ctx.strokeStyle = merchColor // Strong green border for accent
+        ctx.lineWidth = 1.5
         ctx.stroke()
 
         if (itemImg) {
-          // Draw image fit inside square
-          const scale = Math.min(imgSize / itemImg.width, imgSize / itemImg.height)
-          const dw = itemImg.width * scale
-          const dh = itemImg.height * scale
+          // COVER logic: fill the square box while preserving aspect ratio
+          const s = Math.max(imgSize / itemImg.width, imgSize / itemImg.height)
+          const dw = itemImg.width * s
+          const dh = itemImg.height * s
           const dx = pad + (imgSize - dw) / 2
           const dy = itemStartY + (imgSize - dh) / 2
+          
           ctx.save()
           ctx.beginPath()
-          ctx.roundRect(pad, itemStartY, imgSize, imgSize, 8)
+          ctx.roundRect(pad, itemStartY, imgSize, imgSize, 6)
           ctx.clip()
           ctx.drawImage(itemImg, dx, dy, dw, dh)
           ctx.restore()
@@ -2095,23 +2359,23 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
           ctx.fillStyle = '#86efac'
           ctx.font = `bold 28px sans-serif`
           ctx.textAlign = 'center'
-          ctx.fillText('›', pad + imgSize / 2, itemStartY + imgSize / 2 + 10)
+          ctx.fillText('› ', pad + imgSize / 2, itemStartY + imgSize / 2 + 10)
         }
 
         // Text to the right of image
         const textX = pad + imgSize + 14
         const textMaxW = W - textX - pad
 
-        y = itemStartY + 18
-        ctx.fillStyle = '#111111'
-        ctx.font = `bold 13px Courier New`
+        y = itemStartY + 20
+        ctx.fillStyle = merchColor // Product name uses green to be prominent
+        ctx.font = `bold 14px Courier New`
         ctx.textAlign = 'left'
         // Truncate name if too long
-        let itemName = item.name
+        let itemName = item.name + (item.size ? ` (${item.size})` : '')
         while (ctx.measureText(itemName).width > textMaxW && itemName.length > 3) {
           itemName = itemName.slice(0, -1)
         }
-        if (itemName !== item.name) itemName += '...'
+        if (itemName !== (item.name + (item.size ? ` (${item.size})` : ''))) itemName += '...'
         ctx.fillText(itemName, textX, y)
 
         y += lineH - 2
@@ -2120,7 +2384,7 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
         ctx.fillText(`${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}`, textX, y)
 
         y += lineH - 2
-        ctx.fillStyle = '#000000'
+        ctx.fillStyle = merchColor
         ctx.font = `bold 13px Courier New`
         ctx.textAlign = 'right'
         ctx.fillText(`Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`, W - pad, y)
@@ -2150,8 +2414,8 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       drawText('Sub Total', pad, 12, '#000000', 'left', 'normal')
       drawText(`Rp ${rd.total.toLocaleString('id-ID')}`, W - pad, 12, '#000000', 'right', 'normal')
       y += lineH + 5
-      drawText('TOTAL', pad, 20, '#000000', 'left', 'bold')
-      drawText(`Rp ${rd.total.toLocaleString('id-ID')}`, W - pad, 20, '#000000', 'right', 'bold')
+      drawText('TOTAL', pad, 20, merchColor, 'left', 'bold')
+      drawText(`Rp ${rd.total.toLocaleString('id-ID')}`, W - pad, 20, merchColor, 'right', 'bold')
       y += lineH + 10
 
       // PAYMENT INFO
@@ -2177,11 +2441,11 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
 
       drawDashedLine()
 
-      // FOOTER
-      y += 10
-      drawText('Terima kasih telah berbelanja', W / 2, 14, '#000000', 'center', 'normal')
-      y += lineH
-      drawText('IG: @refreshbreeze', W / 2, 14, '#000000', 'center', 'bold')
+      // FOOTER - Remove green block per request
+      y += 20
+      drawText('Terima kasih telah berbelanja', W / 2, 13, merchColor, 'center', 'normal')
+      y += 20
+      drawText('IG: @refreshbreeze', W / 2, 13, merchColor, 'center', 'bold')
       y += lineH
     })
   }, [merchReceiptData])
@@ -2252,11 +2516,19 @@ const ReceiptDrawer = ({ receiptData }) => {
       drawText('Official Store', W / 2, 14, '#000000', 'center', 'normal')
       y += lineH + 5
 
-      ctx.strokeStyle = '#000000'
+      // Header Box - Use theme color if special
+      const headerColor = rd.isSpecial ? (rd.themeColor || '#FF6B9D') : '#000000'
+      ctx.strokeStyle = headerColor
       ctx.lineWidth = 2
       const boxW = 280
-      const boxH = 34
+      const boxH = rd.isSpecial ? 54 : 34
       ctx.strokeRect((W - boxW) / 2, y, boxW, boxH)
+      
+      if (rd.isSpecial) {
+        y += 20
+        drawText('SPECIAL EVENT', W / 2, 12, headerColor, 'center', 'bold')
+      }
+      
       y += 24
       drawText(rd.orderNumber, W / 2, 16, '#000000', 'center', 'bold')
       y += lineH + 10
@@ -2267,7 +2539,7 @@ const ReceiptDrawer = ({ receiptData }) => {
       drawText(rd.createdAt, pad, 12, '#000000', 'left', 'normal')
       drawText('Admin', W - pad, 12, '#000000', 'right', 'normal')
       y += lineH
-      drawText(`Event: ${rd.eventName}`, pad, 12, '#000000', 'left', 'normal')
+      drawText(`Event: ${rd.eventName}`, pad, 12, rd.isSpecial ? headerColor : '#000000', 'left', rd.isSpecial ? 'bold' : 'normal')
       y += lineH
 
       drawDashedLine()
@@ -2299,7 +2571,7 @@ const ReceiptDrawer = ({ receiptData }) => {
 
       // ====== ITEMS (no emoji) ======
       rd.items.forEach(item => {
-        drawText(clean(item.name), pad, 12, '#000000', 'left', 'bold')
+        drawText(clean(item.name), pad, 12, rd.isSpecial ? headerColor : '#000000', 'left', 'bold')
         y += lineH - 4
         drawText(`${item.quantity} x ${item.price.toLocaleString('id-ID')}`, pad + 20, 12, '#000000', 'left', 'normal')
         drawText(`Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`, W - pad, 12, '#000000', 'right', 'normal')
@@ -2315,8 +2587,8 @@ const ReceiptDrawer = ({ receiptData }) => {
       drawText('Sub Total', pad, 12, '#000000', 'left', 'normal')
       drawText(`Rp ${rd.total.toLocaleString('id-ID')}`, W - pad, 12, '#000000', 'right', 'normal')
       y += lineH + 5
-      drawText('TOTAL', pad, 20, '#000000', 'left', 'bold')
-      drawText(`Rp ${rd.total.toLocaleString('id-ID')}`, W - pad, 20, '#000000', 'right', 'bold')
+      drawText('TOTAL', pad, 20, headerColor, 'left', 'bold')
+      drawText(`Rp ${rd.total.toLocaleString('id-ID')}`, W - pad, 20, headerColor, 'right', 'bold')
       y += lineH + 10
 
       // ====== PAYMENT INFO ======
@@ -2339,7 +2611,7 @@ const ReceiptDrawer = ({ receiptData }) => {
       y += 8
       drawText('Terima kasih atas pembelianmu!', W / 2, 14, '#000000', 'center', 'bold')
       y += lineH
-      drawText('Refresh Breeze', W / 2, 14, '#079108', 'center', 'bold')
+      drawText('Refresh Breeze', W / 2, 14, rd.isSpecial ? headerColor : '#079108', 'center', 'bold')
       y += lineH
     }
 

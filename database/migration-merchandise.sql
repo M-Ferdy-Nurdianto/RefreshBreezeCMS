@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS merchandise (
     available BOOLEAN DEFAULT true,
     urutan INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    sizes JSONB,
+    size_chart_urls JSONB
 );
 
 -- TABLE: merch_orders (pesanan merch)
@@ -39,6 +41,7 @@ CREATE TABLE IF NOT EXISTS merch_order_items (
     item_name VARCHAR(255) NOT NULL,
     harga INT NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
+    size VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

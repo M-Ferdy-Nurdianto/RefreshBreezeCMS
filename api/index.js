@@ -49,8 +49,8 @@ app.use(cors({
 
 // Handle preflight requests explicitly
 app.options('*', cors())
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
 // Routes - keeping /api prefix as Express receives full path from Vercel
 app.use('/api/auth', authRoutes)

@@ -51,7 +51,7 @@ router.get('/:id', async (req, res) => {
 // POST create merchandise (admin only)
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { nama, deskripsi, harga, stok, gambar_url, available, urutan } = req.body
+    const { nama, deskripsi, harga, stok, gambar_url, available, urutan, sizes, size_chart_urls } = req.body
 
     if (!nama || !harga) {
       return res.status(400).json({ error: 'Nama dan harga wajib diisi' })
@@ -66,7 +66,9 @@ router.post('/', authMiddleware, async (req, res) => {
         stok: parseInt(stok) || 0,
         gambar_url: gambar_url || null,
         available: available !== undefined ? available : true,
-        urutan: parseInt(urutan) || 0
+        urutan: parseInt(urutan) || 0,
+        sizes: sizes || null,
+        size_chart_urls: size_chart_urls || null
       })
       .select()
       .single()
@@ -82,7 +84,7 @@ router.post('/', authMiddleware, async (req, res) => {
 // PUT update merchandise (admin only)
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { nama, deskripsi, harga, stok, gambar_url, available, urutan } = req.body
+    const { nama, deskripsi, harga, stok, gambar_url, available, urutan, sizes, size_chart_urls } = req.body
 
     const updateData = {}
     if (nama !== undefined) updateData.nama = nama
@@ -92,6 +94,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (gambar_url !== undefined) updateData.gambar_url = gambar_url
     if (available !== undefined) updateData.available = available
     if (urutan !== undefined) updateData.urutan = parseInt(urutan)
+    if (sizes !== undefined) updateData.sizes = sizes
+    if (size_chart_urls !== undefined) updateData.size_chart_urls = size_chart_urls
 
     const { data, error } = await supabase
       .from('merchandise')
