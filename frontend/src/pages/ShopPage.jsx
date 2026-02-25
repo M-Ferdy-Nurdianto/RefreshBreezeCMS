@@ -292,6 +292,16 @@ const ShopPage = () => {
 
   const totalHarga = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
+  // Size Price Increment Logic
+  const getSizePriceIncrement = (size) => {
+    if (!size) return 0;
+    const s = size.toUpperCase().trim();
+    if (s === 'XXL' || s === '2XL') return 5000;
+    if (s === '3XL' || s === 'XXXL') return 10000;
+    if (s === '4XL' || s === 'XXXXL') return 15000;
+    return 0;
+  }
+
   // ”—€ Merch Cart Logic ”—————————————————————————————————————€
   const addToMerchCart = (item, size = '') => {
     const cartId = size ? `${item.id}-${size}` : item.id
@@ -317,7 +327,9 @@ const ShopPage = () => {
     setMerchCart(prev => {
       const ex = prev.find(i => i.cartId === cartId)
       if (ex) return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity + 1 } : i)
-      return [...prev, { ...item, quantity: 1, cartId, size }]
+      const baseHarga = item.baseHarga || item.harga;
+      const finalHarga = baseHarga + getSizePriceIncrement(size);
+      return [...prev, { ...item, baseHarga, harga: finalHarga, quantity: 1, cartId, size }]
     })
   }
 
@@ -343,7 +355,8 @@ const ShopPage = () => {
           return i
         }).filter(i => i.cartId !== cartId)
       }
-      return prev.map(i => i.cartId === cartId ? { ...i, cartId: newCartId, size: newSize } : i)
+      const newHarga = existing.baseHarga + getSizePriceIncrement(newSize);
+      return prev.map(i => i.cartId === cartId ? { ...i, cartId: newCartId, size: newSize, harga: newHarga } : i)
     })
   }
 
@@ -1599,7 +1612,7 @@ const ShopPage = () => {
                                                 : 'text-gray-600 hover:bg-emerald-50 hover:text-[#079108]'
                                             }`}
                                           >
-                                            {s}
+                                            {s} {getSizePriceIncrement(s) > 0 && <span className="opacity-70 lowercase ml-1">(+{getSizePriceIncrement(s)/1000}k)</span>}
                                           </button>
                                         ))}
                                       </motion.div>
@@ -2014,7 +2027,7 @@ const ShopPage = () => {
 
                 {/* Price + stok warning */}
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                  <span className="text-xl sm:text-2xl font-black text-[#079108]">IDR {selectedMerch.harga.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-[#079108]">IDR {(selectedMerch.harga + getSizePriceIncrement(selectedSize)).toLocaleString()}</span>
                   {selectedMerch.stok > 0 && selectedMerch.stok <= 10 && (
                     <span className="text-[10px] sm:text-xs text-orange-500 font-bold flex items-center gap-1"><FaExclamationTriangle className="text-[10px]" /> Sisa {selectedMerch.stok}</span>
                   )}
@@ -2029,13 +2042,18 @@ const ShopPage = () => {
                         <button
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all border-2 ${
+                          className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all border-2 flex flex-col items-center justify-center gap-0.5 ${
                             selectedSize === size
                               ? 'bg-[#079108] border-[#079108] text-white shadow-lg shadow-[#079108]/20'
                               : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
                           }`}
                         >
-                          {size}
+                          <span>{size}</span>
+                          {getSizePriceIncrement(size) > 0 && (
+                            <span className={`text-[8px] sm:text-[9px] ${selectedSize === size ? 'text-white/80' : 'text-gray-400'}`}>
+                              (+{getSizePriceIncrement(size)/1000}k)
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>

@@ -617,7 +617,7 @@ const AdminPage = () => {
         order.order_number,
         order.nama_lengkap || '-',
         `WA: ${order.whatsapp}${order.instagram ? '\nIG: ' + order.instagram : ''}`,
-        order.merch_order_items?.map(i => `${i.item_name}${i.size ? ' (' + i.size + ')' : ''} x${i.quantity}`).join('\n') || '-',
+        order.merch_order_items?.map(i => `${i.item_name} ${i.size ? `(${i.size}) ` : ''}x${i.quantity}`).join('\n') || '-',
         `Rp ${order.total_harga.toLocaleString('id-ID')}`,
         order.status
       ])
@@ -1325,7 +1325,9 @@ const AdminPage = () => {
                           <td className="px-4 py-3">
                             <div className="space-y-0.5">
                               {order.merch_order_items?.map((item, i) => (
-                                <p key={i} className="text-xs text-gray-600">{item.item_name} <span className="font-bold text-custom-green">x{item.quantity}</span></p>
+                                <p key={i} className="text-xs text-gray-600">
+                                  {item.item_name} {item.size && <span className="text-gray-400 font-normal">({item.size})</span>} <span className="font-bold text-custom-green">x{item.quantity}</span>
+                                </p>
                               ))}
                             </div>
                           </td>
@@ -1926,7 +1928,7 @@ const AdminPage = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Ukuran Tersedia</label>
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {['S', 'M', 'L', 'XL', 'XXL'].map(sz => {
+                    {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(sz => {
                       const isActive = availableSizes.split(',').map(s => s.trim()).includes(sz)
                       return (
                         <button
