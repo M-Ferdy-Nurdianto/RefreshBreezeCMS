@@ -50,6 +50,8 @@ const ShopPage = () => {
   const [merchUploading, setMerchUploading] = useState(false)
   const [merchOrderSuccess, setMerchOrderSuccess] = useState(null)
   const [merchReceiptData, setMerchReceiptData] = useState(null)
+  const [maskContact, setMaskContact] = useState(false) // Toggle untuk samarkan kontak di nota
+  const [maskMerchContact, setMaskMerchContact] = useState(false) // Toggle untuk merch receipt
   const merchFileInputRef = useRef(null)
   const [selectedMerch, setSelectedMerch] = useState(null)
   const [selectedSize, setSelectedSize] = useState('')
@@ -1452,8 +1454,21 @@ const ShopPage = () => {
                    </div>
                    <p className="text-[10px] text-gray-400 mt-2 italic">Preview nota otomatis di-generate</p>
                    
+                   {/* Toggle Samarkan Kontak */}
+                   <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
+                     <input
+                       type="checkbox"
+                       checked={maskContact}
+                       onChange={e => setMaskContact(e.target.checked)}
+                       className="w-4 h-4 rounded border-gray-300 text-[#079108] focus:ring-[#079108] cursor-pointer"
+                     />
+                     <span className="text-xs text-gray-600 group-hover:text-gray-800 transition-colors">
+                       🔒 Samarkan kontak (untuk posting IGS)
+                     </span>
+                   </label>
+                   
                    {/* Draw Canvas Effect */}
-                   <ReceiptDrawer receiptData={receiptData} />
+                   <ReceiptDrawer receiptData={receiptData} maskContact={maskContact} />
                 </div>
               )}
 
@@ -1844,7 +1859,21 @@ const ShopPage = () => {
                   />
                 </div>
                 <p className="text-[10px] text-gray-400 mt-2 italic">Preview nota otomatis di-generate</p>
-                <MerchReceiptDrawer merchReceiptData={merchReceiptData} />
+                
+                {/* Toggle Samarkan Kontak */}
+                <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
+                  <input
+                    type="checkbox"
+                    checked={maskMerchContact}
+                    onChange={e => setMaskMerchContact(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#079108] focus:ring-[#079108] cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-600 group-hover:text-gray-800 transition-colors">
+                    🔒 Samarkan kontak (untuk posting IGS)
+                  </span>
+                </label>
+                
+                <MerchReceiptDrawer merchReceiptData={merchReceiptData} maskContact={maskMerchContact} />
               </div>
             )}
 
@@ -2209,10 +2238,25 @@ const ShopPage = () => {
 }
 
 // Helper component to handle canvas drawing
-const MerchReceiptDrawer = ({ merchReceiptData }) => {
+const MerchReceiptDrawer = ({ merchReceiptData, maskContact = false }) => {
   useEffect(() => {
     const canvas = document.getElementById('merch-receipt-canvas')
     if (!canvas || !merchReceiptData) return
+
+    // Helper function untuk menyamarkan HANYA nomor telepon (bukan username IG)
+    const maskPhoneNumber = (text) => {
+      if (!maskContact || !text) return text
+      const str = String(text).trim()
+      // Deteksi apakah ini nomor telepon (mayoritas angka, minimal 8 digit)
+      const digitsOnly = str.replace(/\D/g, '')
+      if (digitsOnly.length >= 8) {
+        // Ini nomor telepon, samarkan
+        if (str.length <= 4) return '****'
+        return '*'.repeat(str.length - 4) + str.slice(-4)
+      }
+      // Bukan nomor telepon (username IG dll), tampilkan utuh
+      return text
+    }
 
     const ctx = canvas.getContext('2d')
     const W = 500
@@ -2318,7 +2362,7 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       drawText(rd.nama || '-', pad + 90, 12, '#000000', 'left', 'bold')
       y += lineH
       drawText('WhatsApp:', pad, 12, '#000000', 'left', 'normal')
-      drawText(rd.whatsapp || '-', pad + 90, 12, '#000000', 'left', 'normal')
+      drawText(maskPhoneNumber(rd.whatsapp) || '-', pad + 90, 12, '#000000', 'left', 'normal')
       y += lineH
       drawText('Instagram:', pad, 12, '#000000', 'left', 'normal')
       drawText(rd.instagram || '-', pad + 90, 12, '#000000', 'left', 'normal')
@@ -2466,15 +2510,30 @@ const MerchReceiptDrawer = ({ merchReceiptData }) => {
       drawText('IG: @refreshbreeze', W / 2, 13, merchColor, 'center', 'bold')
       y += lineH
     })
-  }, [merchReceiptData])
+  }, [merchReceiptData, maskContact])
 
   return null
 }
 
-const ReceiptDrawer = ({ receiptData }) => {
+const ReceiptDrawer = ({ receiptData, maskContact = false }) => {
   useEffect(() => {
     const canvas = document.getElementById('receipt-canvas')
     if (!canvas || !receiptData) return
+
+    // Helper function untuk menyamarkan HANYA nomor telepon (bukan username IG)
+    const maskPhoneNumber = (text) => {
+      if (!maskContact || !text) return text
+      const str = String(text).trim()
+      // Deteksi apakah ini nomor telepon (mayoritas angka, minimal 8 digit)
+      const digitsOnly = str.replace(/\D/g, '')
+      if (digitsOnly.length >= 8) {
+        // Ini nomor telepon, samarkan
+        if (str.length <= 4) return '****'
+        return '*'.repeat(str.length - 4) + str.slice(-4)
+      }
+      // Bukan nomor telepon (username IG dll), tampilkan utuh
+      return text
+    }
 
     const ctx = canvas.getContext('2d')
     const W = 500
@@ -2567,7 +2626,7 @@ const ReceiptDrawer = ({ receiptData }) => {
       drawText(rd.nama || '-', pad + 80, 12, '#000000', 'left', 'bold')
       y += lineH
       drawText('Kontak:', pad, 12, '#000000', 'left', 'normal')
-      drawText(rd.kontak || '-', pad + 80, 12, '#000000', 'left', 'normal')
+      drawText(maskPhoneNumber(rd.kontak) || '-', pad + 80, 12, '#000000', 'left', 'normal')
       y += lineH
       if (rd.catatan) {
         drawText('Catatan:', pad, 12, '#000000', 'left', 'normal')
@@ -2636,7 +2695,7 @@ const ReceiptDrawer = ({ receiptData }) => {
     logo.onload = draw
     if (logo.complete) draw()
 
-  }, [receiptData])
+  }, [receiptData, maskContact])
 
   return null
 }

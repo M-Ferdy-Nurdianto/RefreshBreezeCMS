@@ -30,6 +30,16 @@ lerna-debug.log*
 # Vercel
 .vercel
 
+# VS Code workspace
+*.code-workspace
+
+# APK files (host separately in GitHub Releases)
+*.apk
+
+# Utility scripts (one-time use)
+generate-hash.js
+fix_database.sql
+
 # Backup files
 *.backup
 *.bak
