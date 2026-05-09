@@ -23,6 +23,8 @@ const HeroSection = ({ members, activeMemberId, setActiveMemberId, navigate }) =
                <img 
                  src={member.photo} 
                  alt={member.name} 
+                 fetchpriority={idx < 3 ? "high" : "auto"}
+                 loading="eager"
                  className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                />
                <div className={`absolute inset-0 ${member.color} mix-blend-multiply opacity-30 group-hover:opacity-0 transition-opacity duration-700`}></div>
@@ -77,6 +79,8 @@ const HeroSection = ({ members, activeMemberId, setActiveMemberId, navigate }) =
               <img 
                 src={member.photo} 
                 alt={member.name}
+                fetchpriority={idx < 2 ? "high" : "auto"}
+                loading="eager"
                 className={`absolute inset-0 w-full h-full object-cover z-0 transition-all duration-700 ${activeMemberId === member.id ? 'grayscale-0 scale-110 brightness-110' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'}`}
                 style={getMemberStyle(member)}
               />
