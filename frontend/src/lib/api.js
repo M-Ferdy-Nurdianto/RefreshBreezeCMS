@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { toast } from 'react-toastify'
 
 // In production (Vercel), use the API URL from environment variable
 // In development, use localhost
@@ -32,6 +33,27 @@ api.interceptors.request.use(
     return config
   },
   (error) => Promise.reject(error)
+)
+
+const rateLimitToastId = 'rate-limit-toast'
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status
+    if (status === 429) {
+      const message = error?.response?.data?.error || 'Terlalu banyak permintaan. Silakan tunggu sebentar lalu coba lagi.'
+      if (!toast.isActive(rateLimitToastId)) {
+        toast.error(message, {
+          toastId: rateLimitToastId,
+          position: 'bottom-center',
+          autoClose: 3000
+        })
+      }
+    }
+
+    return Promise.reject(error)
+  }
 )
 
 export default api

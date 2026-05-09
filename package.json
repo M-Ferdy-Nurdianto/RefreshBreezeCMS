@@ -12,7 +12,7 @@
     "build": "cd frontend && npm install && npm run build",
     "build:frontend": "cd frontend && npm run build",
     "start:backend": "cd backend && npm start",
-    "vercel-build": "cd frontend && npm install && npm run build"
+    "vercel-build": "npm run build"
   },
   "keywords": ["refresh-breeze", "cheki", "idol"],
   "author": "Refresh Breeze",
@@ -27,7 +27,10 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.34.5",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.4.1",
+    "express-slow-down": "^2.1.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

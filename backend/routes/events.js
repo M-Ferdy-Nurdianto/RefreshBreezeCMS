@@ -1,11 +1,12 @@
 import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { cachePublic } from '../middleware/cache.js'
 
 const router = express.Router()
 
 // GET: Fetch all events
-router.get('/', async (req, res) => {
+router.get('/', cachePublic({ sMaxAge: 900, maxAge: 120, staleWhileRevalidate: 120 }), async (req, res) => {
   try {
     const { is_past } = req.query
 
@@ -73,7 +74,7 @@ router.get('/', async (req, res) => {
 })
 
 // GET: Fetch single event by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', cachePublic({ sMaxAge: 900, maxAge: 120, staleWhileRevalidate: 120 }), async (req, res) => {
   try {
     const { id } = req.params
 

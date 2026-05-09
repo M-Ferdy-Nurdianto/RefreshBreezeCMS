@@ -1,6 +1,7 @@
 import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { cachePublic } from '../middleware/cache.js'
 
 const router = express.Router()
 
@@ -9,7 +10,7 @@ const router = express.Router()
 // ───────────────────────────────────────────
 
 // GET all merchandise (public)
-router.get('/', async (req, res) => {
+router.get('/', cachePublic({ sMaxAge: 300, maxAge: 60, staleWhileRevalidate: 120 }), async (req, res) => {
   try {
     const { available } = req.query
     let query = supabase
@@ -33,7 +34,7 @@ router.get('/', async (req, res) => {
 })
 
 // GET single merchandise (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', cachePublic({ sMaxAge: 300, maxAge: 60, staleWhileRevalidate: 120 }), async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('merchandise')

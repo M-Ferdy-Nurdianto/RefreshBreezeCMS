@@ -1,11 +1,12 @@
 import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { cachePublic } from '../middleware/cache.js'
 
 const router = express.Router()
 
 // GET: Fetch all FAQs
-router.get('/', async (req, res) => {
+router.get('/', cachePublic({ sMaxAge: 3600, maxAge: 120, staleWhileRevalidate: 300 }), async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('faqs')
