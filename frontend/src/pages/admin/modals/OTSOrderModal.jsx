@@ -89,7 +89,7 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess }) => {
               <select
                 value={formData.event_id}
                 onChange={(e) => setFormData({...formData, event_id: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-custom-green"
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
                 required
               >
                 <option value="">-- Pilih Event *--</option>

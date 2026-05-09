@@ -1,7 +1,11 @@
 import React from 'react'
 import { FaDownload, FaTimes, FaEye } from 'react-icons/fa'
 
-const OrderDetailModal = ({ order, events, onClose }) => {
+const OrderDetailModal = ({ isOpen = false, order, events = [], onClose }) => {
+  if (!isOpen || !order) {
+    return null
+  }
+
   const generateReceipt = () => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')

@@ -193,7 +193,7 @@ router.post('/ots', authMiddleware, async (req, res) => {
         email: email || `ots-${Date.now()}@refreshbreeze.com`,
         instagram: instagram || '-',
         total_harga,
-        status: 'completed',
+        status: 'checked',
         is_ots: true,
         created_by: 'admin',
         payment_proof_url: payment_method || 'Cash' // Store Cash/QR here
@@ -289,179 +289,233 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
 
     // Create Excel workbook
     const workbook = new ExcelJS.Workbook()
-    const worksheet = workbook.addWorksheet('Orders')
+    const worksheet = workbook.addWorksheet('REFRESH_BREEZE_REPORT')
 
-    // Define columns (shared structure)
     worksheet.columns = [
-      { header: 'Order Number', key: 'order_number', width: 22 },
-      { header: 'Tipe', key: 'tipe', width: 12 },
-      { header: 'Nama Lengkap', key: 'nama_lengkap', width: 25 },
-      { header: 'WhatsApp', key: 'whatsapp', width: 16 },
-      { header: 'Instagram', key: 'instagram', width: 20 },
-      { header: 'Items', key: 'items', width: 45 },
-      { header: 'Total Harga', key: 'total_harga', width: 18 },
-      { header: 'Catatan', key: 'catatan', width: 30 },
-      { header: 'Status', key: 'status', width: 12 },
-      { header: 'Tanggal Order', key: 'created_at', width: 20 },
-      // Extra columns for summary if needed, but we'll specific cells
+      { key: 'col1', width: 18 },
+      { key: 'col2', width: 18 },
+      { key: 'col3', width: 18 },
+      { key: 'col4', width: 10 },
+      { key: 'col5', width: 40 },
+      { key: 'col6', width: 8 },
+      { key: 'col7', width: 16 },
+      { key: 'col8', width: 12 },
+      { key: 'col9', width: 20 },
     ]
 
-    // Style Header
-    const styleHeader = (row) => {
-      row.font = { bold: true, color: { argb: 'FFFFFFFF' } }
-      row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } } // Green
-      row.alignment = { vertical: 'middle', horizontal: 'center' }
-    }
-
-    styleHeader(worksheet.getRow(1))
-
-    // Helper to add orders
-    const addOrderRows = (orderList) => {
-      orderList.forEach(order => {
-        const itemsText = order.order_items
-          .map(item => `${item.item_name} (${item.quantity}x)`)
-          .join(', ')
-
-        const row = worksheet.addRow({
-          order_number: order.order_number,
-          tipe: order.is_ots ? 'OTS' : 'Pre-Order',
-          nama_lengkap: order.nama_lengkap,
-          whatsapp: order.whatsapp,
-          instagram: order.instagram || '-',
-          items: itemsText,
-          total_harga: order.total_harga,
-          catatan: order.catatan || '-',
-          status: order.status,
-          created_at: new Date(order.created_at).toLocaleString('id-ID'),
-        })
-
-        // Style borders
-        row.eachCell((cell) => {
-          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-          cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
-        })
+    const applyBorders = (row) => {
+      row.eachCell((cell) => {
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
       })
     }
 
-    // 1. Separate Orders
-    const poOrders = orders.filter(o => !o.is_ots)
-    const otsOrders = orders.filter(o => o.is_ots)
-
-    // 2. Add PO Orders
-    addOrderRows(poOrders)
-
-    // 3. Add Spacer & OTS Header
-    if (otsOrders.length > 0) {
-      worksheet.addRow([])
-      worksheet.addRow([])
-      const otsHeaderRow = worksheet.addRow(['ORDER OTS (ON THE SPOT)', '', '', '', '', '', '', '', '', ''])
-      otsHeaderRow.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }
-      otsHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF97316' } } // Orange
-
-      // Re-add column headers for clarity? Or just continue list? 
-      // User said "bawah nya ots semua dan atas full po jadi kasih space". 
-      // Let's just create a separator header is enough.
-
-      addOrderRows(otsOrders)
+    const mergeRow = (rowNumber, startCol, endCol, value, style) => {
+      worksheet.mergeCells(`${startCol}${rowNumber}:${endCol}${rowNumber}`)
+      const cell = worksheet.getCell(`${startCol}${rowNumber}`)
+      cell.value = value
+      if (style?.font) cell.font = style.font
+      if (style?.fill) cell.fill = style.fill
+      if (style?.alignment) cell.alignment = style.alignment
     }
 
-    // 4. Calculate Stats (Member Sales) - Only from PAID orders (checked/completed)
-    const memberStats = {}
+    const formatCurrency = (value) => `Rp ${Number(value || 0).toLocaleString('id-ID')}`
+    const formatStatus = (status) => {
+      if (status === 'pending') return 'BELUM BAYAR'
+      if (status === 'checked') return 'DI BAYAR'
+      if (status === 'completed') return 'DI AMBIL'
+      return String(status || '-').toUpperCase()
+    }
+
+    const eventId = event_id && event_id !== 'all' ? event_id : null
+    let eventInfo = null
+    if (eventId) {
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('nama, tanggal, bulan, tahun, lokasi, is_past')
+        .eq('id', eventId)
+        .single()
+      if (!eventError) eventInfo = eventData
+    }
+    const eventLabel = eventInfo ? `${eventInfo.nama} - ${eventInfo.bulan} ${eventInfo.tahun}` : 'SEMUA EVENT'
+    const eventMeta = eventInfo ? `Tgl: ${eventInfo.tanggal || '-'} ${eventInfo.bulan || ''} ${eventInfo.tahun || ''} | Lokasi: ${eventInfo.lokasi || '-'} | Status: ${eventInfo.is_past ? 'DONE' : 'ACTIVE'}` : ''
+
     const paidOrders = orders.filter(o => o.status === 'checked' || o.status === 'completed')
+    const totalRevenue = paidOrders.reduce((sum, order) => sum + (order.total_harga || 0), 0)
+    const totalPolaroid = paidOrders.filter(o => o.status === 'completed').reduce((sum, order) => sum + (order.order_items?.reduce((pSum, item) => {
+      const name = String(item.item_name || '').toLowerCase()
+      const isCheki = name.includes('cheki') || name.includes('polaroid')
+      return pSum + (isCheki ? (item.quantity || 0) : 0)
+    }, 0) || 0), 0)
 
-    let totalPolaroid = 0
-    // Helper to strip emojis and special symbols (cause grouping issues)
-    const stripEmoji = (text) => String(text || '').replace(/[^a-zA-Z0-9\s()]/gu, '').trim()
+    const otsOrders = orders.filter(o => o.is_ots)
+    const poOrders = orders.filter(o => !o.is_ots)
 
+    const memberStats = {}
     paidOrders.forEach(order => {
-      order.order_items.forEach(item => {
-        // Count polaroid usage from original item name (ONLY for completed orders)
-        if (order.status === 'completed') {
-          const isPaperUsed = item.item_name.toLowerCase().includes('cheki') || item.item_name.toLowerCase().includes('polaroid')
-          if (isPaperUsed) {
-            totalPolaroid += item.quantity
-          }
-        }
-
-        let name = stripEmoji(item.item_name
+      order.order_items?.forEach(item => {
+        let name = String(item.item_name || '')
           .replace('Cheki ', '')
           .replace(' (Pre-Order)', '')
-        )
-
+          .replace(/[^a-zA-Z0-9\s()]/gu, '')
+          .trim()
         if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) {
           name = 'All Member (Group)'
         }
-
-        if (!memberStats[name]) memberStats[name] = { qty: 0, qtyPO: 0, qtyOTS: 0, revenue: 0 }
-
-        memberStats[name].qty += item.quantity
-        if (order.is_ots) {
-          memberStats[name].qtyOTS += item.quantity
-        } else {
-          memberStats[name].qtyPO += item.quantity
-        }
-        memberStats[name].revenue += (item.price * item.quantity)
+        if (!memberStats[name]) memberStats[name] = { qty: 0, revenue: 0 }
+        const qty = item.quantity || 0
+        memberStats[name].qty += qty
+        memberStats[name].revenue += (qty * (item.price || 0))
       })
     })
 
-    // 5. Add Summary Section
-    worksheet.addRow([])
-    worksheet.addRow([])
-
-    const summaryStartRow = worksheet.rowCount + 1
-    const titleRow = worksheet.addRow(['RINGKASAN PENJUALAN', '', '', '', '', '', '', '', '', ''])
-    titleRow.font = { bold: true, size: 14 }
-    titleRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } } // Slate-800
-    titleRow.eachCell(cell => cell.font = { bold: true, color: { argb: 'FFFFFFFF' } })
-
-    // Summary Headers
-    const summaryHeader = worksheet.addRow(['Member / Item', 'Qty PO', 'Qty OTS', 'Total Qty', 'Total Rupiah', '', '', '', '', ''])
-    summaryHeader.font = { bold: true }
-    for (let i = 1; i <= 5; i++) {
-      summaryHeader.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }
-      summaryHeader.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-    }
-
-    let totalQty = 0
-    let totalPO = 0
-    let totalOTS = 0
-    let totalRev = 0
-
-    // Sort stats: Group last, others alpha or by value? Let's do alphabetical for members
-    const sortedKeys = Object.keys(memberStats).sort()
-
-    sortedKeys.forEach(key => {
-      const { qty, qtyPO, qtyOTS, revenue } = memberStats[key]
-      totalQty += qty
-      totalPO += qtyPO
-      totalOTS += qtyOTS
-      totalRev += revenue
-
-      const row = worksheet.addRow([key, qtyPO, qtyOTS, qty, `Rp ${revenue.toLocaleString('id-ID')}`, '', '', '', '', ''])
-      for (let i = 1; i <= 5; i++) {
-        row.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      }
+    const titleRow = worksheet.addRow(['REFRESH BREEZE - LAPORAN PENJUALAN'])
+    mergeRow(titleRow.number, 'A', 'I', 'REFRESH BREEZE - LAPORAN PENJUALAN', {
+      font: { bold: true, size: 14, color: { argb: 'FFFFFFFF' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } },
+      alignment: { vertical: 'middle', horizontal: 'left' }
     })
 
-    // Grand Total Row
-    const grandTotalRow = worksheet.addRow(['GRAND TOTAL (Items)', totalPO, totalOTS, totalQty, `Rp ${totalRev.toLocaleString('id-ID')}`, '', '', '', '', ''])
-    grandTotalRow.font = { bold: true }
-    for (let i = 1; i <= 5; i++) {
-      grandTotalRow.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } } // Light green
-      grandTotalRow.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    const subtitleRow = worksheet.addRow([`OFFICIAL SALES SUMMARY / ${new Date().toLocaleDateString('id-ID')}`])
+    mergeRow(subtitleRow.number, 'A', 'I', subtitleRow.getCell(1).value, {
+      font: { bold: true, size: 10, color: { argb: 'FF166534' } },
+      alignment: { vertical: 'middle', horizontal: 'left' }
+    })
+
+    worksheet.addRow([])
+
+    const eventRow = worksheet.addRow(['EVENT', eventLabel])
+    worksheet.mergeCells(`B${eventRow.number}:I${eventRow.number}`)
+    eventRow.getCell(1).font = { bold: true }
+    eventRow.getCell(2).font = { bold: true }
+    if (eventMeta) {
+      const metaRow = worksheet.addRow(['DETAILS', eventMeta])
+      worksheet.mergeCells(`B${metaRow.number}:I${metaRow.number}`)
+      metaRow.getCell(1).font = { bold: true, color: { argb: 'FF64748B' } }
+      metaRow.getCell(2).font = { color: { argb: 'FF64748B' } }
     }
 
-    // Polaroid Summary Row
-    const polaroidRow = worksheet.addRow(['TOTAL POLAROID', totalPolaroid, 'lembar', '', '', '', '', '', '', ''])
-    polaroidRow.font = { bold: true, color: { argb: 'FFFFFFFF' } }
-    polaroidRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } } // Green
-    polaroidRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } }
-    polaroidRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } }
+    worksheet.addRow([])
 
+    const summaryLabelRow = worksheet.addRow([])
+    const summaryValueRow = worksheet.addRow([])
+    const summaryBlocks = [
+      { start: 'A', end: 'B', label: 'KEUNTUNGAN', value: formatCurrency(totalRevenue), color: 'FF166534' },
+      { start: 'C', end: 'D', label: 'TOTAL POLAROID', value: `${totalPolaroid} units`, color: 'FF16A34A' },
+      { start: 'E', end: 'F', label: 'OTS ORDERS', value: `${otsOrders.length} orders`, color: 'FF059669' },
+      { start: 'G', end: 'H', label: 'PO ORDERS', value: `${poOrders.length} orders`, color: 'FF22C55E' },
+    ]
 
-    // Set response headers
+    summaryBlocks.forEach(block => {
+      worksheet.mergeCells(`${block.start}${summaryLabelRow.number}:${block.end}${summaryLabelRow.number}`)
+      worksheet.mergeCells(`${block.start}${summaryValueRow.number}:${block.end}${summaryValueRow.number}`)
+      const labelCell = worksheet.getCell(`${block.start}${summaryLabelRow.number}`)
+      const valueCell = worksheet.getCell(`${block.start}${summaryValueRow.number}`)
+      labelCell.value = block.label
+      valueCell.value = block.value
+      labelCell.font = { bold: true, color: { argb: 'FF166534' } }
+      labelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }
+      labelCell.alignment = { vertical: 'middle', horizontal: 'center' }
+      valueCell.font = { bold: true, color: { argb: block.color } }
+      valueCell.alignment = { vertical: 'middle', horizontal: 'center' }
+    })
+
+    applyBorders(summaryLabelRow)
+    applyBorders(summaryValueRow)
+
+    worksheet.addRow([])
+
+    const memberTitleRow = worksheet.addRow(['MEMBER PERFORMANCE (A-Z)'])
+    mergeRow(memberTitleRow.number, 'A', 'I', 'MEMBER PERFORMANCE (A-Z)', {
+      font: { bold: true, color: { argb: 'FFFFFFFF' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } },
+      alignment: { vertical: 'middle', horizontal: 'left' }
+    })
+
+    const memberHeaderRow = worksheet.addRow(['Member / Lineup', 'Qty', 'Revenue', '', '', '', '', '', ''])
+    memberHeaderRow.font = { bold: true }
+    for (let i = 1; i <= 3; i++) {
+      const cell = memberHeaderRow.getCell(i)
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }
+      cell.alignment = { vertical: 'middle', horizontal: i === 3 ? 'right' : 'left' }
+    }
+    applyBorders(memberHeaderRow)
+
+    const sortedMembers = Object.keys(memberStats).sort((a, b) => a.localeCompare(b))
+    if (sortedMembers.length === 0) {
+      const emptyRow = worksheet.addRow(['-', '-', '-', '', '', '', '', '', ''])
+      applyBorders(emptyRow)
+    } else {
+      sortedMembers.forEach(name => {
+        const stats = memberStats[name]
+        const row = worksheet.addRow([name, stats.qty, stats.revenue, '', '', '', '', '', ''])
+        row.getCell(3).numFmt = '"Rp" #,##0'
+        row.getCell(3).alignment = { vertical: 'middle', horizontal: 'right' }
+        applyBorders(row)
+      })
+    }
+
+    worksheet.addRow([])
+
+    const detailsTitleRow = worksheet.addRow(['TRANSACTION DETAILS'])
+    mergeRow(detailsTitleRow.number, 'A', 'I', 'TRANSACTION DETAILS', {
+      font: { bold: true, color: { argb: 'FFFFFFFF' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF065F46' } },
+      alignment: { vertical: 'middle', horizontal: 'left' }
+    })
+
+    const addOrderSection = (title, fillColor, ordersList) => {
+      const sectionRow = worksheet.addRow([title])
+      mergeRow(sectionRow.number, 'A', 'I', title, {
+        font: { bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } },
+        alignment: { vertical: 'middle', horizontal: 'left' }
+      })
+
+      const headerRow = worksheet.addRow(['Kode', 'Customer', 'Contact', 'Type', 'Items', 'Qty', 'Amount', 'Status', 'Date'])
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } }
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+      })
+      applyBorders(headerRow)
+
+      if (ordersList.length === 0) {
+        const emptyRow = worksheet.addRow(['-', '-', '-', '-', '-', '-', '-', '-', '-'])
+        applyBorders(emptyRow)
+        return
+      }
+
+      ordersList.forEach(order => {
+        const itemsText = order.order_items
+          ?.map(item => `${item.item_name} x${item.quantity}`)
+          .join(', ') || '-'
+        const qty = order.order_items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0
+        const contact = order.is_ots ? '-' : ([order.whatsapp, order.instagram].filter(Boolean).join(' / ') || '-')
+        const row = worksheet.addRow([
+          order.order_number || '-',
+          order.nama_lengkap || '-',
+          contact,
+          order.is_ots ? 'OTS' : 'PO',
+          itemsText,
+          qty,
+          order.total_harga || 0,
+          formatStatus(order.status),
+          new Date(order.created_at).toLocaleString('id-ID')
+        ])
+        row.getCell(7).numFmt = '"Rp" #,##0'
+        row.eachCell((cell, colNumber) => {
+          cell.alignment = { vertical: 'middle', horizontal: colNumber === 7 ? 'right' : 'left', wrapText: true }
+        })
+        applyBorders(row)
+      })
+    }
+
+    addOrderSection('OTS ORDERS', 'FF059669', otsOrders)
+    worksheet.addRow([])
+    addOrderSection('PO ORDERS', 'FF16A34A', poOrders)
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    res.setHeader('Content-Disposition', `attachment; filename=RefreshBreeze_Orders_${Date.now()}.xlsx`)
+    res.setHeader('Content-Disposition', `attachment; filename=RefreshBreeze_Report_${Date.now()}.xlsx`)
 
     await workbook.xlsx.write(res)
     res.end()

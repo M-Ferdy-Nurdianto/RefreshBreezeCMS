@@ -13,6 +13,7 @@ import authRoutes from '../backend/routes/auth.js'
 import uploadRoutes from '../backend/routes/upload.js'
 import merchandiseRoutes from '../backend/routes/merchandise.js'
 import merchOrdersRoutes from '../backend/routes/merchOrders.js'
+import { supabase } from '../backend/config/supabase.js'
 
 const app = express()
 

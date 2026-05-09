@@ -77,7 +77,7 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
             <select
               value={deleteType}
               onChange={(e) => setDeleteType(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white"
             >
               <option value="all">Hapus Semua Data</option>
               <option value="event">Hapus Per Event</option>
@@ -94,7 +94,7 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
               <select
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white"
               >
                 <option value="">-- Pilih Event --</option>
                 {events.map((event) => (

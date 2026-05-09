@@ -43,7 +43,7 @@ export const generateExcel = async ({ scope, value, params, events, api }) => {
       return 'Filtered'
     })().replace(/[^a-zA-Z0-9_\-]/g, '_')
 
-    a.download = `RefreshBreeze_Orders_${safeSuffix}_${new Date().toISOString().split('T')[0]}.xlsx`
+    a.download = `RefreshBreeze_Report_${safeSuffix}_${new Date().toISOString().split('T')[0]}.xlsx`
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
@@ -199,42 +199,217 @@ export const generatePDF = async ({ api, scope, value, params, events }) => {
     const orders = res.data.data
     if (!orders || orders.length === 0) throw new Error('Tidak ada data untuk diexport.')
 
-    let eventName = ''; if (scope === 'event' && value) { const foundEvent = events.find(e => e.id === value); eventName = foundEvent ? `${foundEvent.nama} - ${foundEvent.bulan} ${foundEvent.tahun}` : 'Event' }
+    const eventId = scope === 'event' ? value : exportParams.event_id
+    const eventInfo = eventId ? events.find(e => e.id === eventId) : null
+    const eventLabel = eventInfo ? `${eventInfo.nama} - ${eventInfo.bulan} ${eventInfo.tahun}` : 'Semua Event'
+    const monthIndexMap = {
+      januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5, juli: 6,
+      agustus: 7, september: 8, oktober: 9, november: 10, desember: 11,
+      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7,
+      sep: 8, oct: 9, nov: 10, dec: 11
+    }
+    const getEventStatusLabel = () => {
+      if (!eventInfo) return ''
+      if (eventInfo.is_past) return 'SELESAI'
+      const monthKey = String(eventInfo.bulan || '').toLowerCase()
+      const monthIndex = monthIndexMap[monthKey]
+      const day = Number(eventInfo.tanggal)
+      const year = Number(eventInfo.tahun)
+      if (!Number.isNaN(day) && !Number.isNaN(year) && monthIndex !== undefined) {
+        const eventDate = new Date(year, monthIndex, day)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        if (eventDate < today) return 'SELESAI'
+      }
+      return 'AKTIF'
+    }
+    const eventMeta = eventInfo ? `Tgl: ${eventInfo.tanggal || '-'} ${eventInfo.bulan || ''} ${eventInfo.tahun || ''} | Lokasi: ${eventInfo.lokasi || '-'} | Status: ${getEventStatusLabel()}` : ''
+
     const paidOrders = orders.filter(o => o.status === 'checked' || o.status === 'completed')
-    let totalRevenue = 0; let totalItems = 0; const memberStats = {}
-
-    paidOrders.forEach(order => {
-      totalRevenue += order.total_harga || 0
-      order.order_items?.forEach(item => {
-        totalItems += item.quantity || 0
-        let name = stripEmoji(item.item_name.replace('Cheki ', '').replace(' (Pre-Order)', ''))
-        if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) name = 'All Member (Group)'
-        if (!memberStats[name]) memberStats[name] = { total: 0, po: 0, ots: 0 }
-        memberStats[name].total += item.quantity || 0
-        if (order.is_ots) memberStats[name].ots += item.quantity || 0
-        else memberStats[name].po += item.quantity || 0
-      })
-    })
-
+    const totalRevenue = paidOrders.reduce((sum, order) => sum + (order.total_harga || 0), 0)
     const totalPolaroid = paidOrders.filter(o => o.status === 'completed').reduce((sum, order) => sum + (order.order_items?.reduce((pSum, item) => {
-      const isCheki = item.item_name.toLowerCase().includes('cheki') || item.item_name.toLowerCase().includes('polaroid')
+      const name = String(item.item_name || '').toLowerCase()
+      const isCheki = name.includes('cheki') || name.includes('polaroid')
       return pSum + (isCheki ? (item.quantity || 0) : 0)
     }, 0) || 0), 0)
 
-    const doc = new jsPDF()
-    doc.setFillColor(7, 145, 8); doc.rect(0, 0, 210, 24, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text('REFRESH BREEZE - LAPORAN PENJUALAN', 105, 16, { align: 'center' })
-    doc.setTextColor(0, 0, 0); doc.setFontSize(10); doc.text(`Tanggal Export: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, 14, 35)
+    const otsOrders = orders.filter(o => o.is_ots)
+    const poOrders = orders.filter(o => !o.is_ots)
 
-    let scopeLabel = 'Sesuai Filter Aktif'; if (scope === 'event') scopeLabel = eventName; else if (scope === 'month') { const [y, m] = value.split('-'); const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; scopeLabel = `${monthNames[parseInt(m) - 1]} ${y}` }
-    doc.text(`Cakupan Data: ${scopeLabel}`, 14, 40)
-    doc.setFillColor(240, 253, 244); doc.roundedRect(14, 45, 182, 35, 3, 3, 'F'); doc.setDrawColor(34, 197, 94); doc.roundedRect(14, 45, 182, 35, 3, 3, 'S')
-    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(22, 101, 52); doc.text('RINGKASAN (Checked/Completed Orders)', 20, 55)
-    doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(0, 0, 0); doc.text(`Total Omzet: Rp ${totalRevenue.toLocaleString('id-ID')}`, 20, 65); doc.text(`Order Terbayar: ${paidOrders.length} dari ${orders.length}`, 100, 65); doc.text(`Total Polaroid: ${totalPolaroid} pcs`, 20, 72)
+    const memberStats = {}
+    paidOrders.forEach(order => {
+      order.order_items?.forEach(item => {
+        let name = stripEmoji(String(item.item_name || '').replace('Cheki ', '').replace(' (Pre-Order)', ''))
+        if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) name = 'All Member (Group)'
+        if (!memberStats[name]) memberStats[name] = { qty: 0, revenue: 0 }
+        const qty = item.quantity || 0
+        const price = Number(item.price ?? item.harga ?? 0)
+        memberStats[name].qty += qty
+        memberStats[name].revenue += (qty * price)
+      })
+    })
 
-    const memberBody = Object.entries(memberStats).sort((a, b) => b[1].total - a[1].total).map(([name, stats]) => [stripEmoji(name), `${stats.po} pcs`, `${stats.ots} pcs`, `${stats.total} pcs`])
-    autoTable(doc, { startY: 85, head: [['Nama Member', 'Pre-Order', 'On The Spot', 'Total']], body: memberBody, theme: 'grid', headStyles: { fillColor: [7, 145, 8], textColor: 255 }, styles: { fontSize: 9 } })
+    const formatCurrency = (value) => `Rp ${Number(value || 0).toLocaleString('id-ID')}`
+    const formatDate = (value) => new Date(value).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const statusLabel = (status) => {
+      if (status === 'pending') return 'BELUM BAYAR'
+      if (status === 'checked') return 'DI BAYAR'
+      if (status === 'completed') return 'DI AMBIL'
+      return String(status || '-').toUpperCase()
+    }
+    const loadLogoDataUrl = async () => {
+      const logoPaths = [
+        '/images/logos/logo.webp',
+        '/apple-touch-icon.png',
+        '/android-chrome-192x192.png'
+      ]
+      for (const path of logoPaths) {
+        try {
+          const res = await fetch(path)
+          if (!res.ok) continue
+          const blob = await res.blob()
+          const image = await new Promise((resolve, reject) => {
+            const img = new Image()
+            img.onload = () => resolve(img)
+            img.onerror = () => reject(new Error('Failed to load logo'))
+            img.src = URL.createObjectURL(blob)
+          })
+          const canvas = document.createElement('canvas')
+          canvas.width = image.width
+          canvas.height = image.height
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(image, 0, 0)
+          URL.revokeObjectURL(image.src)
+          return canvas.toDataURL('image/png')
+        } catch (error) {
+          // Try next logo path
+        }
+      }
+      return null
+    }
+    const buildOrderRows = (list) => list.map(order => {
+      const items = order.order_items?.map(item => `${stripEmoji(item.item_name)} x${item.quantity}`).join(', ') || '-'
+      const qty = order.order_items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0
+      const contact = order.is_ots ? '-' : ([order.whatsapp, order.instagram].filter(Boolean).join(' / ') || '-')
+      return [
+        order.order_number || '-',
+        stripEmoji(order.nama_lengkap || '-'),
+        contact,
+        order.is_ots ? 'OTS' : 'PO',
+        items,
+        qty,
+        formatCurrency(order.total_harga),
+        statusLabel(order.status),
+        formatDate(order.created_at)
+      ]
+    })
 
-    doc.save(`RefreshBreeze_Sales_${scopeLabel.replace(/ /g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`)
+    const logoDataUrl = await loadLogoDataUrl()
+    const doc = new jsPDF('p', 'mm', 'a4')
+    doc.setFillColor(7, 145, 8)
+    doc.rect(0, 0, 210, 24, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, 'PNG', 14, 5, 12, 12)
+    }
+    doc.text('REFRESH BREEZE - LAPORAN PENJUALAN', 105, 15, { align: 'center' })
+
+    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(10)
+    const infoStartY = 32
+    doc.text(`Tanggal Export: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, 14, infoStartY)
+    doc.text(`Event: ${eventLabel}`, 14, infoStartY + 5)
+    if (eventMeta) {
+      doc.setFontSize(8)
+      doc.setTextColor(100, 116, 139)
+      doc.text(eventMeta, 14, infoStartY + 9)
+    }
+
+    autoTable(doc, {
+      startY: eventMeta ? infoStartY + 14 : infoStartY + 10,
+      head: [['KEUNTUNGAN', 'TOTAL POLAROID', 'OTS ORDERS', 'PO ORDERS']],
+      body: [[formatCurrency(totalRevenue), `${totalPolaroid} units`, `${otsOrders.length} orders`, `${poOrders.length} orders`]],
+      theme: 'grid',
+      styles: { fontSize: 9, halign: 'center' },
+      headStyles: { fillColor: [220, 252, 231], textColor: [22, 101, 52], fontStyle: 'bold' },
+      bodyStyles: { fillColor: [255, 255, 255], textColor: [22, 101, 52], fontStyle: 'bold' },
+      columnStyles: {
+        0: { textColor: [21, 128, 61] },
+        1: { textColor: [22, 163, 74] },
+        2: { textColor: [5, 150, 105] },
+        3: { textColor: [16, 185, 129] }
+      }
+    })
+
+    let currentY = doc.lastAutoTable.finalY + 8
+    doc.setFillColor(6, 95, 70)
+    doc.rect(14, currentY, 182, 7, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(10)
+    doc.text('MEMBER PERFORMANCE (A-Z)', 16, currentY + 5)
+    currentY += 10
+
+    const memberBody = Object.entries(memberStats)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([name, stats]) => [stripEmoji(name), stats.qty, formatCurrency(stats.revenue)])
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Member / Lineup', 'Qty', 'Revenue']],
+      body: memberBody.length ? memberBody : [['-', '-', '-']],
+      theme: 'grid',
+      headStyles: { fillColor: [7, 145, 8], textColor: 255 },
+      styles: { fontSize: 9 },
+      columnStyles: { 2: { halign: 'right' } }
+    })
+
+    currentY = doc.lastAutoTable.finalY + 8
+    doc.setFillColor(6, 95, 70)
+    doc.rect(14, currentY, 182, 7, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(10)
+    doc.text('TRANSACTION DETAILS', 16, currentY + 5)
+    currentY += 10
+
+    doc.setFillColor(5, 150, 105)
+    doc.rect(14, currentY, 182, 6, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(9)
+    doc.text('OTS ORDERS', 16, currentY + 4)
+    currentY += 8
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Kode', 'Customer', 'Contact', 'Type', 'Items', 'Qty', 'Amount', 'Status', 'Date']],
+      body: buildOrderRows(otsOrders).length ? buildOrderRows(otsOrders) : [['-', '-', '-', '-', '-', '-', '-', '-', '-']],
+      theme: 'grid',
+      styles: { fontSize: 7, cellPadding: 1, overflow: 'linebreak' },
+      headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+      columnStyles: { 4: { cellWidth: 40 }, 6: { halign: 'right' } }
+    })
+
+    currentY = doc.lastAutoTable.finalY + 6
+    doc.setFillColor(22, 163, 74)
+    doc.rect(14, currentY, 182, 6, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(9)
+    doc.text('PO ORDERS', 16, currentY + 4)
+    currentY += 8
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Kode', 'Customer', 'Contact', 'Type', 'Items', 'Qty', 'Amount', 'Status', 'Date']],
+      body: buildOrderRows(poOrders).length ? buildOrderRows(poOrders) : [['-', '-', '-', '-', '-', '-', '-', '-', '-']],
+      theme: 'grid',
+      styles: { fontSize: 7, cellPadding: 1, overflow: 'linebreak' },
+      headStyles: { fillColor: [22, 163, 74], textColor: 255 },
+      columnStyles: { 4: { cellWidth: 40 }, 6: { halign: 'right' } }
+    })
+
+    const safeLabel = eventLabel.replace(/[^a-zA-Z0-9_\-]/g, '_')
+    doc.save(`RefreshBreeze_Orders_${safeLabel}_${new Date().toISOString().slice(0, 10)}.pdf`)
     Swal.fire({ icon: 'success', title: 'PDF Berhasil!', timer: 1500, showConfirmButton: false })
   } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal PDF', text: error.message }) }
 }

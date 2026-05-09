@@ -152,7 +152,7 @@ const OrdersTab = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
           >
             <option value="all">Semua Status</option>
             <option value="pending">Unchecked</option>
@@ -176,7 +176,7 @@ const OrdersTab = ({
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
           >
             <option value="all">Semua Waktu</option>
             <option value="week">Minggu Ini</option>
@@ -230,15 +230,54 @@ const OrdersTab = ({
 
               const { value: scope } = await Swal.fire({
                 title: 'Pilih Cakupan Data',
-                input: 'radio',
-                inputOptions: eventOptions,
-                inputValidator: (value) => {
-                  if (!value) return 'Pilih cakupan data!'
+                width: '600px',
+                html: `
+                  <div class="selection-grid">
+                    <label class="selection-card active" id="card-current">
+                      <input type="radio" name="export-scope" value="current" checked>
+                      <span class="card-subtitle">Data Saat Ini</span>
+                      <span class="card-title">Sesuai Filter di Layar</span>
+                      <div class="card-check">✓</div>
+                    </label>
+                    ${events.map(ev => `
+                      <label class="selection-card" id="card-${ev.id}">
+                        <input type="radio" name="export-scope" value="event_${ev.id}">
+                        <span class="card-subtitle">${ev.bulan} ${ev.tahun}</span>
+                        <span class="card-title">${ev.nama}</span>
+                        <div class="card-check">✓</div>
+                      </label>
+                    `).join('')}
+                  </div>
+                `,
+                didOpen: () => {
+                  const container = Swal.getHtmlContainer()
+                  const cards = container.querySelectorAll('.selection-card')
+                  cards.forEach(card => {
+                    card.addEventListener('click', () => {
+                      cards.forEach(c => c.classList.remove('active'))
+                      card.classList.add('active')
+                      card.querySelector('input').checked = true
+                    })
+                  })
+                },
+                preConfirm: () => {
+                  const checked = Swal.getHtmlContainer().querySelector('input[name="export-scope"]:checked')
+                  if (!checked) {
+                    Swal.showValidationMessage('Silakan pilih salah satu!')
+                    return false
+                  }
+                  return checked.value
                 },
                 confirmButtonText: format === 'excel' ? '📊 Download Excel' : '📄 Download PDF',
                 confirmButtonColor: format === 'excel' ? '#079108' : '#EF4444',
                 showCancelButton: true,
-                cancelButtonText: 'Batal'
+                cancelButtonText: 'Batal',
+                customClass: {
+                  popup: 'rounded-3xl',
+                  title: 'text-xl font-black uppercase tracking-tight pt-8',
+                  confirmButton: 'rounded-xl px-8 py-3 font-bold uppercase tracking-widest text-xs',
+                  cancelButton: 'rounded-xl px-8 py-3 font-bold uppercase tracking-widest text-xs'
+                }
               })
 
               if (!scope) return
@@ -356,7 +395,7 @@ const OrdersTab = ({
             <select
               value={merchOrderStatusFilter}
               onChange={e => setMerchOrderStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
             >
               <option value="all">Semua Status</option>
               <option value="pending">Pending</option>

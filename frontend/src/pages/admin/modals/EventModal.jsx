@@ -116,7 +116,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
             <select
               value={formData.bulan}
               onChange={(e) => setFormData({...formData, bulan: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
               required
             >
               <option value="">Bulan</option>
