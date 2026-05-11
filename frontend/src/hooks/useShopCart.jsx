@@ -1,10 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { getMemberEmoji } from '../lib/memberUtils'
+import { showToast } from '../lib/toast'
 
 export const useShopCart = (hargaMember, hargaGrup) => {
-  const [cart, setCart] = useState([])
-  const [merchCart, setMerchCart] = useState([])
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('rb_cart')
+      return saved ? JSON.parse(saved) : []
+    } catch (e) { return [] }
+  })
+  
+  const [merchCart, setMerchCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('rb_merch_cart')
+      return saved ? JSON.parse(saved) : []
+    } catch (e) { return [] }
+  })
+
+  // Persist to localStorage
+  useEffect(() => {
+    localStorage.setItem('rb_cart', JSON.stringify(cart))
+  }, [cart])
+
+  useEffect(() => {
+    localStorage.setItem('rb_merch_cart', JSON.stringify(merchCart))
+  }, [merchCart])
 
   // --- Cheki Cart Logic ---
   const addToCart = (type, member = null, getMemberImage) => {
@@ -23,36 +44,11 @@ export const useShopCart = (hargaMember, hargaGrup) => {
     const existing = cart.find(i => i.id === item.id)
     const newQty = existing ? existing.quantity + 1 : 1
     
-    const toastId = `cart-${item.id}`
-    const toastContent = (
-      <div className="flex items-center gap-4 px-6 py-3 bg-gray-900/95 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
-        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
-          {isGroup ? '✨' : getMemberEmoji(member.id)}
-        </div>
-        <div className="flex flex-col">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 leading-none mb-1.5">Added to Cart</p>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-white whitespace-nowrap">{item.name}</p>
-            <span className="text-white/40 text-[10px] font-bold">• {newQty}x</span>
-          </div>
-        </div>
-      </div>
+    showToast.cart(
+      item.name, 
+      isGroup ? '✨' : getMemberEmoji(member.id),
+      `Added to Cart ${newQty > 1 ? `(${newQty}x)` : ''}`
     )
-
-    const toastOptions = {
-      toastId,
-      position: "bottom-center",
-      autoClose: 2500,
-      className: "!bg-transparent !p-0 !shadow-none min-h-0",
-      bodyClassName: "!p-0 !m-0",
-      closeButton: false,
-    }
-
-    if (toast.isActive(toastId)) {
-      toast.update(toastId, { render: toastContent, ...toastOptions })
-    } else {
-      toast(toastContent, toastOptions)
-    }
 
     setCart(prev => {
       const existingInPrev = prev.find(i => i.id === item.id)
@@ -66,16 +62,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const updateQuantity = (id, delta) => {
     const item = cart.find(i => i.id === id)
     if (item && item.quantity === 1 && delta === -1) {
-      toast(
-        <div className="flex items-center gap-4 px-6 py-3 bg-red-900/90 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">🗑️</div>
-          <div className="flex flex-col">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 leading-none mb-1.5">Removed from Cart</p>
-            <p className="text-sm font-black text-white whitespace-nowrap">{item.name}</p>
-          </div>
-        </div>,
-        { position: "bottom-center", autoClose: 2000, className: "!bg-transparent !p-0 !shadow-none min-h-0", bodyClassName: "!p-0 !m-0", closeButton: false }
-      )
+      showToast.error(item.name, 'Removed from Cart')
     }
 
     setCart(prev => {
@@ -95,16 +82,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const removeFromCart = (id) => {
     const item = cart.find(i => i.id === id)
     if (item) {
-      toast(
-        <div className="flex items-center gap-4 px-6 py-3 bg-red-900/90 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">🗑️</div>
-          <div className="flex flex-col">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 leading-none mb-1.5">Removed from Cart</p>
-            <p className="text-sm font-black text-white whitespace-nowrap">{item.name}</p>
-          </div>
-        </div>,
-        { position: "bottom-center", autoClose: 2000, className: "!bg-transparent !p-0 !shadow-none min-h-0", bodyClassName: "!p-0 !m-0", closeButton: false }
-      )
+      showToast.error(item.name, 'Removed from Cart')
     }
     setCart(prev => prev.filter(item => item.id !== id))
   }
@@ -123,22 +101,11 @@ export const useShopCart = (hargaMember, hargaGrup) => {
     const cartId = size ? `${item.id}-${size}` : item.id
     const existing = merchCart.find(i => i.cartId === cartId)
     const newQty = existing ? existing.quantity + 1 : 1
-    const toastId = `merch-${cartId}`
-    const toastContent = (
-      <div className="flex items-center gap-4 px-6 py-3 bg-gray-900/95 backdrop-blur-xl rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px]">
-        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">🛍️</div>
-        <div className="flex flex-col">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 leading-none mb-1.5">Added to Cart</p>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-white whitespace-nowrap">{item.nama}{size ? ` (${size})` : ''}</p>
-            <span className="text-white/40 text-[10px] font-bold">• {newQty}x</span>
-          </div>
-        </div>
-      </div>
+    showToast.cart(
+      `${item.nama}${size ? ` (${size})` : ''}`,
+      '🛍️',
+      `Added to Cart ${newQty > 1 ? `(${newQty}x)` : ''}`
     )
-    const toastOptions = { toastId, position: "bottom-center", autoClose: 2500, className: "!bg-transparent !p-0 !shadow-none min-h-0", bodyClassName: "!p-0 !m-0", closeButton: false }
-    if (toast.isActive(toastId)) toast.update(toastId, { render: toastContent, ...toastOptions })
-    else toast(toastContent, toastOptions)
 
     setMerchCart(prev => {
       const ex = prev.find(i => i.cartId === cartId)

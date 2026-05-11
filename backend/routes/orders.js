@@ -301,6 +301,7 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
       { key: 'col7', width: 16 },
       { key: 'col8', width: 12 },
       { key: 'col9', width: 20 },
+      { key: 'col10', width: 25 },
     ]
 
     const applyBorders = (row) => {
@@ -336,8 +337,27 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
         .single()
       if (!eventError) eventInfo = eventData
     }
+    const monthIndexMap = {
+      januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5, juli: 6,
+      agustus: 7, september: 8, oktober: 9, november: 10, desember: 11
+    }
+    const getEventStatusLabel = () => {
+      if (!eventInfo) return ''
+      if (eventInfo.is_past) return 'DONE'
+      const monthKey = String(eventInfo.bulan || '').toLowerCase()
+      const monthIndex = monthIndexMap[monthKey]
+      const day = Number(eventInfo.tanggal)
+      const year = Number(eventInfo.tahun)
+      if (!Number.isNaN(day) && !Number.isNaN(year) && monthIndex !== undefined) {
+        const eventDate = new Date(year, monthIndex, day)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        if (eventDate < today) return 'DONE'
+      }
+      return 'ACTIVE'
+    }
     const eventLabel = eventInfo ? `${eventInfo.nama} - ${eventInfo.bulan} ${eventInfo.tahun}` : 'SEMUA EVENT'
-    const eventMeta = eventInfo ? `Tgl: ${eventInfo.tanggal || '-'} ${eventInfo.bulan || ''} ${eventInfo.tahun || ''} | Lokasi: ${eventInfo.lokasi || '-'} | Status: ${eventInfo.is_past ? 'DONE' : 'ACTIVE'}` : ''
+    const eventMeta = eventInfo ? `Tgl: ${eventInfo.tanggal || '-'} ${eventInfo.bulan || ''} ${eventInfo.tahun || ''} | Lokasi: ${eventInfo.lokasi || '-'} | Status: ${getEventStatusLabel()}` : ''
 
     const paidOrders = orders.filter(o => o.status === 'checked' || o.status === 'completed')
     const totalRevenue = paidOrders.reduce((sum, order) => sum + (order.total_harga || 0), 0)
@@ -369,14 +389,14 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     })
 
     const titleRow = worksheet.addRow(['REFRESH BREEZE - LAPORAN PENJUALAN'])
-    mergeRow(titleRow.number, 'A', 'I', 'REFRESH BREEZE - LAPORAN PENJUALAN', {
+    mergeRow(titleRow.number, 'A', 'J', 'REFRESH BREEZE - LAPORAN PENJUALAN', {
       font: { bold: true, size: 14, color: { argb: 'FFFFFFFF' } },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } },
       alignment: { vertical: 'middle', horizontal: 'left' }
     })
 
     const subtitleRow = worksheet.addRow([`OFFICIAL SALES SUMMARY / ${new Date().toLocaleDateString('id-ID')}`])
-    mergeRow(subtitleRow.number, 'A', 'I', subtitleRow.getCell(1).value, {
+    mergeRow(subtitleRow.number, 'A', 'J', subtitleRow.getCell(1).value, {
       font: { bold: true, size: 10, color: { argb: 'FF166534' } },
       alignment: { vertical: 'middle', horizontal: 'left' }
     })
@@ -389,7 +409,7 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     eventRow.getCell(2).font = { bold: true }
     if (eventMeta) {
       const metaRow = worksheet.addRow(['DETAILS', eventMeta])
-      worksheet.mergeCells(`B${metaRow.number}:I${metaRow.number}`)
+      worksheet.mergeCells(`B${metaRow.number}:J${metaRow.number}`)
       metaRow.getCell(1).font = { bold: true, color: { argb: 'FF64748B' } }
       metaRow.getCell(2).font = { color: { argb: 'FF64748B' } }
     }
@@ -425,7 +445,7 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     worksheet.addRow([])
 
     const memberTitleRow = worksheet.addRow(['MEMBER PERFORMANCE (A-Z)'])
-    mergeRow(memberTitleRow.number, 'A', 'I', 'MEMBER PERFORMANCE (A-Z)', {
+    mergeRow(memberTitleRow.number, 'A', 'J', 'MEMBER PERFORMANCE (A-Z)', {
       font: { bold: true, color: { argb: 'FFFFFFFF' } },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF079108' } },
       alignment: { vertical: 'middle', horizontal: 'left' }
@@ -457,7 +477,7 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     worksheet.addRow([])
 
     const detailsTitleRow = worksheet.addRow(['TRANSACTION DETAILS'])
-    mergeRow(detailsTitleRow.number, 'A', 'I', 'TRANSACTION DETAILS', {
+    mergeRow(detailsTitleRow.number, 'A', 'J', 'TRANSACTION DETAILS', {
       font: { bold: true, color: { argb: 'FFFFFFFF' } },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF065F46' } },
       alignment: { vertical: 'middle', horizontal: 'left' }
@@ -465,13 +485,13 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
 
     const addOrderSection = (title, fillColor, ordersList) => {
       const sectionRow = worksheet.addRow([title])
-      mergeRow(sectionRow.number, 'A', 'I', title, {
+      mergeRow(sectionRow.number, 'A', 'J', title, {
         font: { bold: true, color: { argb: 'FFFFFFFF' } },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } },
         alignment: { vertical: 'middle', horizontal: 'left' }
       })
 
-      const headerRow = worksheet.addRow(['Kode', 'Customer', 'Contact', 'Type', 'Items', 'Qty', 'Amount', 'Status', 'Date'])
+      const headerRow = worksheet.addRow(['Kode', 'Customer', 'Contact', 'Type', 'Items', 'Qty', 'Amount', 'Status', 'Date', 'Catatan'])
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } }
       headerRow.eachCell((cell) => {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } }
@@ -500,7 +520,8 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
           qty,
           order.total_harga || 0,
           formatStatus(order.status),
-          new Date(order.created_at).toLocaleString('id-ID')
+          new Date(order.created_at).toLocaleString('id-ID'),
+          order.catatan || '-'
         ])
         row.getCell(7).numFmt = '"Rp" #,##0'
         row.eachCell((cell, colNumber) => {

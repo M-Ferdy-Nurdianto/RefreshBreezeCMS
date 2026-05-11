@@ -19,15 +19,17 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {merch.map((item, idx) => {
           const inCart = merchCart.find(i => i.id === item.id)
-          const habis = item.stok > 0 && item.stok <= (inCart?.quantity || 0)
+          const isClosed = item.available === false
+          const habis = !isClosed && item.stok > 0 && item.stok <= (inCart?.quantity || 0)
+          
           return (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.08 }}
-              className={`relative bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 cursor-pointer ${habis ? 'opacity-60' : ''}`}
-              onClick={() => !habis && setSelectedMerch(item)}
+              className={`relative bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 cursor-pointer ${habis || isClosed ? 'opacity-60' : ''}`}
+              onClick={() => !habis && !isClosed && setSelectedMerch(item)}
             >
               <div className="relative w-full overflow-hidden">
                 {item.gambar_url ? (
@@ -37,12 +39,17 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
                     <FaBox className="text-5xl text-emerald-200" />
                   </div>
                 )}
-                {habis && (
+                {isClosed && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="bg-gray-800 text-white text-xs font-black uppercase px-4 py-2 rounded-full tracking-widest border border-gray-600">Close</span>
+                  </div>
+                )}
+                {!isClosed && habis && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <span className="bg-red-500 text-white text-xs font-black uppercase px-4 py-2 rounded-full tracking-widest">Habis</span>
                   </div>
                 )}
-                {!habis && inCart && (
+                {!habis && !isClosed && inCart && (
                   <div className="absolute top-2 right-2 bg-[#079108] text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg">
                     {inCart.quantity}x
                   </div>
@@ -53,8 +60,10 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
                 <h4 className="font-black text-sm uppercase tracking-tight text-gray-900 leading-tight">{item.nama}</h4>
                 {item.deskripsi && <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed whitespace-pre-line">{item.deskripsi}</p>}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-base font-black text-[#079108]">IDR {item.harga.toLocaleString()}</span>
-                  {!habis && (
+                  <span className={`text-base font-black ${isClosed ? 'text-gray-400' : 'text-[#079108]'}`}>
+                    IDR {item.harga.toLocaleString()}
+                  </span>
+                  {!habis && !isClosed && (
                       <motion.div
                         whileTap={{ scale: 0.9 }}
                         className="w-8 h-8 rounded-full bg-[#079108] flex items-center justify-center text-white shadow-md cursor-pointer"
@@ -72,7 +81,7 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
                   )}
                 </div>
                 {(!item.stok || item.stok === 0) && (
-                  <p className="text-[10px] text-emerald-600 font-bold">Pre-Order</p>
+                  <p className="text-[10px] text-emerald-600 font-bold">{isClosed ? '' : 'Pre-Order'}</p>
                 )}
               </div>
             </motion.div>

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaHeart, FaArrowLeft, FaBirthdayCake, FaInstagram, FaPalette, FaQuoteLeft } from 'react-icons/fa'
 import { getAssetPath } from '../lib/pathUtils'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 import api from '../lib/api'
 import Skeleton from '../components/Skeleton'
 

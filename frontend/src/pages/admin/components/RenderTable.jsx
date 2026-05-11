@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FaEye, FaTrash, FaImage } from 'react-icons/fa'
+import CustomSelect from './CustomSelect'
 
 const RenderTable = ({ data, title, icon, emptyMessage, action, loading, onView, onDelete, onStatusChange }) => {
   const scrollContainerRef = React.useRef(null)
@@ -148,19 +149,21 @@ const RenderTable = ({ data, title, icon, emptyMessage, action, loading, onView,
                         Rp {order.total_harga?.toLocaleString('id-ID')}
                       </td>
                       <td className="px-4 py-3">
-                        <select
+                        <CustomSelect
                           value={order.status}
                           onChange={(e) => onStatusChange(order.id, e.target.value)}
-                          className={`px-3 py-1 rounded-full text-xs font-bold border-2 cursor-pointer ${
+                          variant="status"
+                          className={
                             order.status === 'pending' ? 'bg-white text-gray-600 border-gray-300' :
                             order.status === 'checked' ? 'bg-blue-100 text-blue-700 border-blue-400' :
                             'bg-green-100 text-green-700 border-green-400'
-                          }`}
-                        >
-                          <option value="pending">Unchecked</option>
-                          <option value="checked">Checked</option>
-                          <option value="completed">Completed</option>
-                        </select>
+                          }
+                          options={[
+                            { value: 'pending', label: 'Unchecked' },
+                            { value: 'checked', label: 'Checked' },
+                            { value: 'completed', label: 'Completed' }
+                          ]}
+                        />
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {new Date(order.created_at).toLocaleDateString('id-ID', {

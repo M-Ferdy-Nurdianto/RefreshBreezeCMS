@@ -72,17 +72,19 @@ const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onToggle
                       <td className="px-4 py-3 text-sm text-gray-600">{event.lokasi}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{event.event_lineup?.length || 0} member</td>
                       <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => onTogglePast(event.id, event.is_past)}
-                          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                            past
-                              ? 'bg-gray-200 text-gray-600 hover:bg-green-100 hover:text-green-700'
-                              : 'bg-green-100 text-green-700 hover:bg-gray-200 hover:text-gray-600'
-                          }`}
-                          title={past ? 'Klik untuk aktifkan' : 'Klik untuk tandai selesai'}
-                        >
-                          {past ? '✓ Selesai' : '● Aktif'}
-                        </button>
+                        {past ? (
+                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-600">
+                            Selesai
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => onTogglePast(event.id, event.is_past)}
+                            className="px-3 py-1 rounded-full text-xs font-bold transition-all bg-green-100 text-green-700 hover:bg-gray-200 hover:text-gray-600"
+                            title="Klik untuk tandai selesai secara manual"
+                          >
+                            Aktif
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2">

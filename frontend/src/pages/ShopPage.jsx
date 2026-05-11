@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaShoppingCart, FaSpinner } from 'react-icons/fa'
+import { FaShoppingCart, FaSpinner, FaTicketAlt, FaChevronDown } from 'react-icons/fa'
+import { AnimatePresence, motion } from 'framer-motion'
+import { toast } from 'react-toastify'
 import { getAssetPath } from '../lib/pathUtils'
+import { showToast } from '../lib/toast'
 import api from '../lib/api'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 import { getMemberEmoji } from '../lib/memberUtils'
 import { useShopCart } from '../hooks/useShopCart'
 
@@ -23,6 +25,7 @@ const ShopPage = () => {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [step, setStep] = useState(1)
+  const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
   
   // Checkout Form State
   const [formData, setFormData] = useState({ nama_panggilan: '', kontak: '', event_id: '', catatan: '' })
@@ -33,7 +36,6 @@ const ShopPage = () => {
   const [orderSuccess, setOrderSuccess] = useState(null)
   const [receiptData, setReceiptData] = useState(null)
   const [activeDropdownId, setActiveDropdownId] = useState(null)
-  const [lineupError, setLineupError] = useState(null)
   const fileInputRef = useRef(null)
 
   // Merch State
@@ -87,7 +89,7 @@ const ShopPage = () => {
         ])
 
         try {
-          const merchRes = await api.get('/merchandise?available=true')
+          const merchRes = await api.get('/merchandise')
           if (merchRes.data.success) setMerch(merchRes.data.data)
         } catch (_) {}
         
@@ -103,7 +105,17 @@ const ShopPage = () => {
              })
            setMembers(sorted)
         }
-        if (eventsRes.data.success) setEvents(eventsRes.data.data)
+        if (eventsRes.data.success) {
+          const activeEvents = eventsRes.data.data.filter(event => {
+            if (event.is_past) return false;
+            const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+            const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return eventDate >= today;
+          });
+          setEvents(activeEvents);
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error)
       } finally {
@@ -138,8 +150,14 @@ const ShopPage = () => {
       const orderRes = await api.post('/merch-orders', orderData)
       if (orderRes.data.success) {
         setMerchReceiptData({
-          orderNumber: orderRes.data.order.order_number, items: cartHook.merchCart.map(i => ({ name: i.nama, quantity: i.quantity, price: i.harga, size: i.size || null })),
-          nama: merchForm.nama_lengkap, whatsapp: merchForm.whatsapp, total: cartHook.totalMerchHarga, createdAt: new Date().toLocaleString('id-ID')
+          orderNumber: orderRes.data.order.order_number, 
+          items: cartHook.merchCart.map(i => ({ name: i.nama, quantity: i.quantity, price: i.harga, size: i.size || null, image: i.gambar_url })),
+          nama: merchForm.nama_lengkap, 
+          whatsapp: merchForm.whatsapp, 
+          instagram: merchForm.instagram,
+          catatan: merchForm.catatan,
+          total: cartHook.totalMerchHarga, 
+          createdAt: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':').replace(/\//g, '/')
         })
         setMerchOrderSuccess(orderRes.data.order); cartHook.setMerchCart([]); setStep(5)
       }
@@ -159,11 +177,12 @@ const ShopPage = () => {
     if (!formData.event_id) return alert('Silakan pilih jadwal event')
     const selectedEvent = events.find(e => e.id === formData.event_id)
     const isEventSpecial = selectedEvent?.is_special || selectedEvent?.type === 'special' || !!selectedEvent?.theme_name || !!selectedEvent?.theme_color
-    if (selectedEvent && isEventSpecial && selectedEvent.event_lineup && selectedEvent.event_lineup.length > 0) {
-      const allowedMemberIds = selectedEvent.event_lineup.map(l => l.member_id)
-      const invalidItems = cartHook.cart.filter(item => item.member_id !== 'group' && !allowedMemberIds.some(id => String(id) === String(item.member_id)))
+    if (selectedEvent && selectedEvent.event_lineup && selectedEvent.event_lineup.length > 0) {
+      const allowedMemberIds = selectedEvent.event_lineup.map(l => String(l.member_id))
+      const invalidItems = cartHook.cart.filter(item => item.member_id !== 'group' && !allowedMemberIds.includes(String(item.member_id)))
       if (invalidItems.length > 0) {
-        setLineupError({ eventName: selectedEvent.nama, eventColor: selectedEvent.theme_color || '#FF6B9D', themeName: selectedEvent.theme_name || 'Special', items: invalidItems })
+        const memberNames = invalidItems.map(i => i.name).join(', ')
+        showToast.error(`${memberNames} tidak terdapat di lineup event ini!`, 'Lineup Error')
         return
       }
     }
@@ -177,9 +196,18 @@ const ShopPage = () => {
       const orderRes = await api.post('/orders', orderData)
       if (orderRes.data.success) {
         setReceiptData({
-          orderNumber: orderRes.data.order.order_number, eventName: selectedEvent?.nama || '-', eventDate: selectedEvent ? `${selectedEvent.tanggal} ${selectedEvent.bulan} ${selectedEvent.tahun}` : '-',
-          isSpecial: isEventSpecial, themeColor: isEventSpecial ? (selectedEvent.theme_color || '#FF6B9D') : '#079108',
-          items: cartHook.cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })), nama: formData.nama_panggilan, kontak: formData.kontak, total: cartHook.totalHarga, createdAt: new Date().toLocaleString('id-ID')
+          orderNumber: orderRes.data.order.order_number, 
+          eventName: selectedEvent?.nama || '-', 
+          eventDate: selectedEvent ? `${selectedEvent.tanggal} ${selectedEvent.bulan} ${selectedEvent.tahun}` : '-',
+          isSpecial: isEventSpecial, 
+          themeColor: isEventSpecial ? (selectedEvent.theme_color || '#FF6B9D') : '#079108',
+          items: cartHook.cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, image: item.image })), 
+          nama: formData.nama_panggilan, 
+          kontak: formData.kontak, 
+          instagram: null,
+          catatan: formData.catatan,
+          total: cartHook.totalHarga, 
+          createdAt: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':').replace(/\//g, '/')
         })
         setOrderSuccess(orderRes.data.order); cartHook.setCart([]); setStep(3)
       }
@@ -199,7 +227,7 @@ const ShopPage = () => {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 text-gray-900 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 text-gray-900">
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
@@ -217,9 +245,75 @@ const ShopPage = () => {
         {step === 1 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
             <div className="lg:col-span-2 space-y-12">
+                {/* Event Selector */}
+                <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-8 shadow-xl">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#079108] to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-[#079108]/20">
+                      <FaTicketAlt className="text-xl" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black uppercase tracking-tight">Pilih Jadwal Event</h2>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Wajib dipilih sebelum memesan cheki</p>
+                    </div>
+                  </div>
+
+                  <div className="relative custom-dropdown-container">
+                    <div 
+                      onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
+                      className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white shadow-md' : 'border-transparent hover:border-gray-200'}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-3 h-3 rounded-full ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                        <span className={`font-black uppercase tracking-widest text-sm ${formData.event_id ? 'text-gray-900' : 'text-gray-400'}`}>
+                          {events.find(e => e.id === formData.event_id)?.nama || 'Klik untuk memilih event...'}
+                        </span>
+                      </div>
+                      <FaChevronDown className={`text-gray-400 transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    <AnimatePresence>
+                      {eventDropdownOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 right-0 mt-3 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl z-[100] overflow-hidden"
+                        >
+                          <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                            {events.length > 0 ? events.map(event => (
+                              <div 
+                                key={event.id}
+                                onClick={() => { setFormData({...formData, event_id: event.id}); setEventDropdownOpen(false); }}
+                                className="px-8 py-4 hover:bg-emerald-50 cursor-pointer flex items-center justify-between group transition-colors"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-black text-gray-900 uppercase tracking-tight">{event.nama}</span>
+                                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{event.tanggal} {event.bulan}</span>
+                                </div>
+                                {formData.event_id === event.id && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                              </div>
+                            )) : (
+                              <div className="px-8 py-6 text-center text-gray-400 font-bold italic">Tidak ada event tersedia</div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
                 <ChekiSection 
                   loading={loading} members={members} hargaGrup={hargaGrup} hargaMember={hargaMember} 
-                  addToCart={(type, m) => cartHook.addToCart(type, m, getMemberImage)} getMemberImage={getMemberImage} getAssetPath={getAssetPath} 
+                  selectedEvent={events.find(e => e.id === formData.event_id)}
+                    addToCart={(type, m) => {
+                    if (type === 'member' || type === 'group') {
+                      if (!formData.event_id) {
+                        showToast.info("Silakan pilih jadwal event terlebih dahulu!", "Info")
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                      }
+                    }
+                    cartHook.addToCart(type, m, getMemberImage);
+                  }} 
+                  getMemberImage={getMemberImage} getAssetPath={getAssetPath} 
                 />
                 <MerchSection 
                   merch={merch} merchCart={cartHook.merchCart} setSelectedMerch={setSelectedMerch} addToMerchCart={cartHook.addToMerchCart} 
@@ -243,7 +337,7 @@ const ShopPage = () => {
             handleSubmit={handleSubmit} handleMerchSubmit={handleMerchSubmit} handleFileChange={handleFileChange} handleMerchFileChange={handleMerchFileChange}
             orderSuccess={orderSuccess} merchOrderSuccess={merchOrderSuccess} receiptData={receiptData} merchReceiptData={merchReceiptData}
             maskContact={maskContact} setMaskContact={setMaskContact} maskMerchContact={maskMerchContact} setMaskMerchContact={setMaskMerchContact}
-            activeDropdownId={activeDropdownId} setActiveDropdownId={setActiveDropdownId} lineupError={lineupError} setLineupError={setLineupError}
+            activeDropdownId={activeDropdownId} setActiveDropdownId={setActiveDropdownId} 
             fileInputRef={fileInputRef} merchFileInputRef={merchFileInputRef} themeColor={themeColor} isSpecialEvent={isSpecialEvent} payment={payment}
             copied={copied} setCopied={setCopied}
           />
@@ -255,7 +349,6 @@ const ShopPage = () => {
         selectedSize={selectedSize} setSelectedSize={setSelectedSize} addToMerchCart={cartHook.addToMerchCart} 
       />
 
-      <Footer />
     </div>
   )
 }

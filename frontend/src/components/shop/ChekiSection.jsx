@@ -10,8 +10,14 @@ const ChekiSection = ({
   hargaMember, 
   addToCart, 
   getMemberImage, 
-  getAssetPath 
+  getAssetPath,
+  selectedEvent
 }) => {
+  const isMemberInLineup = (memberId) => {
+    if (!selectedEvent || !selectedEvent.event_lineup || selectedEvent.event_lineup.length === 0) return true;
+    return selectedEvent.event_lineup.some(l => String(l.member_id) === String(memberId));
+  }
+
   return (
     <div className="space-y-12">
       {/* Header */}
@@ -99,6 +105,7 @@ const ChekiSection = ({
                   addToCart={addToCart}
                   getMemberImage={getMemberImage}
                   hargaMember={hargaMember}
+                  inLineup={isMemberInLineup(member.id)}
                 />
               ))
            )}

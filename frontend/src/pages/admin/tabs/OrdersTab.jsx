@@ -3,6 +3,8 @@ import Swal from 'sweetalert2'
 import { FaShoppingCart, FaPlus, FaFileExcel, FaBox, FaEye, FaTrash } from 'react-icons/fa'
 import RenderTable from '../components/RenderTable'
 
+import CustomSelect from '../components/CustomSelect'
+
 const OrdersTab = ({
   orders,
   events,
@@ -146,43 +148,39 @@ const OrdersTab = ({
             placeholder="Cari nama atau order number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green"
+            className="filter-input"
           />
 
-          <select
+          <CustomSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
-          >
-            <option value="all">Semua Status</option>
-            <option value="pending">Unchecked</option>
-            <option value="checked">Checked</option>
-            <option value="completed">Completed</option>
-          </select>
+            options={[
+              { value: 'all', label: 'Semua Status' },
+              { value: 'pending', label: 'Unchecked' },
+              { value: 'checked', label: 'Checked' },
+              { value: 'completed', label: 'Completed' }
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={eventFilter}
             onChange={(e) => setEventFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
-          >
-            <option value="all">Semua Event</option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.nama} - {event.bulan} {event.tahun}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: 'all', label: 'Semua Event' },
+              ...events.map(ev => ({ value: ev.id, label: `${ev.nama} - ${ev.bulan} ${ev.tahun}` }))
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
-          >
-            <option value="all">Semua Waktu</option>
-            <option value="week">Minggu Ini</option>
-            <option value="month">Bulan Ini</option>
-            <option value="custom">Custom Range</option>
-          </select>
+            options={[
+              { value: 'all', label: 'Semua Waktu' },
+              { value: 'week', label: 'Minggu Ini' },
+              { value: 'month', label: 'Bulan Ini' },
+              { value: 'custom', label: 'Custom Range' }
+            ]}
+          />
         </div>
 
         {dateFilter === 'custom' && (
@@ -232,32 +230,56 @@ const OrdersTab = ({
                 title: 'Pilih Cakupan Data',
                 width: '600px',
                 html: `
-                  <div class="selection-grid">
-                    <label class="selection-card active" id="card-current">
-                      <input type="radio" name="export-scope" value="current" checked>
-                      <span class="card-subtitle">Data Saat Ini</span>
-                      <span class="card-title">Sesuai Filter di Layar</span>
-                      <div class="card-check">✓</div>
-                    </label>
-                    ${events.map(ev => `
-                      <label class="selection-card" id="card-${ev.id}">
-                        <input type="radio" name="export-scope" value="event_${ev.id}">
-                        <span class="card-subtitle">${ev.bulan} ${ev.tahun}</span>
-                        <span class="card-title">${ev.nama}</span>
-                        <div class="card-check">✓</div>
-                      </label>
-                    `).join('')}
-                  </div>
+                  <table class="excel-table">
+                    <thead>
+                      <tr>
+                        <th class="col-no">No</th>
+                        <th class="col-name">Nama Event / Cakupan</th>
+                        <th class="col-radio">Pilih</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="selected" onclick="this.querySelector('input').click()">
+                        <td class="col-no">1</td>
+                        <td class="col-name">Sesuai Filter di Layar (Data Saat Ini)</td>
+                        <td class="col-radio">
+                          <input type="radio" name="export-scope" value="current" checked>
+                        </td>
+                      </tr>
+                      ${events.map((ev, idx) => {
+                        const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 }
+                        const eventDate = new Date(ev.tahun, months[ev.bulan] || 0, ev.tanggal)
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0)
+                        const isPast = ev.is_past || eventDate < today
+
+                        return `
+                          <tr class="${isPast ? 'text-gray-400' : ''}" onclick="this.querySelector('input').click()">
+                            <td class="col-no">${idx + 2}</td>
+                            <td class="col-name">
+                              ${ev.nama} (${ev.bulan} ${ev.tahun})
+                              ${isPast ? '<span class="text-[10px] bg-gray-100 px-1 rounded ml-1">SELESAI</span>' : ''}
+                            </td>
+                            <td class="col-radio">
+                              <input type="radio" name="export-scope" value="event_${ev.id}">
+                            </td>
+                          </tr>
+                        `
+                      }).join('')}
+                    </tbody>
+                  </table>
                 `,
                 didOpen: () => {
                   const container = Swal.getHtmlContainer()
-                  const cards = container.querySelectorAll('.selection-card')
-                  cards.forEach(card => {
-                    card.addEventListener('click', () => {
-                      cards.forEach(c => c.classList.remove('active'))
-                      card.classList.add('active')
-                      card.querySelector('input').checked = true
-                    })
+                  const rows = container.querySelectorAll('tr')
+                  rows.forEach(row => {
+                    const radio = row.querySelector('input')
+                    if (radio) {
+                      radio.addEventListener('change', () => {
+                        rows.forEach(r => r.classList.remove('selected'))
+                        if (radio.checked) row.classList.add('selected')
+                      })
+                    }
                   })
                 },
                 preConfirm: () => {
@@ -273,10 +295,10 @@ const OrdersTab = ({
                 showCancelButton: true,
                 cancelButtonText: 'Batal',
                 customClass: {
-                  popup: 'rounded-3xl',
-                  title: 'text-xl font-black uppercase tracking-tight pt-8',
-                  confirmButton: 'rounded-xl px-8 py-3 font-bold uppercase tracking-widest text-xs',
-                  cancelButton: 'rounded-xl px-8 py-3 font-bold uppercase tracking-widest text-xs'
+                  popup: 'rounded-xl',
+                  title: 'text-lg font-bold pt-6 pb-2',
+                  confirmButton: 'rounded-lg px-6 py-2.5 font-bold text-xs uppercase tracking-wider',
+                  cancelButton: 'rounded-lg px-6 py-2.5 font-bold text-xs uppercase tracking-wider'
                 }
               })
 
@@ -452,21 +474,23 @@ const OrdersTab = ({
                           <p className="truncate" title={order.catatan}>{order.catatan || '-'}</p>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <select
+                          <CustomSelect
                             value={order.status}
                             onChange={e => onMerchOrderStatusChange(order.id, e.target.value)}
-                            className={`px-2 py-1 rounded-full text-xs font-bold border border-gray-200 focus:ring-2 focus:ring-custom-green ${
-                              order.status === 'pending' ? 'bg-white text-gray-600' :
-                              order.status === 'checked' ? 'bg-blue-100 text-blue-700' :
-                              order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                              'bg-red-100 text-red-700'
-                            }`}
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="checked">Checked</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
+                            variant="status"
+                            className={
+                              order.status === 'pending' ? 'bg-white text-gray-600 border-gray-300' :
+                              order.status === 'checked' ? 'bg-blue-100 text-blue-700 border-blue-400' :
+                              order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-400' :
+                              'bg-red-100 text-red-700 border-red-400'
+                            }
+                            options={[
+                              { value: 'pending', label: 'Pending' },
+                              { value: 'checked', label: 'Checked' },
+                              { value: 'completed', label: 'Completed' },
+                              { value: 'cancelled', label: 'Cancelled' }
+                            ]}
+                          />
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-center gap-2">

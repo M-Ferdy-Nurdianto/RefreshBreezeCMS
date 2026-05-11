@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import { supabase } from '../lib/supabase'
+import { showToast } from '../lib/toast'
 import Swal from 'sweetalert2'
 
 import OrdersTab from './admin/tabs/OrdersTab'
@@ -29,8 +30,8 @@ import {
 const AdminPage = () => {
   const navigate = useNavigate()
 
-  const [activeTab, setActiveTab] = useState('orders')
-  const [orderSubTab, setOrderSubTab] = useState('all')
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('admin_active_tab') || 'orders')
+  const [orderSubTab, setOrderSubTab] = useState(() => localStorage.getItem('admin_order_subtab') || 'all')
   const [orders, setOrders] = useState([])
   const [members, setMembers] = useState([])
   const [events, setEvents] = useState([])
@@ -83,15 +84,7 @@ const AdminPage = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
         fetchOrders()
         if (payload.eventType === 'INSERT' && payload.new.created_by === 'customer') {
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'info',
-            title: 'Order Baru!',
-            text: `${payload.new.nama_lengkap}`,
-            showConfirmButton: false,
-            timer: 3000
-          })
+          showToast.info(payload.new.nama_lengkap, 'Order Baru!')
         }
       })
       .subscribe()
@@ -100,10 +93,15 @@ const AdminPage = () => {
   }, [])
 
   useEffect(() => {
+    localStorage.setItem('admin_active_tab', activeTab)
     if (activeTab === 'orders') {
       fetchOrders()
     }
   }, [statusFilter, otsFilter, eventFilter, dateFilter, dateFrom, dateTo, searchQuery, activeTab, orderSubTab])
+
+  useEffect(() => {
+    localStorage.setItem('admin_order_subtab', orderSubTab)
+  }, [orderSubTab])
 
   const checkAuth = () => {
     if (!localStorage.getItem('admin_token')) {
@@ -236,7 +234,7 @@ const AdminPage = () => {
   const handleStatusChange = async (orderId, status) => {
     try {
       await api.patch(`/orders/${orderId}/status`, { status })
-      Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Status updated!', showConfirmButton: false, timer: 1500 })
+      showToast.success('Status updated!')
       fetchOrders()
     } catch (error) {
       Swal.fire({ icon: 'error', title: 'Gagal Update Status', text: error.response?.data?.error || error.message })
@@ -309,7 +307,11 @@ const AdminPage = () => {
     try {
       await api.patch(`/events/${eventId}`, { is_past: !currentStatus })
       fetchEvents()
-      Swal.fire({ icon: 'success', title: !currentStatus ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!', timer: 1500, showConfirmButton: false })
+      showToast.cart(
+        'Status updated',
+        '✅',
+        !currentStatus ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!'
+      )
     } catch (error) {
       Swal.fire({ icon: 'error', title: 'Gagal', text: error.message })
     }
@@ -547,9 +549,17 @@ const AdminPage = () => {
     }
   }
 
-  const handleToggleMerchAvailability = async (item) => {
-    await api.put(`/merchandise/${item.id}`, { available: !item.available })
-    fetchMerch()
+  const handleToggleMerchAvailability = async (item, newValue = null) => {
+    const isAvailable = newValue !== null ? (newValue === 'aktif') : !item.available
+    const previousValue = item.available
+    setMerch(prev => prev.map(m => (m.id === item.id ? { ...m, available: isAvailable } : m)))
+    try {
+      await api.put(`/merchandise/${item.id}`, { available: isAvailable })
+      fetchMerch()
+    } catch (error) {
+      setMerch(prev => prev.map(m => (m.id === item.id ? { ...m, available: previousValue } : m)))
+      Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Gagal update ketersediaan' })
+    }
   }
 
   const handleMerchOrderStatusChange = async (orderId, newStatus) => {

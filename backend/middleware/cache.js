@@ -7,6 +7,11 @@ export const cachePublic = ({
     return next()
   }
 
+  if (req.headers.authorization) {
+    res.set('Cache-Control', 'no-store')
+    return next()
+  }
+
   res.set('Cache-Control', `public, max-age=${maxAge}, s-maxage=${sMaxAge}, stale-while-revalidate=${staleWhileRevalidate}`)
   next()
 }

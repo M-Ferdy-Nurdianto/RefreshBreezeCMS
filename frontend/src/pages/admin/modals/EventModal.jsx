@@ -3,9 +3,10 @@ import Swal from 'sweetalert2'
 import { FaTimes } from 'react-icons/fa'
 import api from '../../../lib/api'
 import { formatMemberName } from '../../../lib/memberUtils'
+import { showToast } from '../../../lib/toast'
 
 const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
-  const isEditingSpecial = editingEvent?.is_special || editingEvent?.type === 'special' || !!editingEvent?.theme_name || !!editingEvent?.theme_color
+  const isEditingSpecial = editingEvent?.is_special === true || editingEvent?.type === 'special'
   const [eventType, setEventType] = useState(isEditingSpecial ? 'special' : 'regular')
   const [formData, setFormData] = useState(() => {
     if (editingEvent) {
@@ -49,21 +50,40 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
 
     try {
       if (editingEvent) {
-        const payload = { ...formData, type: eventType, is_special: eventType === 'special' }
-        delete payload.event_gallery
-        delete payload.event_lineup
-        delete payload.created_at
-        delete payload.id
+        // Clean payload: only send fields that exist in the events table
+        const payload = {
+          nama: formData.nama,
+          tanggal: formData.tanggal,
+          bulan: formData.bulan,
+          tahun: formData.tahun,
+          lokasi: formData.lokasi,
+          event_time: formData.event_time,
+          cheki_time: formData.cheki_time,
+          is_past: formData.is_past,
+          type: eventType,
+          is_special: eventType === 'special',
+          theme_name: eventType === 'special' ? formData.theme_name : null,
+          theme_color: eventType === 'special' ? formData.theme_color : null,
+          lineup: formData.lineup // Send the array of UUIDs
+        }
 
         await api.patch(`/events/${editingEvent.id}`, payload)
-        Swal.fire({ icon: 'success', title: 'Event Updated!', timer: 1500, showConfirmButton: false })
+        showToast.success('Event Updated!')
       } else {
-        await api.post('/events', { ...formData, type: eventType, is_special: eventType === 'special' })
-        Swal.fire({ icon: 'success', title: 'Event Created!', timer: 1500, showConfirmButton: false })
+        const payload = { 
+          ...formData, 
+          type: eventType, 
+          is_special: eventType === 'special',
+          theme_name: eventType === 'special' ? formData.theme_name : null,
+          theme_color: eventType === 'special' ? formData.theme_color : null,
+          lineup: formData.lineup 
+        }
+        await api.post('/events', payload)
+        showToast.success('Event Created!')
       }
       onSuccess()
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Gagal', text: error.response?.data?.error || error.message })
+      showToast.error(error.response?.data?.error || error.message, 'Gagal')
     } finally {
       setSubmitting(false)
     }

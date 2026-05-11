@@ -6,7 +6,7 @@ import { cachePublic } from '../middleware/cache.js'
 const router = express.Router()
 
 // GET: Fetch all events
-router.get('/', cachePublic({ sMaxAge: 900, maxAge: 120, staleWhileRevalidate: 120 }), async (req, res) => {
+router.get('/', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 10 }), async (req, res) => {
   try {
     const { is_past } = req.query
 
@@ -74,7 +74,7 @@ router.get('/', cachePublic({ sMaxAge: 900, maxAge: 120, staleWhileRevalidate: 1
 })
 
 // GET: Fetch single event by ID
-router.get('/:id', cachePublic({ sMaxAge: 900, maxAge: 120, staleWhileRevalidate: 120 }), async (req, res) => {
+router.get('/:id', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 10 }), async (req, res) => {
   try {
     const { id } = req.params
 

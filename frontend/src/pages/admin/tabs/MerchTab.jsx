@@ -223,12 +223,15 @@ const MerchTab = ({
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
+                      type="button"
                       onClick={() => onToggleMerchAvailability(item)}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                        item.available ? 'bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-700' : 'bg-red-100 text-red-700 hover:bg-green-100 hover:text-green-700'
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+                        item.available
+                          ? 'bg-green-100 text-green-700 border-green-400 hover:bg-green-200'
+                          : 'bg-red-100 text-red-700 border-red-400 hover:bg-red-200'
                       }`}
                     >
-                      {item.available ? '● Aktif' : '✗ Nonaktif'}
+                      {item.available ? 'Aktif' : 'Nonaktif'}
                     </button>
                   </td>
                   <td className="px-4 py-3">

@@ -17,13 +17,13 @@ const CartSidebar = ({
 
   return (
     <div className="lg:col-span-1">
-      <div className="sticky top-32 space-y-6">
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-emerald-900/5 border border-emerald-50/50 relative overflow-hidden group">
+      <div className="sticky top-24 lg:top-32 max-h-[calc(100vh-120px)] lg:max-h-[calc(100vh-160px)] flex flex-col">
+        <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-2xl shadow-emerald-900/5 border border-emerald-50/50 relative overflow-hidden group flex-1 flex flex-col min-h-0">
           {/* Decorative background */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform duration-700 group-hover:scale-110"></div>
           
-          <div className="relative">
-            <div className="flex items-center justify-between mb-8">
+          <div className="relative flex flex-col flex-1 min-h-0">
+            <div className="flex flex-shrink-0 items-center justify-between mb-6">
                <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-[#079108] rounded-2xl flex items-center justify-center shadow-lg shadow-[#079108]/20">
                     <FaShoppingCart className="text-white text-xl" />
@@ -37,7 +37,7 @@ const CartSidebar = ({
                </div>
             </div>
 
-            <div className="space-y-6 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar pb-2">
               <AnimatePresence mode="popLayout">
                 {/* Cheki Items */}
                 {cart.map((item) => (
@@ -131,7 +131,7 @@ const CartSidebar = ({
             </div>
 
             {hasItems && (
-              <div className="mt-8 pt-8 border-t border-gray-100 space-y-4">
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 flex-shrink-0">
                  <div className="flex items-center justify-between">
                     <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Subtotal</span>
                     <span className="text-2xl font-black text-gray-900">IDR {(totalHarga + totalMerchHarga).toLocaleString()}</span>

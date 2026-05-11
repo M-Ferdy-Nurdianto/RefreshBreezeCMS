@@ -1,5 +1,6 @@
 import React from 'react'
 import { FaFilter, FaShoppingCart, FaCheck } from 'react-icons/fa'
+import CustomSelect from '../components/CustomSelect'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -120,18 +121,14 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
 
         <div className="flex items-center gap-2">
           <FaFilter className="text-gray-500" />
-          <select
+          <CustomSelect
             value={recapEventFilter}
             onChange={(e) => setRecapEventFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
-          >
-            <option value="all">Semua Event</option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.nama} - {event.bulan} {event.tahun}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: 'all', label: 'Semua Event' },
+              ...events.map(ev => ({ value: ev.id, label: `${ev.nama} - ${ev.bulan} ${ev.tahun}` }))
+            ]}
+          />
         </div>
       </div>
 

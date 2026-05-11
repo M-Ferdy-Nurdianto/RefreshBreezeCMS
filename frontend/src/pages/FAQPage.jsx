@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaPlus, FaMinus, FaQuestionCircle, FaChevronLeft } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 import api from '../lib/api'
 
 const FAQPage = () => {

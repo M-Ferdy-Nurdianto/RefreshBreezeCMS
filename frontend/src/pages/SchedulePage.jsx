@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaMapMarkerAlt, FaClock, FaHistory, FaCalendarAlt } from 'react-icons/fa'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 import api from '../lib/api'
 import { getMemberEmoji, formatMemberName } from '../lib/memberUtils'
 
@@ -26,9 +25,17 @@ const SchedulePage = () => {
     fetchEvents()
   }, [])
 
-  const upcomingEvents = events.filter(e => !e.is_past)
-  // Sort past events by date descending (already handled by backend usually, but ensuring)
-  const pastEvents = events.filter(e => e.is_past)
+  const isEventPast = (event) => {
+    if (event.is_past) return true;
+    const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+    const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return eventDate < today;
+  };
+
+  const upcomingEvents = events.filter(e => !isEventPast(e))
+  const pastEvents = events.filter(e => isEventPast(e))
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
