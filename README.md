@@ -1,5 +1,8 @@
 # 🌬️ Refresh Breeze - Website Penjualan Cheki
 
+> [!IMPORTANT]
+> **COPYRIGHT NOTICE**: Repositori ini bersifat **PUBLIC** hanya untuk tujuan transparansi, namun lisensi kode adalah **PRIVATE**. Kode ini hanya diperbolehkan untuk digunakan oleh tim resmi **Refresh Breeze**. Pihak lain dilarang keras menggandakan atau menggunakan kode ini tanpa izin.
+
 Website fullstack untuk penjualan Cheki (foto polaroid) dengan member Refresh Breeze. Dibangun dengan **React.js**, **Tailwind CSS**, **Express.js**, **Supabase**, dan **Supabase Storage** untuk manajemen file.
 
 [![Deployment](https://img.shields.io/badge/Deploy-Vercel-black?style=flat&logo=vercel)](https://vercel.com)
