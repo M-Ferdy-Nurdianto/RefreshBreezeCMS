@@ -1,9 +1,42 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { FaDownload, FaChevronLeft, FaExclamationTriangle } from 'react-icons/fa'
 import { toPng } from 'html-to-image'
 
 const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
   const receiptRef = useRef(null)
+  const [scale, setScale] = useState(1)
+  const [height, setHeight] = useState(0)
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined') {
+        const padding = 32 // total horizontal padding
+        const availableWidth = window.innerWidth - padding
+        const baseWidth = 655
+        
+        let newScale = 1
+        if (availableWidth < baseWidth) {
+          newScale = availableWidth / baseWidth
+        }
+        setScale(newScale)
+
+        if (receiptRef.current) {
+          setHeight(receiptRef.current.offsetHeight)
+        }
+      }
+    }
+
+    handleResize()
+    // Small delay to ensure ref is populated
+    const timeout = setTimeout(handleResize, 100)
+    
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timeout)
+    }
+  }, [data]) // Re-run if data changes as it affects height
+
   if (!data) return null
 
   // Special theme color logic
@@ -88,16 +121,24 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#079108]/15 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div 
-        ref={receiptRef}
-        className="relative z-10 bg-white shadow-2xl shadow-emerald-900/10 overflow-hidden flex flex-col ring-1 ring-gray-900/5" 
-        style={{ 
-          ...receiptFontStyle, 
-          width: '655px', // <--- Atur Lebar Nota di sini
-          maxWidth: '100%',
-          minHeight: 'auto', // <--- Diubah jadi auto agar tidak kosong di bawah
-          padding: '40px 60px'
+        className="relative z-10 transition-transform duration-300"
+        style={{
+          width: '655px',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top center',
+          marginBottom: height > 0 ? `${height * (scale - 1)}px` : '0px' // Remove extra space caused by scaling
         }}
       >
+        <div 
+          ref={receiptRef}
+          className="bg-white shadow-2xl shadow-emerald-900/10 overflow-hidden flex flex-col ring-1 ring-gray-900/5" 
+          style={{ 
+            ...receiptFontStyle, 
+            width: '655px',
+            minHeight: 'auto',
+            padding: '40px 60px'
+          }}
+        >
         {/* Header */}
         <div className="flex flex-col items-center text-center space-y-1 mb-4 mt-2">
           <img src="/images/logos/logo.webp" alt="Refresh Breeze" className="h-16 object-contain mb-1" />
@@ -280,6 +321,7 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
             <FaDownload className="text-xs" />
             Download Nota
           </button>
+        </div>
         </div>
       </div>
     </div>
