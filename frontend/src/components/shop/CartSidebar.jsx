@@ -16,7 +16,9 @@ const CartSidebar = ({
   const hasItems = cart.length > 0 || merchCart.length > 0
 
   return (
-    <div className="lg:col-span-1">
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block lg:col-span-1">
       <div className="sticky top-24 lg:top-32 max-h-[calc(100vh-120px)] lg:max-h-[calc(100vh-160px)] flex flex-col">
         <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-2xl shadow-emerald-900/5 border border-emerald-50/50 relative overflow-hidden group flex-1 flex flex-col min-h-0">
           {/* Decorative background */}
@@ -156,7 +158,40 @@ const CartSidebar = ({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Mobile Floating Checkout Button */}
+      <AnimatePresence>
+        {hasItems && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-4 right-4 z-50 lg:hidden"
+          >
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              onClick={onCheckout}
+              className="w-full bg-gray-900 text-white p-2 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between border border-white/10 backdrop-blur-xl"
+            >
+              <div className="flex items-center gap-3 pl-4">
+                 <div className="bg-[#079108] w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-[#079108]/20">
+                    <FaShoppingCart className="text-white text-sm" />
+                 </div>
+                 <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Checkout</span>
+                    <span className="text-sm font-black uppercase tracking-tight">{cart.length + merchCart.length} Items Selected</span>
+                 </div>
+              </div>
+              <div className="bg-white/10 px-6 py-3 rounded-[1.5rem] flex items-center gap-3">
+                 <span className="text-sm font-black">IDR {(totalHarga + totalMerchHarga).toLocaleString()}</span>
+                 <FaChevronRight className="text-[10px] text-emerald-400" />
+              </div>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 

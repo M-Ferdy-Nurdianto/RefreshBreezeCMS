@@ -222,10 +222,4 @@
   @apply ring-2 ring-offset-1 ring-slate-300;
 }
 
-@media only screen and (max-width: 480px) {
-  .Toastify__toast-container {
-    width: 90vw !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-  }
-}
+

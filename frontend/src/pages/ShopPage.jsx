@@ -241,54 +241,58 @@ const ShopPage = () => {
 
       <Header cartCount={cartHook.cart.length + cartHook.merchCart.length} onCartClick={() => setStep(1)} />
       
-      <main className="relative pt-32 pb-40 container mx-auto max-w-7xl px-4">
+      <main className="relative pt-32 pb-30 container mx-auto max-w-7xl px-4">
         {step === 1 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
             <div className="lg:col-span-2 space-y-12">
                 {/* Event Selector */}
-                <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-8 shadow-xl">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#079108] to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-[#079108]/20">
-                      <FaTicketAlt className="text-xl" />
+                <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-xl">
+                  <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#079108] to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-[#079108]/20 shrink-0">
+                      <FaTicketAlt className="text-lg sm:text-xl" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black uppercase tracking-tight">Pilih Jadwal Event</h2>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Wajib dipilih sebelum memesan cheki</p>
+                      <h2 className="text-lg sm:text-2xl font-black uppercase tracking-tight leading-tight">Pilih Jadwal Event</h2>
+                      <p className="text-[9px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Wajib dipilih sebelum memesan cheki</p>
                     </div>
                   </div>
 
                   <div className="relative custom-dropdown-container">
                     <div 
                       onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
-                      className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white shadow-md' : 'border-transparent hover:border-gray-200'}`}
+                      className={`w-full bg-gray-50 border-2 rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white shadow-md' : 'border-transparent hover:border-gray-200'}`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-3 h-3 rounded-full ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
-                        <span className={`font-black uppercase tracking-widest text-sm ${formData.event_id ? 'text-gray-900' : 'text-gray-400'}`}>
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                        <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900' : 'text-gray-400'}`}>
                           {events.find(e => e.id === formData.event_id)?.nama || 'Klik untuk memilih event...'}
                         </span>
                       </div>
-                      <FaChevronDown className={`text-gray-400 transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180' : ''}`} />
+                      <FaChevronDown className={`text-gray-400 text-xs sm:text-sm transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180' : ''}`} />
                     </div>
 
                     <AnimatePresence>
                       {eventDropdownOpen && (
                         <motion.div 
-                          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 right-0 mt-3 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl z-[100] overflow-hidden"
+                          initial={{ opacity: 0, y: -10 }} 
+                          animate={{ opacity: 1, y: 0 }} 
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50"
                         >
-                          <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                          <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
                             {events.length > 0 ? events.map(event => (
                               <div 
                                 key={event.id}
                                 onClick={() => { setFormData({...formData, event_id: event.id}); setEventDropdownOpen(false); }}
-                                className="px-8 py-4 hover:bg-emerald-50 cursor-pointer flex items-center justify-between group transition-colors"
+                                className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${formData.event_id === event.id ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
                               >
                                 <div className="flex flex-col">
-                                  <span className="font-black text-gray-900 uppercase tracking-tight">{event.nama}</span>
-                                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{event.tanggal} {event.bulan}</span>
+                                  <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${formData.event_id === event.id ? 'text-[#079108]' : 'text-gray-900'}`}>{event.nama}</span>
+                                  <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{event.tanggal} {event.bulan}</span>
                                 </div>
-                                {formData.event_id === event.id && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                                {formData.event_id === event.id && (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                )}
                               </div>
                             )) : (
                               <div className="px-8 py-6 text-center text-gray-400 font-bold italic">Tidak ada event tersedia</div>

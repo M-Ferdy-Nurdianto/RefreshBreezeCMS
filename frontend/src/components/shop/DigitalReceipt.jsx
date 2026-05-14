@@ -2,10 +2,11 @@ import React, { useRef, useState, useEffect } from 'react'
 import { FaDownload, FaChevronLeft, FaExclamationTriangle } from 'react-icons/fa'
 import { toPng } from 'html-to-image'
 
-const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
+const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }) => {
   const receiptRef = useRef(null)
   const [scale, setScale] = useState(1)
   const [height, setHeight] = useState(0)
+  const [maskEnabled, setMaskEnabled] = useState(true)
 
   useEffect(() => {
     const handleResize = () => {
@@ -105,14 +106,19 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
     const isPhoneNumber = /^[\d\s\+\-\(\)]+$/.test(str) && str.replace(/\D/g, '').length >= 8;
     
     if (isPhoneNumber) {
-      return maskPhone(str);
+      return maskEnabled ? maskPhone(str) : str;
     }
     // Otherwise treat as username
-    return str.startsWith('@') ? str : `@${str}`;
+    const username = str.startsWith('@') ? str : `@${str}`;
+    if (!maskEnabled) return username;
+    
+    // Simple masking for username: @us*****
+    if (username.length <= 4) return username;
+    return username.slice(0, 3) + '*'.repeat(Math.max(2, username.length - 4)) + username.slice(-1);
   };
 
   return (
-    <div className="relative flex flex-col items-center py-12 px-4 min-h-screen bg-slate-50 overflow-hidden">
+    <div className={`relative flex flex-col items-center ${isPreview ? 'py-4' : 'py-12 min-h-screen bg-slate-50'} px-4 overflow-hidden`}>
       {/* Grid Pattern Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
       
@@ -194,22 +200,20 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
             <div className="flex text-sm">
               <span className="w-24 flex-shrink-0">WhatsApp</span>
               <span className="mr-2">:</span>
-              <span>{maskPhone(data.whatsapp)}</span>
+              <span>{maskEnabled ? maskPhone(data.whatsapp) : data.whatsapp}</span>
             </div>
           )}
           {isMerch && data.instagram && (
             <div className="flex text-sm">
               <span className="w-24 flex-shrink-0">Instagram</span>
               <span className="mr-2">:</span>
-              <span>{data.instagram.startsWith('@') ? data.instagram : `@${data.instagram}`}</span>
+              <span>{formatContact(data.instagram)}</span>
             </div>
           )}
-          <div className="flex flex-col text-sm pt-1">
-            <div className="flex">
-              <span className="w-24 flex-shrink-0">Catatan</span>
-              <span className="mr-2">:</span>
-            </div>
-            <span className="italic text-gray-700 pl-4">{data.catatan || '-'}</span>
+          <div className="flex text-sm">
+            <span className="w-24 flex-shrink-0">Catatan</span>
+            <span className="mr-2">:</span>
+            <span className="italic text-gray-700 break-words">{data.catatan || '-'}</span>
           </div>
         </div>
 
@@ -219,7 +223,7 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
         {/* Items Section */}
         <div className="space-y-4 mb-4 px-4">
           {data.items.map((item, idx) => (
-            <div key={idx} className="flex flex-col">
+            <div key={idx} className="flex flex-col text-left">
               <h4 className="text-sm font-bold uppercase leading-tight mb-1" style={{ color: accentColor }}>
                 {item.name} {item.size ? `(${item.size})` : ''}
               </h4>
@@ -306,21 +310,35 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload }) => {
         </div>
 
         {/* Actions (Hidden on capture) */}
-        <div className="receipt-actions flex gap-4 w-full mt-auto pt-8 pb-4 px-4 print:hidden">
+        <div className={`receipt-actions flex flex-col gap-4 w-full mt-auto ${isPreview ? 'pt-4 pb-2' : 'pt-8 pb-4'} px-4 print:hidden`}>
           <button 
-            onClick={onBack}
-            className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+            onClick={() => setMaskEnabled(!maskEnabled)}
+            className={`w-full py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${maskEnabled ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-gray-50 text-gray-400 border border-gray-100'}`}
           >
-            <FaChevronLeft className="text-xs" />
-            Kembali
+            <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-colors ${maskEnabled ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'}`}>
+              {maskEnabled && <div className="w-1 h-1 bg-white rounded-full"></div>}
+            </div>
+            {maskEnabled ? 'Kontak Disamarkan' : 'Samarkan Kontak'}
           </button>
-          <button 
-            onClick={handleDownload}
-            className="flex-[2] bg-gray-900 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition-colors"
-          >
-            <FaDownload className="text-xs" />
-            Download Nota
-          </button>
+
+          <div className="flex gap-4 w-full">
+            {!isPreview && (
+              <button 
+                onClick={onBack}
+                className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+              >
+                <FaChevronLeft className="text-xs" />
+                Kembali
+              </button>
+            )}
+            <button 
+              onClick={handleDownload}
+              className={`${isPreview ? 'w-full' : 'flex-[2]'} bg-gray-900 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-black transition-colors`}
+            >
+              <FaDownload className="text-xs" />
+              Download Nota
+            </button>
+          </div>
         </div>
         </div>
       </div>

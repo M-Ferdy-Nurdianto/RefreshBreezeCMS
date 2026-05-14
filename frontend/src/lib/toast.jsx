@@ -23,15 +23,15 @@ const CustomToast = ({ message, type = 'info', label }) => {
   const style = toastStyles[type] || toastStyles.info
   
   return (
-    <div className="flex items-start gap-4 px-6 py-4 bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px] max-w-[350px]">
+    <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-4 bg-gray-900/95 backdrop-blur-xl rounded-[1.25rem] border border-white/10 shadow-2xl w-[90vw] sm:w-auto sm:min-w-[320px] sm:max-w-[400px] mx-auto">
       <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
         {style.icon}
       </div>
-      <div className="flex flex-col pt-0.5">
-        <p className={`text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-2 ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}`}>
+      <div className="flex flex-col min-w-0">
+        <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-1.5 ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}`}>
           {label || style.label}
         </p>
-        <p className="text-sm font-black text-white leading-relaxed">{message}</p>
+        <p className="text-xs sm:text-sm font-black text-white leading-tight sm:leading-relaxed truncate sm:whitespace-normal">{message}</p>
       </div>
     </div>
   )
@@ -40,7 +40,7 @@ const CustomToast = ({ message, type = 'info', label }) => {
 const toastOptions = (id) => ({
   toastId: id,
   position: "bottom-center",
-  autoClose: 2500, // Hilang otomatis dalam 2.5 detik
+  autoClose: 1500,
   className: "!bg-transparent !p-0 !shadow-none min-h-0",
   bodyClassName: "!p-0 !m-0",
   closeButton: false,
@@ -69,13 +69,13 @@ export const showToast = {
   cart: (message, emoji = '✨', label = 'Added to Cart') => {
     const id = `cart-${message}`
     const content = (
-      <div className="flex items-start gap-4 px-6 py-4 bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] min-w-[280px] max-w-[350px]">
+      <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-4 bg-gray-900/95 backdrop-blur-xl rounded-[1.25rem] border border-white/10 shadow-2xl w-[90vw] sm:w-auto sm:min-w-[320px] sm:max-w-[400px] mx-auto">
         <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
           {emoji}
         </div>
-        <div className="flex flex-col pt-0.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 leading-none mb-2">{label}</p>
-          <p className="text-sm font-black text-white leading-relaxed">{message}</p>
+        <div className="flex flex-col min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 leading-none mb-1.5">{label}</p>
+          <p className="text-xs sm:text-sm font-black text-white leading-tight sm:leading-relaxed truncate sm:whitespace-normal">{message}</p>
         </div>
       </div>
     )

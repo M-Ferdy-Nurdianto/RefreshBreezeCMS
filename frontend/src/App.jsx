@@ -31,7 +31,7 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ToastContainer
         position="bottom-center"
-        autoClose={2000}
+        autoClose={1500}
         hideProgressBar={true}
         newestOnTop={true}
         closeOnClick
@@ -39,10 +39,10 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme="dark"
         transition={Zoom}
         toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
-        style={{ zIndex: 99999, width: 'auto' }}
+        style={{ zIndex: 99999, width: '100%', maxWidth: 'none', bottom: '24px', left: '0', right: '0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
       />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>

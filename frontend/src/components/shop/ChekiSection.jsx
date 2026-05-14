@@ -19,14 +19,14 @@ const ChekiSection = ({
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 sm:space-y-12">
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative"
       >
-         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-3 bg-gradient-to-r from-gray-900 via-gray-700 to-[#079108] bg-clip-text text-transparent">
+         <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2 sm:mb-3 bg-gradient-to-r from-gray-900 via-gray-700 to-[#079108] bg-clip-text text-transparent">
            Shop Tickets
          </h1>
          <p className="text-gray-500 font-medium text-sm sm:text-base">Dapatkan tiket cheki eksklusif bersama member favoritmu!</p>
@@ -57,24 +57,24 @@ const ChekiSection = ({
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-gradient-to-r from-[#079108] to-emerald-500 text-white px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest mb-6 shadow-lg shadow-[#079108]/30"
+                className="bg-gradient-to-r from-[#079108] to-emerald-500 text-white px-3 sm:px-5 py-1 sm:py-2 rounded-full text-[9px] sm:text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 shadow-lg shadow-[#079108]/30"
               >
                  ✨ Best Value
               </motion.div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase tracking-tight mb-2 sm:mb-3 drop-shadow-2xl">
+              <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase tracking-tight mb-1 sm:mb-3 drop-shadow-2xl">
                  Group Cheki
               </h2>
               <p className="text-gray-300 font-medium max-w-md text-xs sm:text-sm md:text-base leading-relaxed mb-4 sm:mb-8 hidden sm:block">
                  Foto eksklusif bersama seluruh member Refresh Breeze dalam satu frame.
               </p>
-              <div className="flex items-center gap-4 sm:gap-8">
-                 <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white">IDR {hargaGrup.toLocaleString()}</span>
+              <div className="flex items-center gap-3 sm:gap-8">
+                 <span className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white">IDR {hargaGrup.toLocaleString()}</span>
                  <motion.button 
                    whileHover={{ scale: 1.1 }}
                    whileTap={{ scale: 0.95 }}
-                   className="bg-white text-[#079108] w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-white/20 group-hover:bg-[#079108] group-hover:text-white transition-colors duration-300"
+                   className="bg-white text-[#079108] w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-xl shadow-white/20 group-hover:bg-[#079108] group-hover:text-white transition-colors duration-300"
                  >
-                    <FaPlus className="text-lg" />
+                    <FaPlus className="text-sm sm:text-lg" />
                  </motion.button>
               </div>
           </div>

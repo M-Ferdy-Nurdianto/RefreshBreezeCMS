@@ -16,7 +16,7 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
         {merch.map((item, idx) => {
           const inCart = merchCart.find(i => i.id === item.id)
           const isClosed = item.available === false
