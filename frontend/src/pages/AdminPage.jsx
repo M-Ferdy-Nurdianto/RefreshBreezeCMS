@@ -267,7 +267,7 @@ const AdminPage = () => {
   const handleBulkDelete = async (deleteType, params = {}) => {
     try {
       const response = await api.post('/orders/bulk-delete', { deleteType, ...params })
-      Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.data.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 })
+      showToast.success(response.data.message)
       fetchOrders()
       setShowBulkDeleteModal(false)
     } catch (error) {
@@ -296,7 +296,7 @@ const AdminPage = () => {
 
     try {
       await api.delete(`/events/${eventId}`)
-      Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Event berhasil dihapus', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 })
+      showToast.success('Event berhasil dihapus')
       fetchEvents()
     } catch (error) {
       Swal.fire('Error!', error.response?.data?.error || error.message, 'error')

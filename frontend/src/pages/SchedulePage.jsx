@@ -34,8 +34,23 @@ const SchedulePage = () => {
     return eventDate < today;
   };
 
-  const upcomingEvents = events.filter(e => !isEventPast(e))
-  const pastEvents = events.filter(e => isEventPast(e))
+  const upcomingEvents = events
+    .filter(e => !isEventPast(e))
+    .sort((a, b) => {
+      const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+      const dateA = new Date(a.tahun, months[a.bulan] || 0, a.tanggal);
+      const dateB = new Date(b.tahun, months[b.bulan] || 0, b.tanggal);
+      return dateA - dateB;
+    })
+
+  const pastEvents = events
+    .filter(e => isEventPast(e))
+    .sort((a, b) => {
+      const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+      const dateA = new Date(a.tahun, months[a.bulan] || 0, a.tanggal);
+      const dateB = new Date(b.tahun, months[b.bulan] || 0, b.tanggal);
+      return dateB - dateA;
+    })
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">

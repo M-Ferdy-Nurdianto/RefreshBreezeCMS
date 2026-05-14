@@ -50,6 +50,18 @@ router.get('/', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 10 }
     }
 
     if (data) {
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+
+      data = data.map(event => {
+        const monthIndex = monthMap[event.bulan] !== undefined ? monthMap[event.bulan] : 0
+        const eventDate = new Date(event.tahun, monthIndex, event.tanggal)
+        return {
+          ...event,
+          is_past: event.is_past || eventDate < now
+        }
+      })
+
       data.sort((a, b) => {
         // 1. Year (Desc)
         if (b.tahun !== a.tahun) return b.tahun - a.tahun

@@ -39,9 +39,21 @@ const HomePage = () => {
         try {
             const [eventsRes, faqsRes] = await Promise.all([ api.get('/events'), api.get('/faqs') ])
             if (eventsRes.data.success) {
+                const monthMap = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+
                 const upcoming = eventsRes.data.data
-                    .filter(e => !e.is_past)
-                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                    .filter(e => {
+                        if (e.is_past) return false;
+                        const eventDate = new Date(e.tahun, monthMap[e.bulan] || 0, e.tanggal);
+                        return eventDate >= now;
+                    })
+                    .sort((a, b) => {
+                        const dateA = new Date(a.tahun, monthMap[a.bulan] || 0, a.tanggal);
+                        const dateB = new Date(b.tahun, monthMap[b.bulan] || 0, b.tanggal);
+                        return dateA - dateB;
+                    })
                     .slice(0, 3)
                 setEvents(upcoming)
             }
