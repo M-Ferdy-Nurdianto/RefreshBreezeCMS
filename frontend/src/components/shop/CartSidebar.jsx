@@ -19,69 +19,48 @@ const CartSidebar = ({
     <>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block lg:col-span-1">
-      <div className="sticky top-24 lg:top-32 max-h-[calc(100vh-120px)] lg:max-h-[calc(100vh-160px)] flex flex-col">
-        <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-2xl shadow-emerald-900/5 border border-emerald-50/50 relative overflow-hidden group flex-1 flex flex-col min-h-0">
-          {/* Decorative background */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform duration-700 group-hover:scale-110"></div>
-          
-          <div className="relative flex flex-col flex-1 min-h-0">
-            <div className="flex flex-shrink-0 items-center justify-between mb-6">
-               <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#079108] rounded-2xl flex items-center justify-center shadow-lg shadow-[#079108]/20">
-                    <FaShoppingCart className="text-white text-xl" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight">Your Cart</h3>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                      {cart.length + merchCart.length} Items Selected
-                    </p>
-                  </div>
-               </div>
+        <div className="sticky top-32">
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#079108]">
+                <FaShoppingCart className="text-xl" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Keranjang</h3>
+                <p className="text-xs text-gray-400">{cart.length + merchCart.length} item dipilih</p>
+              </div>
             </div>
 
-            <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar pb-2">
+            <div className="space-y-6 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
               <AnimatePresence mode="popLayout">
                 {/* Cheki Items */}
                 {cart.map((item) => (
                   <motion.div 
                     key={item.id}
                     layout
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="flex items-center gap-4 group/item"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-4 group"
                   >
-                     <div className="w-16 h-16 rounded-2xl bg-gray-50 p-2 border border-gray-100 flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-black text-gray-900 truncate uppercase tracking-tight">{item.name}</h4>
-                        <p className="text-xs font-bold text-[#079108]">IDR {item.price.toLocaleString()}</p>
-                        
-                        <div className="flex items-center gap-3 mt-2">
-                           <div className="flex items-center bg-gray-50 rounded-full p-1 border border-gray-100">
-                              <button 
-                                onClick={() => updateQuantity(item.id, -1)}
-                                className="w-6 h-6 rounded-full hover:bg-white flex items-center justify-center transition-colors"
-                              >
-                                <FaMinus className="text-[8px]" />
-                              </button>
-                              <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
-                              <button 
-                                onClick={() => updateQuantity(item.id, 1)}
-                                className="w-6 h-6 rounded-full hover:bg-white flex items-center justify-center transition-colors"
-                              >
-                                <FaPlus className="text-[8px]" />
-                              </button>
-                           </div>
-                           <button 
-                            onClick={() => removeFromCart(item.id)}
-                            className="text-gray-300 hover:text-red-500 transition-colors"
-                           >
-                              <FaTrash className="text-xs" />
-                           </button>
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100">
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h4>
+                      <p className="text-xs text-emerald-600 font-medium">Rp {item.price.toLocaleString()}</p>
+                      
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center bg-gray-50 rounded-lg p-1">
+                          <button onClick={() => updateQuantity(item.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaMinus className="text-[8px] text-gray-400" /></button>
+                          <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.id, 1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaPlus className="text-[8px] text-emerald-600" /></button>
                         </div>
-                     </div>
+                        <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                          <FaTrash className="text-[10px]" />
+                        </button>
+                      </div>
+                    </div>
                   </motion.div>
                 ))}
 
@@ -90,109 +69,108 @@ const CartSidebar = ({
                   <motion.div 
                     key={item.cartId}
                     layout
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="flex items-center gap-4 group/item"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-4 group"
                   >
-                     <div className="w-16 h-16 rounded-2xl bg-gray-50 p-2 border border-gray-100 flex-shrink-0">
-                        {item.gambar_url ? (
-                          <img src={item.gambar_url} alt={item.nama} className="w-full h-full object-contain" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-emerald-200">🛍️</div>
-                        )}
-                     </div>
-                     <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-black text-gray-900 truncate uppercase tracking-tight">{item.nama}</h4>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-[#079108]">IDR {item.harga.toLocaleString()}</p>
-                          {item.size && <span className="text-[10px] font-black bg-gray-100 px-1.5 py-0.5 rounded uppercase">{item.size}</span>}
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100 relative">
+                      {item.gambar_url ? (
+                        <img src={item.gambar_url} alt={item.nama} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">🛍️</div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-gray-900 truncate">{item.nama}</h4>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-emerald-600 font-medium">Rp {item.harga.toLocaleString()}</p>
+                        {item.size && <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 font-bold uppercase">{item.size}</span>}
+                      </div>
+                      
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center bg-gray-50 rounded-lg p-1">
+                          <button onClick={() => updateMerchQuantity(item.cartId, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaMinus className="text-[8px] text-gray-400" /></button>
+                          <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
+                          <button onClick={() => updateMerchQuantity(item.cartId, 1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaPlus className="text-[8px] text-emerald-600" /></button>
                         </div>
-                        
-                        <div className="flex items-center gap-3 mt-2">
-                           <div className="flex items-center bg-gray-50 rounded-full p-1 border border-gray-100">
-                              <button onClick={() => updateMerchQuantity(item.cartId, -1)} className="w-6 h-6 rounded-full hover:bg-white flex items-center justify-center transition-colors"><FaMinus className="text-[8px]" /></button>
-                              <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
-                              <button onClick={() => updateMerchQuantity(item.cartId, 1)} className="w-6 h-6 rounded-full hover:bg-white flex items-center justify-center transition-colors"><FaPlus className="text-[8px]" /></button>
-                           </div>
-                           <button onClick={() => removeFromMerchCart(item.cartId)} className="text-gray-300 hover:text-red-500 transition-colors"><FaTrash className="text-xs" /></button>
-                        </div>
-                     </div>
+                        <button onClick={() => removeFromMerchCart(item.cartId)} className="text-gray-300 hover:text-red-500 transition-colors"><FaTrash className="text-[10px]" /></button>
+                      </div>
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
 
               {!hasItems && (
-                <div className="py-12 text-center">
-                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-200">
-                      <FaShoppingCart className="text-2xl" />
-                   </div>
-                   <p className="text-gray-400 font-bold text-sm">Your cart is empty</p>
+                <div className="py-10 text-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-200">
+                    <FaShoppingCart className="text-2xl" />
+                  </div>
+                  <p className="text-gray-400 text-sm">Keranjang belanja kosong</p>
+                  <p className="text-[10px] text-gray-300 mt-1 uppercase tracking-widest font-bold">Pilih item untuk memulai</p>
                 </div>
               )}
             </div>
 
             {hasItems && (
-              <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 flex-shrink-0">
-                 <div className="flex items-center justify-between">
-                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Subtotal</span>
-                    <span className="text-2xl font-black text-gray-900">IDR {(totalHarga + totalMerchHarga).toLocaleString()}</span>
-                 </div>
-                 
-                 <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={onCheckout}
-                    className="w-full bg-[#079108] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-[#079108]/20 flex items-center justify-center gap-3 group"
-                 >
-                    Checkout Now
-                    <FaChevronRight className="text-xs group-hover:translate-x-1 transition-transform" />
-                 </motion.button>
+              <div className="mt-8 pt-8 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-sm text-gray-500">Total Pembayaran</span>
+                  <span className="text-xl font-bold text-gray-900">Rp {(totalHarga + totalMerchHarga).toLocaleString()}</span>
+                </div>
+                
+                <button 
+                  onClick={onCheckout}
+                  className="w-full bg-[#079108] text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-900/10 hover:bg-[#067a07] transition-all flex items-center justify-center gap-2"
+                >
+                  Checkout Sekarang
+                  <FaChevronRight className="text-[10px]" />
+                </button>
 
-                 <div className="flex items-center gap-2 justify-center text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                    <FaUniversity className="text-[#079108]" />
-                    Secure Payment via Bank Transfer
-                 </div>
+                <p className="text-center text-[10px] text-gray-400 mt-4 font-medium uppercase tracking-widest">
+                  Pembayaran Aman via Transfer Bank
+                </p>
               </div>
             )}
           </div>
         </div>
       </div>
-      </div>
 
-      {/* Mobile Floating Checkout Button */}
+      {/* Mobile Floating Button */}
       <AnimatePresence>
         {hasItems && (
           <motion.div 
-            initial={{ y: 100, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-6 left-4 right-4 z-50 lg:hidden"
+            exit={{ y: 20, opacity: 0 }}
+            className="fixed bottom-8 left-4 right-4 z-50 lg:hidden"
           >
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
+            <button 
               onClick={onCheckout}
-              className="w-full bg-gray-900 text-white p-2 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between border border-white/10 backdrop-blur-xl"
+              className="w-full bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between"
             >
-              <div className="flex items-center gap-3 pl-4">
-                 <div className="bg-[#079108] w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-[#079108]/20">
-                    <FaShoppingCart className="text-white text-sm" />
-                 </div>
-                 <div className="flex flex-col items-start leading-none">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Checkout</span>
-                    <span className="text-sm font-black uppercase tracking-tight">{cart.length + merchCart.length} Items Selected</span>
-                 </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#079108] rounded-xl flex items-center justify-center">
+                  <FaShoppingCart className="text-white text-sm" />
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Checkout</span>
+                  <span className="text-sm font-bold">{cart.length + merchCart.length} item dipilih</span>
+                </div>
               </div>
-              <div className="bg-white/10 px-6 py-3 rounded-[1.5rem] flex items-center gap-3">
-                 <span className="text-sm font-black">IDR {(totalHarga + totalMerchHarga).toLocaleString()}</span>
-                 <FaChevronRight className="text-[10px] text-emerald-400" />
+              <div className="flex items-center gap-3">
+                <span className="text-base font-bold">Rp {(totalHarga + totalMerchHarga).toLocaleString()}</span>
+                <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                  <FaChevronRight className="text-[10px]" />
+                </div>
               </div>
-            </motion.button>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
     </>
   )
 }
+
 
 export default CartSidebar

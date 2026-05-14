@@ -42,7 +42,6 @@ function App() {
         theme="dark"
         transition={Zoom}
         toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
-        style={{ zIndex: 99999, width: '100%', maxWidth: 'none', bottom: '24px', left: '0', right: '0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
       />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
