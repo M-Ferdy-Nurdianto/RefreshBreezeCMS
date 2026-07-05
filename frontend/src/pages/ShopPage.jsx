@@ -55,8 +55,8 @@ const ShopPage = () => {
   const [activeSlide, setActiveSlide] = useState(0)
 
   // Cart Hook
-  const hargaMember = Number(config?.hargaChekiPerMember) || 25000
-  const hargaGrup = Number(config?.hargaChekiGrup) || 30000
+  const hargaMember = Number(config?.harga_cheki_per_member) || 25000
+  const hargaGrup = Number(config?.harga_cheki_grup) || 30000
   const cartHook = useShopCart(hargaMember, hargaGrup)
 
   // Click outside listener for custom dropdowns

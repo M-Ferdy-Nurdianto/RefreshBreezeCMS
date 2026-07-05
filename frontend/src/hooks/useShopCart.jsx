@@ -23,6 +23,17 @@ export const useShopCart = (hargaMember, hargaGrup) => {
     localStorage.setItem('rb_cart', JSON.stringify(cart))
   }, [cart])
 
+  // Sync prices with config if they change
+  useEffect(() => {
+    setCart(prev => prev.map(item => {
+      const expectedPrice = item.id === 'group' ? hargaGrup : hargaMember
+      if (item.price !== expectedPrice) {
+        return { ...item, price: expectedPrice }
+      }
+      return item
+    }))
+  }, [hargaMember, hargaGrup])
+
   useEffect(() => {
     localStorage.setItem('rb_merch_cart', JSON.stringify(merchCart))
   }, [merchCart])
