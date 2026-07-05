@@ -85,45 +85,69 @@ const memberData = {
     instagram: '@matcvie_',
     objectPosition: 'center 20%',
     gallery: ['piya1.webp', 'piya2.webp', 'piya3.webp']
+  },
+  'rara': {
+    color: '#9e1527',
+    gradient: 'from-red-600 to-rose-800',
+    emoji: '🎸',
+    namaPanggung: '🎸 Rara 🎸',
+    objectPosition: 'center 20%',
+    gallery: []
   }
 }
+let cachedMembers = null
 
 const MembersPage = () => {
-  const [members, setMembers] = useState([])
+  const [members, setMembers] = useState(cachedMembers || [])
   const [selectedMember, setSelectedMember] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!cachedMembers)
 
   const sanitizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
 
-  const getMemberData = (name) => {
-    const clean = sanitizeName(name)
+  const getMemberData = (member) => {
+    const clean = sanitizeName(member.nama_panggung)
+
     // Handle 'aca' vs 'acaa' mismatch
-    if (clean === 'aca') return memberData['acaa']
-    return memberData[clean] || { 
-      color: '#079108', 
-      gradient: 'from-green-500 to-emerald-600', 
-      emoji: '💚',
-      tagline: 'Member',
-      jiko: '',
-      tanggalLahir: '-',
-      hobi: '-',
-      instagram: '-'
+    let baseData = memberData['acaa']
+    if (clean !== 'aca') {
+      baseData = memberData[clean] || { 
+        color: '#079108', 
+        gradient: 'from-green-500 to-emerald-600', 
+        emoji: '💚',
+        tagline: 'Member',
+        jiko: '',
+        tanggalLahir: '-',
+        hobi: '-',
+        instagram: '-'
+      }
+    }
+
+    return {
+      ...baseData,
+      tagline: member.tagline || baseData.tagline,
+      jiko: member.jikoshoukai || baseData.jiko,
+      tanggalLahir: member.tanggal_lahir || baseData.tanggalLahir,
+      hobi: member.hobi || baseData.hobi,
+      instagram: member.instagram || baseData.instagram
     }
   }
 
   useEffect(() => {
+    if (cachedMembers) return; // Skip if already cached
+
     const fetchMembers = async () => {
       try {
         const response = await api.get('/members')
         if (response.data.success) {
-          const heroOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta', 'piya']
+          const heroOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
           const sorted = response.data.data
-            .filter(m => m.member_id !== 'group' && m.member_id !== 'yanyee')
+            .filter(m => m.member_id !== 'group' && m.member_id !== 'yanyee' && m.member_id !== 'piya' && m.hadir !== false)
             .sort((a, b) => {
               const indexA = heroOrder.indexOf(a.member_id)
               const indexB = heroOrder.indexOf(b.member_id)
               return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99)
             })
+          cachedMembers = sorted
           setMembers(sorted)
         }
       } catch (error) {
@@ -136,8 +160,9 @@ const MembersPage = () => {
   }, [])
 
   // Profile images from /images/members/
-  const getProfileImage = (name) => {
-    const clean = sanitizeName(name)
+  const getProfileImage = (member) => {
+    if (!member.image_url) return getAssetPath('/images/members/secret.png')
+    const clean = sanitizeName(member.nama_panggung)
     if (clean === 'acaa' || clean === 'aca') return getAssetPath('/images/members/aca.webp')
     return getAssetPath(`/images/members/${clean}.webp`)
   }
@@ -200,7 +225,7 @@ const MembersPage = () => {
                       transition={{ delay: 0.4 }}
                       className="text-gray-300 max-w-md text-sm md:text-base"
                     >
-                      6 individu berbakat yang siap menghibur dan menginspirasi dengan energi positif mereka!
+                      5 individu berbakat yang siap menghibur dan menginspirasi dengan energi positif mereka!
                     </motion.p>
                   </div>
                 </div>
@@ -216,7 +241,7 @@ const MembersPage = () => {
                   ))
                 ) : (
                   members.map((member, idx) => {
-                    const data = getMemberData(member.nama_panggung)
+                    const data = getMemberData(member)
                     return (
                       <motion.div 
                         key={member.id}
@@ -232,8 +257,8 @@ const MembersPage = () => {
                       >
                         {/* Image */}
                         <img 
-                          src={getProfileImage(member.nama_panggung)} 
-                          alt={member.nama_panggung}
+                          src={getProfileImage(member)} 
+                          alt={data.namaPanggung}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         
@@ -283,7 +308,7 @@ const MembersPage = () => {
               className="max-w-5xl mx-auto"
             >
               {(() => {
-                const data = getMemberData(selectedMember.nama_panggung)
+                const data = getMemberData(selectedMember)
                 const clean = sanitizeName(selectedMember.nama_panggung)
                 
                 return (
@@ -317,8 +342,8 @@ const MembersPage = () => {
                       >
                         <div className="w-full h-full overflow-hidden bg-gray-100 rounded-sm">
                           <img 
-                            src={getProfileImage(selectedMember.nama_panggung)} 
-                            alt={selectedMember.nama_panggung}
+                            src={getProfileImage(selectedMember)} 
+                            alt={data.namaPanggung}
                             className="w-full h-full object-cover"
                             style={{ objectPosition: data.objectPosition || 'center 20%' }}
                           />

@@ -50,6 +50,7 @@ const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onToggle
               ) : (
                 events.map((event) => {
                   const past = isEventPast(event)
+                  const visibleLineupCount = event.event_lineup?.filter(el => el.members?.member_id !== 'piya').length || 0
                   return (
                     <tr key={event.id} className="border-b hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
@@ -70,7 +71,7 @@ const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onToggle
                         {event.tanggal} {event.bulan} {event.tahun}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{event.lokasi}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{event.event_lineup?.length || 0} member</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{visibleLineupCount} member</td>
                       <td className="px-4 py-3 text-center">
                         {past ? (
                           <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-600">

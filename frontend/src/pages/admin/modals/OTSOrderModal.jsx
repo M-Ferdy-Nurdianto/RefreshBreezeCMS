@@ -93,7 +93,15 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess }) => {
                 required
               >
                 <option value="">-- Pilih Event *--</option>
-                {events.filter(e => !e.is_special).map(event => (
+                {events.filter(event => {
+                  if (event.is_special) return false;
+                  if (event.is_past) return false;
+                  const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+                  const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return eventDate >= today;
+                }).map(event => (
                   <option key={event.id} value={event.id}>
                     {event.nama} - {event.tanggal} {event.bulan} {event.tahun}
                   </option>
@@ -172,19 +180,45 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess }) => {
             <div className="border-l pl-6">
               <h4 className="font-bold mb-4">Pilih Member:</h4>
               <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                {members.map((member) => (
-                  <button
-                    key={member.id}
-                    type="button"
-                    onClick={() => addItem(member)}
-                    className="p-3 border rounded-lg hover:border-custom-green hover:bg-custom-mint/20 transition-colors text-left"
-                  >
-                    <div className="text-sm font-semibold">{formatMemberName(member.nama_panggung)}</div>
-                    <div className="text-xs text-gray-500">
-                      Rp {(member.member_id === 'group' ? 30000 : 25000).toLocaleString('id-ID')}
-                    </div>
-                  </button>
-                ))}
+                {members.map((member) => {
+                  const selectedEvent = events.find(e => e.id === formData.event_id);
+                  let isAllowed = true;
+                  if (selectedEvent && selectedEvent.event_lineup && selectedEvent.event_lineup.length > 0) {
+                    if (member.member_id !== 'group') {
+                      const allowedIds = selectedEvent.event_lineup.map(l => String(l.member_id));
+                      // In case member.id or member.member_id is used in lineup
+                      isAllowed = allowedIds.includes(String(member.id)) || allowedIds.includes(String(member.member_id));
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={member.id}
+                      type="button"
+                      onClick={() => {
+                        if (!formData.event_id) {
+                          Swal.fire({ icon: 'warning', title: 'Pilih Event', text: 'Silakan pilih event terlebih dahulu.', confirmButtonColor: '#079108' });
+                          return;
+                        }
+                        addItem(member);
+                      }}
+                      disabled={!isAllowed}
+                      className={`p-3 border rounded-lg transition-colors text-left ${
+                        isAllowed 
+                          ? 'hover:border-custom-green hover:bg-custom-mint/20 bg-white cursor-pointer' 
+                          : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <div className={`text-sm font-semibold ${!isAllowed && 'text-gray-400'}`}>
+                        {formatMemberName(member.nama_panggung)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Rp {(member.member_id === 'group' ? 30000 : 25000).toLocaleString('id-ID')}
+                      </div>
+                      {!isAllowed && <div className="text-[10px] text-red-400 mt-1">Tidak Hadir</div>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

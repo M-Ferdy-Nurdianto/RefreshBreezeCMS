@@ -43,6 +43,12 @@ export const memberData = {
         name: 'Piya',
         gradient: 'from-pink-400 to-rose-500',
     },
+    'rara': {
+        color: '#9e1527',
+        emoji: '🎸',
+        name: 'Rara',
+        gradient: 'from-red-600 to-rose-800',
+    },
     'group': {
         color: '#079108',
         emoji: '💚',

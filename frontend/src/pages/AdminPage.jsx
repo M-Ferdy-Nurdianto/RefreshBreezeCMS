@@ -165,7 +165,7 @@ const AdminPage = () => {
   const fetchMembers = async () => {
     try {
       const res = await api.get('/members')
-      setMembers(res.data.data?.filter(m => m.member_id !== 'yanyee') || [])
+      setMembers(res.data.data?.filter(m => m.member_id !== 'yanyee' && m.member_id !== 'piya' && m.hadir !== false) || [])
     } catch (error) {
       console.error(error)
     }

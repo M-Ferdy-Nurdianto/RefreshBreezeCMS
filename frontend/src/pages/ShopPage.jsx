@@ -73,6 +73,7 @@ const ShopPage = () => {
   // Helper functions
   const sanitizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
   const getMemberImage = (member) => {
+    if (!member.image_url) return getAssetPath('/images/members/secret.png')
     const id = member.member_id || sanitizeName(member.nama_panggung)
     const clean = id.replace('aa', 'a')
     if (clean === 'aca' || clean === 'acaa') return getAssetPath('/images/shop/aca.webp')
@@ -95,9 +96,9 @@ const ShopPage = () => {
         
         if (configRes.data.success) setConfig(configRes.data.data)
         if (membersRes.data.success) {
-           const heroOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta', 'piya']
+           const heroOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
            const sorted = membersRes.data.data
-             .filter(m => m.member_id !== 'group' && m.member_id !== 'yanyee')
+             .filter(m => m.member_id !== 'group' && m.member_id !== 'yanyee' && m.member_id !== 'piya' && m.hadir !== false)
              .sort((a, b) => {
                 const indexA = heroOrder.indexOf(a.member_id)
                 const indexB = heroOrder.indexOf(b.member_id)

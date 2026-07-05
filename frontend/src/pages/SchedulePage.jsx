@@ -93,22 +93,24 @@ const SchedulePage = () => {
                 </div>
               ) : (
                 <div className="grid gap-8">
-                  {upcomingEvents.map((event, idx) => (
-                    <motion.div 
-                      key={event.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      className={`p-8 rounded-[3.5rem] flex flex-col gap-8 hover:shadow-2xl transition-all group ${
-                        event.is_special 
-                          ? 'border-2 hover:shadow-xl' 
-                          : 'bg-white border-2 border-[#079108]/20 hover:border-[#079108]/40'
-                      }`}
-                      style={event.is_special ? {
-                        background: `linear-gradient(135deg, ${event.theme_color}15 0%, white 50%)`,
-                        borderColor: event.theme_color
-                      } : {}}
-                    >
+                  {upcomingEvents.map((event, idx) => {
+                    const visibleLineup = event.event_lineup?.filter(el => el.members?.member_id !== 'piya') || []
+                    return (
+                      <motion.div 
+                        key={event.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className={`p-8 rounded-[3.5rem] flex flex-col gap-8 hover:shadow-2xl transition-all group ${
+                          event.is_special 
+                            ? 'border-2 hover:shadow-xl' 
+                            : 'bg-white border-2 border-[#079108]/20 hover:border-[#079108]/40'
+                        }`}
+                        style={event.is_special ? {
+                          background: `linear-gradient(135deg, ${event.theme_color}15 0%, white 50%)`,
+                          borderColor: event.theme_color
+                        } : {}}
+                      >
                       <div className="flex flex-col md:flex-row items-center gap-8 w-full">
                           {/* Date Badge */}
                           <div 
@@ -177,11 +179,11 @@ const SchedulePage = () => {
                       </div>
 
                       {/* Lineup Section - Names Only */}
-                      {event.event_lineup && event.event_lineup.length > 0 && (
+                      {visibleLineup.length > 0 && (
                          <div className="w-full pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-6">
                              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 pt-2">Idol Line Up</h4>
                              <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                                {event.event_lineup.map(el => (
+                                {visibleLineup.map(el => (
                                     <span 
                                       key={el.members.id} 
                                       className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
@@ -197,8 +199,9 @@ const SchedulePage = () => {
                              </div>
                          </div>
                       )}
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    )
+                  })}
                 </div>
               )}
             </section>

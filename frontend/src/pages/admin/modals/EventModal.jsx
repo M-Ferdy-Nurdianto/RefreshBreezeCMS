@@ -10,7 +10,9 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
   const [eventType, setEventType] = useState(isEditingSpecial ? 'special' : 'regular')
   const [formData, setFormData] = useState(() => {
     if (editingEvent) {
-      const existingLineup = editingEvent.event_lineup?.map(el => el.member_id) || []
+      const existingLineup = editingEvent.event_lineup
+        ?.filter(el => el.members?.member_id !== 'piya')
+        .map(el => el.member_id) || []
       return {
         ...editingEvent,
         lineup: existingLineup,
@@ -213,9 +215,9 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
             <label className="text-xs font-bold text-gray-600 block mb-1">Lineup ({formData.lineup?.length || 0})</label>
             <div className="grid grid-cols-3 gap-1 border rounded-lg p-2 bg-gray-50">
               {(() => {
-                const lineupOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta', 'piya']
+                const lineupOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
                 return members
-                  .filter(m => m.member_id !== 'group')
+                  .filter(m => m.member_id !== 'group' && m.member_id !== 'piya' && m.hadir !== false)
                   .sort((a, b) => {
                     const iA = lineupOrder.indexOf(a.member_id)
                     const iB = lineupOrder.indexOf(b.member_id)
