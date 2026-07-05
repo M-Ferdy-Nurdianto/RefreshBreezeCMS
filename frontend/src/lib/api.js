@@ -58,14 +58,27 @@ api.interceptors.response.use(
   }
 )
 
+// Add request interceptor to invalidate cache on POST, PUT, DELETE, PATCH
+api.interceptors.request.use(
+  (config) => {
+    if (config.method !== 'get') {
+      apiCache.clear()
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
 // Global in-memory cache for GET requests
 const apiCache = new Map()
 const originalGet = api.get
 
 api.get = async (url, config) => {
-  // Skip cache if admin is logged in or if explicitly disabled
   const token = localStorage.getItem('admin_token')
-  if (token || config?.skipCache) {
+  const isMetadata = url.startsWith('/members') || url.startsWith('/events') || url.startsWith('/config') || url.startsWith('/merchandise')
+
+  // Skip cache if explicitly disabled, or if admin is logged in and it's not metadata (like orders)
+  if (config?.skipCache || (token && !isMetadata)) {
     return originalGet.call(api, url, config)
   }
 

@@ -37,14 +37,14 @@ const AdminPage = () => {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [otsFilter, setOtsFilter] = useState('all')
-  const [eventFilter, setEventFilter] = useState('all')
-  const [recapEventFilter, setRecapEventFilter] = useState('all')
-  const [dateFilter, setDateFilter] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const [statusFilter, setStatusFilter] = useState(() => localStorage.getItem('admin_status_filter') || 'all')
+  const [otsFilter, setOtsFilter] = useState(() => localStorage.getItem('admin_ots_filter') || 'all')
+  const [eventFilter, setEventFilter] = useState(() => localStorage.getItem('admin_event_filter') || 'all')
+  const [recapEventFilter, setRecapEventFilter] = useState(() => localStorage.getItem('admin_recap_event_filter') || 'all')
+  const [dateFilter, setDateFilter] = useState(() => localStorage.getItem('admin_date_filter') || 'all')
+  const [searchQuery, setSearchQuery] = useState(() => localStorage.getItem('admin_search_query') || '')
+  const [dateFrom, setDateFrom] = useState(() => localStorage.getItem('admin_date_from') || '')
+  const [dateTo, setDateTo] = useState(() => localStorage.getItem('admin_date_to') || '')
 
   const [showOTSModal, setShowOTSModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
@@ -109,6 +109,19 @@ const AdminPage = () => {
   useEffect(() => {
     localStorage.setItem('admin_order_subtab', orderSubTab)
   }, [orderSubTab])
+
+  useEffect(() => {
+    localStorage.setItem('admin_status_filter', statusFilter)
+    localStorage.setItem('admin_ots_filter', otsFilter)
+    localStorage.setItem('admin_event_filter', eventFilter)
+    localStorage.setItem('admin_recap_event_filter', recapEventFilter)
+    localStorage.setItem('admin_date_filter', dateFilter)
+    localStorage.setItem('admin_search_query', searchQuery)
+    if (dateFrom) localStorage.setItem('admin_date_from', dateFrom)
+    else localStorage.removeItem('admin_date_from')
+    if (dateTo) localStorage.setItem('admin_date_to', dateTo)
+    else localStorage.removeItem('admin_date_to')
+  }, [statusFilter, otsFilter, eventFilter, recapEventFilter, dateFilter, searchQuery, dateFrom, dateTo])
 
   const checkAuth = () => {
     if (!localStorage.getItem('admin_token')) {
