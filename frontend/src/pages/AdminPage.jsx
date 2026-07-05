@@ -79,17 +79,24 @@ const AdminPage = () => {
     checkAuth()
     fetchAll()
 
-    const subscription = supabase
-      .channel('public:orders')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-        fetchOrders()
-        if (payload.eventType === 'INSERT' && payload.new.created_by === 'customer') {
-          showToast.info(payload.new.nama_lengkap, 'Order Baru!')
-        }
-      })
-      .subscribe()
+    let subscription = null
+    if (supabase) {
+      subscription = supabase
+        .channel('public:orders')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+          fetchOrders()
+          if (payload.eventType === 'INSERT' && payload.new.created_by === 'customer') {
+            showToast.info(payload.new.nama_lengkap, 'Order Baru!')
+          }
+        })
+        .subscribe()
+    }
 
-    return () => supabase.removeChannel(subscription)
+    return () => {
+      if (supabase && subscription) {
+        supabase.removeChannel(subscription)
+      }
+    }
   }, [])
 
   useEffect(() => {
