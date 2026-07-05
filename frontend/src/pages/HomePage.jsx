@@ -30,7 +30,7 @@ const HomePage = () => {
     { id: 'aca', name: 'ACA', color: 'bg-[#4A90B5]', photo: getAssetPath('/images/hero/aca.webp?v=33'), posX: 0, posY: 23, scale: 2.1, translateX: 18, translateY: 0 },
     { id: 'sinta', name: 'SINTA', color: 'bg-[#4C804C]', photo: getAssetPath('/images/hero/sinta.webp?v=33'), posX: 48, posY: 31, scale: 2, translateX: 18, translateY: 6 },
     { id: 'cally', name: 'CALLY', color: 'bg-[#9BBF9B]', photo: getAssetPath('/images/hero/cally.webp?v=33'), posX: 27, posY: 28, scale: 1.8, translateX: 18, translateY: 0 },
-    { id: 'rara', name: 'RARA', color: 'bg-[#386638]', photo: getAssetPath('/images/hero/rara.webp?v=33'), posX: 50, posY: 50, scale: 1.5, translateX: 0, translateY: 0 },
+    { id: 'rara', name: 'RARA', color: 'bg-[#386638]', photo: getAssetPath('/images/hero/rara.webp?v=33'), posX: 50, posY: 36, scale: 1.5, translateX: 0, translateY: 0 },
   ]
 
   useEffect(() => {
