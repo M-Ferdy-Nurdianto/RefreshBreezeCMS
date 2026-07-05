@@ -55,6 +55,8 @@ const AdminPage = () => {
 
   const [hargaPerMember, setHargaPerMember] = useState('25000')
   const [hargaGrup, setHargaGrup] = useState('30000')
+  const [hargaOtsPerMember, setHargaOtsPerMember] = useState('25000')
+  const [hargaOtsGrup, setHargaOtsGrup] = useState('30000')
   const [configLoading, setConfigLoading] = useState(false)
 
   const [merch, setMerch] = useState([])
@@ -206,6 +208,8 @@ const AdminPage = () => {
       const configData = res.data.data || {}
       if (configData.harga_cheki_per_member) setHargaPerMember(configData.harga_cheki_per_member)
       if (configData.harga_cheki_grup) setHargaGrup(configData.harga_cheki_grup)
+      if (configData.harga_ots_per_member) setHargaOtsPerMember(configData.harga_ots_per_member)
+      if (configData.harga_ots_grup) setHargaOtsGrup(configData.harga_ots_grup)
     } catch (error) {
       console.error(error)
     }
@@ -741,6 +745,10 @@ const AdminPage = () => {
             setHargaPerMember={setHargaPerMember}
             hargaGrup={hargaGrup}
             setHargaGrup={setHargaGrup}
+            hargaOtsPerMember={hargaOtsPerMember}
+            setHargaOtsPerMember={setHargaOtsPerMember}
+            hargaOtsGrup={hargaOtsGrup}
+            setHargaOtsGrup={setHargaOtsGrup}
             configLoading={configLoading}
             updateConfig={updateConfig}
           />
@@ -765,6 +773,8 @@ const AdminPage = () => {
             setShowOTSModal(false)
             fetchOrders()
           }}
+          hargaOtsPerMember={hargaOtsPerMember}
+          hargaOtsGrup={hargaOtsGrup}
         />
       )}
 

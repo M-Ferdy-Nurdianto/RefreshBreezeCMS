@@ -4,7 +4,7 @@ import { FaTimes } from 'react-icons/fa'
 import api from '../../../lib/api'
 import { formatMemberName } from '../../../lib/memberUtils'
 
-const OTSOrderModal = ({ members, events, onClose, onSuccess }) => {
+const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember = 25000, hargaOtsGrup = 30000 }) => {
   const [formData, setFormData] = useState({
     nama_lengkap: '',
     event_id: '',
@@ -15,7 +15,7 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess }) => {
 
   const addItem = (member) => {
     const isGroup = member.member_id === 'group'
-    const price = isGroup ? 30000 : 25000
+    const price = parseInt(isGroup ? hargaOtsGrup : hargaOtsPerMember, 10)
 
     const existing = formData.items.find(item => item.member_id === member.id)
     if (existing) {
@@ -213,7 +213,7 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess }) => {
                         {formatMemberName(member.nama_panggung)}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Rp {(member.member_id === 'group' ? 30000 : 25000).toLocaleString('id-ID')}
+                        Rp {parseInt(member.member_id === 'group' ? hargaOtsGrup : hargaOtsPerMember, 10).toLocaleString('id-ID')}
                       </div>
                       {!isAllowed && <div className="text-[10px] text-red-400 mt-1">Tidak Hadir</div>}
                     </button>
