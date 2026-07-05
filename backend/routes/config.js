@@ -6,7 +6,7 @@ import { cachePublic } from '../middleware/cache.js'
 const router = express.Router()
 
 // GET: Fetch all config
-router.get('/', cachePublic({ sMaxAge: 300, maxAge: 60, staleWhileRevalidate: 60 }), async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('config')
