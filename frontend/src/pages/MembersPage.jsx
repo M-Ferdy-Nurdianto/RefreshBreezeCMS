@@ -225,7 +225,7 @@ const MembersPage = () => {
                       transition={{ delay: 0.4 }}
                       className="text-gray-300 max-w-md text-sm md:text-base"
                     >
-                      5 individu berbakat yang siap menghibur dan menginspirasi dengan energi positif mereka!
+                      6 individu berbakat yang siap menghibur dan menginspirasi dengan energi positif mereka!
                     </motion.p>
                   </div>
                 </div>
