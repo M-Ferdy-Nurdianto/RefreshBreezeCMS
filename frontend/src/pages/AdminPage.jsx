@@ -328,13 +328,34 @@ const AdminPage = () => {
   }
 
   const handleTogglePast = async (eventId, currentStatus) => {
+    const isNowPast = !currentStatus;
+    const result = await Swal.fire({
+      title: isNowPast ? 'Selesaikan Event?' : 'Aktifkan Event?',
+      text: isNowPast 
+        ? 'Apakah Anda yakin event ini sudah selesai?' 
+        : 'Apakah Anda yakin ingin mengaktifkan event ini kembali?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: isNowPast ? '#079108' : '#3085d6',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: isNowPast ? 'Ya, Selesaikan' : 'Ya, Aktifkan',
+      cancelButtonText: 'Batal',
+      customClass: {
+        popup: 'rounded-xl',
+        confirmButton: 'rounded-lg',
+        cancelButton: 'rounded-lg'
+      }
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
-      await api.patch(`/events/${eventId}`, { is_past: !currentStatus })
+      await api.patch(`/events/${eventId}`, { is_past: isNowPast })
       fetchEvents()
       showToast.cart(
         'Status updated',
         '✅',
-        !currentStatus ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!'
+        isNowPast ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!'
       )
     } catch (error) {
       Swal.fire({ icon: 'error', title: 'Gagal', text: error.message })

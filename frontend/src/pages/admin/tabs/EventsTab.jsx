@@ -2,9 +2,7 @@ import React from 'react'
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
 
 const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onTogglePast }) => {
-  const isEventPast = (event) => {
-    if (event.is_past) return true
-
+  const checkEventDate = (event) => {
     const months = {
       'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
       'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
@@ -15,6 +13,11 @@ const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onToggle
     today.setHours(0, 0, 0, 0)
 
     return eventDate < today
+  }
+
+  const isEventPast = (event) => {
+    if (event.is_past) return true
+    return checkEventDate(event)
   }
 
   return (
@@ -49,6 +52,7 @@ const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onToggle
                 </tr>
               ) : (
                 events.map((event) => {
+                  const pastByDate = checkEventDate(event)
                   const past = isEventPast(event)
                   const visibleLineupCount = event.event_lineup?.filter(el => el.members?.member_id !== 'piya').length || 0
                   return (
@@ -73,17 +77,21 @@ const EventsTab = ({ events, onCreateEvent, onEditEvent, onDeleteEvent, onToggle
                       <td className="px-4 py-3 text-sm text-gray-600">{event.lokasi}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{visibleLineupCount} member</td>
                       <td className="px-4 py-3 text-center">
-                        {past ? (
+                        {pastByDate ? (
                           <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-600">
                             Selesai
                           </span>
                         ) : (
                           <button
                             onClick={() => onTogglePast(event.id, event.is_past)}
-                            className="px-3 py-1 rounded-full text-xs font-bold transition-all bg-green-100 text-green-700 hover:bg-gray-200 hover:text-gray-600"
-                            title="Klik untuk tandai selesai secara manual"
+                            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                              past
+                                ? 'bg-gray-200 text-gray-600 hover:bg-green-100 hover:text-green-700'
+                                : 'bg-green-100 text-green-700 hover:bg-gray-200 hover:text-gray-600'
+                            }`}
+                            title={past ? 'Klik untuk aktifkan kembali' : 'Klik untuk tandai selesai secara manual'}
                           >
-                            Aktif
+                            {past ? 'Selesai' : 'Aktif'}
                           </button>
                         )}
                       </td>
