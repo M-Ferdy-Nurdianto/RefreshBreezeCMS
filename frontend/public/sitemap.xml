@@ -1,27 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://refresh-breeze.vercel.app/</loc>
+    <loc>https://refreshbreeze.web.id/</loc>
     <lastmod>2024-05-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://refresh-breeze.vercel.app/shop</loc>
+    <loc>https://refreshbreeze.web.id/shop</loc>
     <lastmod>2024-05-11</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://refresh-breeze.vercel.app/members</loc>
+    <loc>https://refreshbreeze.web.id/members</loc>
     <lastmod>2024-05-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://refresh-breeze.vercel.app/schedule</loc>
+    <loc>https://refreshbreeze.web.id/schedule</loc>
     <lastmod>2024-05-11</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://refreshbreeze.web.id/music</loc>
+    <lastmod>2024-05-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://refreshbreeze.web.id/media</loc>
+    <lastmod>2024-05-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://refreshbreeze.web.id/faq</loc>
+    <lastmod>2024-05-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://refreshbreeze.web.id/story</loc>
+    <lastmod>2024-05-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>
