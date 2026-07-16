@@ -381,9 +381,16 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
         if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) {
           name = 'All Member (Group)'
         }
-        if (!memberStats[name]) memberStats[name] = { qty: 0, revenue: 0 }
+        if (!memberStats[name]) memberStats[name] = { qty: 0, otsQty: 0, poQty: 0, revenue: 0 }
         const qty = item.quantity || 0
         memberStats[name].qty += qty
+        
+        if (order.is_ots) {
+          memberStats[name].otsQty += qty
+        } else {
+          memberStats[name].poQty += qty
+        }
+        
         memberStats[name].revenue += (qty * (item.price || 0))
       })
     })
@@ -451,25 +458,29 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
       alignment: { vertical: 'middle', horizontal: 'left' }
     })
 
-    const memberHeaderRow = worksheet.addRow(['Member / Lineup', 'Qty', 'Revenue', '', '', '', '', '', ''])
+    const memberHeaderRow = worksheet.addRow(['Member / Lineup', 'Total Qty', 'OTS Qty', 'PO Qty', 'Revenue', '', '', '', '', ''])
     memberHeaderRow.font = { bold: true }
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 5; i++) {
       const cell = memberHeaderRow.getCell(i)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }
-      cell.alignment = { vertical: 'middle', horizontal: i === 3 ? 'right' : 'left' }
+      cell.alignment = { vertical: 'middle', horizontal: i === 5 ? 'right' : 'center' }
     }
     applyBorders(memberHeaderRow)
 
     const sortedMembers = Object.keys(memberStats).sort((a, b) => a.localeCompare(b))
     if (sortedMembers.length === 0) {
-      const emptyRow = worksheet.addRow(['-', '-', '-', '', '', '', '', '', ''])
+      const emptyRow = worksheet.addRow(['-', '-', '-', '-', '-', '', '', '', '', ''])
       applyBorders(emptyRow)
     } else {
       sortedMembers.forEach(name => {
         const stats = memberStats[name]
-        const row = worksheet.addRow([name, stats.qty, stats.revenue, '', '', '', '', '', ''])
-        row.getCell(3).numFmt = '"Rp" #,##0'
-        row.getCell(3).alignment = { vertical: 'middle', horizontal: 'right' }
+        const row = worksheet.addRow([name, stats.qty, stats.otsQty, stats.poQty, stats.revenue, '', '', '', '', ''])
+        row.getCell(5).numFmt = '"Rp" #,##0'
+        
+        row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' }
+        row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' }
+        row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' }
+        row.getCell(5).alignment = { vertical: 'middle', horizontal: 'right' }
         applyBorders(row)
       })
     }

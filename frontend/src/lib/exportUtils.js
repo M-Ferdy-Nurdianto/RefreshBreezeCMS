@@ -241,10 +241,16 @@ export const generatePDF = async ({ api, scope, value, params, events }) => {
       order.order_items?.forEach(item => {
         let name = stripEmoji(String(item.item_name || '').replace('Cheki ', '').replace(' (Pre-Order)', ''))
         if (name.toLowerCase().includes('all member') || name.toLowerCase().includes('group')) name = 'All Member (Group)'
-        if (!memberStats[name]) memberStats[name] = { qty: 0, revenue: 0 }
+        if (!memberStats[name]) memberStats[name] = { qty: 0, otsQty: 0, poQty: 0, revenue: 0 }
         const qty = item.quantity || 0
         const price = Number(item.price ?? item.harga ?? 0)
+        
         memberStats[name].qty += qty
+        if (order.is_ots) {
+          memberStats[name].otsQty += qty
+        } else {
+          memberStats[name].poQty += qty
+        }
         memberStats[name].revenue += (qty * price)
       })
     })
@@ -353,16 +359,21 @@ export const generatePDF = async ({ api, scope, value, params, events }) => {
 
     const memberBody = Object.entries(memberStats)
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([name, stats]) => [stripEmoji(name), stats.qty, formatCurrency(stats.revenue)])
+      .map(([name, stats]) => [stripEmoji(name), stats.qty, stats.otsQty, stats.poQty, formatCurrency(stats.revenue)])
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Member / Lineup', 'Qty', 'Revenue']],
-      body: memberBody.length ? memberBody : [['-', '-', '-']],
+      head: [['Member / Lineup', 'Total Qty', 'OTS Qty', 'PO Qty', 'Revenue']],
+      body: memberBody.length ? memberBody : [['-', '-', '-', '-', '-']],
       theme: 'grid',
       headStyles: { fillColor: [7, 145, 8], textColor: 255 },
       styles: { fontSize: 9 },
-      columnStyles: { 2: { halign: 'right' } }
+      columnStyles: { 
+        1: { halign: 'center', cellWidth: 20 },
+        2: { halign: 'center', cellWidth: 20 },
+        3: { halign: 'center', cellWidth: 20 },
+        4: { halign: 'right' } 
+      }
     })
 
     currentY = doc.lastAutoTable.finalY + 8
