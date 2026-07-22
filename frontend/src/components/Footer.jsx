@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import Tilt from 'react-parallax-tilt'
-import { FaInstagram, FaTwitter, FaYoutube, FaMapMarkerAlt, FaEnvelope, FaTiktok, FaDiscord } from 'react-icons/fa'
+import { FaInstagram, FaTwitter, FaYoutube, FaMapMarkerAlt, FaEnvelope, FaTiktok, FaDiscord, FaWhatsapp, FaSpotify } from 'react-icons/fa'
 
 const Footer = () => {
   return (
@@ -58,6 +58,8 @@ const Footer = () => {
                   { icon: <FaYoutube />, href: 'https://youtube.com/@RefreshBreeze' },
                   { icon: <FaTiktok />, href: 'https://tiktok.com/@refbreeze' },
                   { icon: <FaDiscord />, href: 'https://discord.gg/DSgfU4Mqmr' },
+                  { icon: <FaWhatsapp />, href: 'https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32' },
+                  { icon: <FaSpotify />, href: 'https://open.spotify.com/artist/5k89pO7XY1xNhiZWJ8IGaW?si=FAT85cI5TeCFhKp30gCC3w' },
                 ].map((social, idx) => (
                   <a 
                     key={idx}

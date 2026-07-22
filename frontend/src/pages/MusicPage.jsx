@@ -1,15 +1,16 @@
 import { motion } from 'framer-motion'
-import { FaMusic, FaInstagram, FaTwitter, FaYoutube, FaTiktok, FaPlayCircle } from 'react-icons/fa'
+import { FaMusic, FaInstagram, FaTwitter, FaYoutube, FaTiktok, FaWhatsapp, FaSpotify } from 'react-icons/fa'
 import Header from '../components/Header'
 import { getAssetPath } from '../lib/pathUtils'
+import FeaturedMusic from '../components/FeaturedMusic'
 
 const MusicPage = () => {
   return (
-    <div className="min-h-screen bg-white text-dark overflow-x-hidden relative">
+    <div className="min-h-screen bg-white text-dark overflow-x-hidden relative pb-16">
       <div className="noise-bg opacity-10"></div>
       <Header />
       
-      <main className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center min-h-[90vh] relative z-10">
+      <main className="container mx-auto max-w-7xl px-3 sm:px-4 py-20 sm:py-32 flex flex-col items-center justify-center min-h-[90vh] relative z-10">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -41,25 +42,21 @@ const MusicPage = () => {
             <div className="w-24 h-2 bg-dark mx-auto rounded-full"></div>
           </div>
 
-          <div className="max-w-2xl mx-auto space-y-8">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-dark text-white text-[10px] font-black tracking-[0.3em] uppercase shadow-xl">
-               <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-               COMING SOON
-            </div>
-            <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed italic">
-              "Harmoni kesegaran sedang kami racik. Segera hadir daftar lagu dan rilisan resmi dari Refresh Breeze."
-            </p>
+          <div className="w-full mt-12 sm:mt-16">
+             <FeaturedMusic />
           </div>
 
-          {/* Social Links to stay updated */}
+          {/* Social Links to stay updated - Stacked 3 top, 3 bottom */}
           <div className="pt-12 space-y-10">
             <h3 className="text-[10px] font-black tracking-[0.5em] text-gray-300 uppercase">Follow Our Beats</h3>
-            <div className="flex justify-center gap-6">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-[260px] sm:max-w-md mx-auto justify-items-center">
               {[
-                { icon: <FaInstagram />, href: 'https://instagram.com/refbreeze' },
-                { icon: <FaTwitter />, href: 'https://twitter.com/ref_breeze' },
-                { icon: <FaYoutube />, href: 'https://youtube.com/@RefreshBreeze' },
-                { icon: <FaTiktok />, href: 'https://tiktok.com/@refbreeze' },
+                { icon: <FaInstagram />, href: 'https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32' },
+                { icon: <FaTwitter />, href: 'https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32' },
+                { icon: <FaYoutube />, href: 'https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32' },
+                { icon: <FaTiktok />, href: 'https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32' },
+                { icon: <FaWhatsapp />, href: 'https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32' },
+                { icon: <FaSpotify />, href: 'https://open.spotify.com/artist/5k89pO7XY1xNhiZWJ8IGaW?si=FAT85cI5TeCFhKp30gCC3w' },
               ].map((social, idx) => (
                 <motion.a
                   key={idx}
@@ -67,7 +64,7 @@ const MusicPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ y: -8, scale: 1.1 }}
-                  className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-2xl text-gray-400 hover:text-white hover:bg-dark transition-all shadow-sm hover:shadow-2xl"
+                  className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-xl sm:text-2xl text-gray-400 hover:text-white hover:bg-dark transition-all shadow-sm hover:shadow-2xl"
                 >
                   {social.icon}
                 </motion.a>
@@ -82,7 +79,6 @@ const MusicPage = () => {
             <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#4A90B5] rounded-full blur-[150px]"></div>
         </div>
       </main>
-      
     </div>
   )
 }

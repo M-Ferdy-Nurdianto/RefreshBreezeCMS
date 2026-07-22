@@ -14,6 +14,7 @@ import ScheduleSection from '../components/home/ScheduleSection'
 import ShopPreviewSection from '../components/home/ShopPreviewSection'
 import MediaSection from '../components/home/MediaSection'
 import FAQSection from '../components/home/FAQSection'
+import SpotifySection from '../components/home/SpotifySection'
 
 const HomePage = () => {
   const navigate = useNavigate()
@@ -81,6 +82,8 @@ const HomePage = () => {
       <HeroSection 
         members={members} activeMemberId={activeMemberId} setActiveMemberId={setActiveMemberId} navigate={navigate} 
       />
+      
+      <SpotifySection />
       
       <AboutSection navigate={navigate} getAssetPath={getAssetPath} />
       

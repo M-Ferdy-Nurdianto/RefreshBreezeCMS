@@ -1,0 +1,35 @@
+# Direktori Node dan build
+node_modules/
+build/
+dist/
+.vercel/
+
+# File Log dan Brain AI (Transkrip percakapan sebelumnya)
+brain/
+*.log
+
+# File lock (Sangat besar dan tidak perlu dibaca oleh agen)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# File biner dan media
+*.apk
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.mp4
+*.webm
+
+# File Git
+.git/
+
+# File backup
+*.backup
+*.bak
+*.tmp
+*.swp
