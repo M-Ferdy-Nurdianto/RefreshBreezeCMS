@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { FaDownload, FaChevronLeft, FaExclamationTriangle } from 'react-icons/fa'
+import { FaDownload, FaChevronLeft, FaExclamationTriangle, FaWhatsapp } from 'react-icons/fa'
 import { toPng } from 'html-to-image'
 
 const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }) => {
@@ -304,8 +304,17 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }
           <p className="text-sm font-bold italic" style={{ color: accentColor }}>
             Terima kasih telah berbelanja
           </p>
-          <p className="text-xs font-bold text-gray-500">
-            IG: <span style={{ color: accentColor }}>@refreshbreeze</span>
+          <p className="text-xs font-bold text-gray-500 flex items-center gap-2">
+            <span>IG: <span style={{ color: accentColor }}>@refreshbreeze</span></span>
+            <span>•</span>
+            <a 
+              href="https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-600 hover:text-emerald-500 transition-colors flex items-center gap-1"
+            >
+              <FaWhatsapp className="text-xs" /> WA Channel
+            </a>
           </p>
         </div>
 

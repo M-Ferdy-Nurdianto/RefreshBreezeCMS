@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaChevronRight, FaPlus, FaMinus, FaCamera, FaSpinner, 
   FaUniversity, FaRegCopy, FaCheckCircle, FaTrash, 
-  FaInstagram, FaDownload 
+  FaInstagram, FaDownload, FaWhatsapp 
 } from 'react-icons/fa'
 import { useState } from 'react'
 import DigitalReceipt from './DigitalReceipt'
@@ -169,13 +169,37 @@ const CheckoutProcess = ({
         <div className="space-y-4">
           <DigitalReceipt data={data} payment={payment} isPreview />
           
-          <div className="max-w-md mx-auto space-y-3">
-            <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-lg">
-              <FaInstagram className="text-lg" /> Post Nota ke IG Story
+          <div className="max-w-md mx-auto space-y-4">
+            {/* WhatsApp Channel Info Button */}
+            <div className="space-y-2">
+              <a 
+                href="https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all group border border-emerald-400/30"
+              >
+                <FaWhatsapp className="text-xl text-emerald-200 group-hover:scale-110 transition-transform" />
+                <span>Gabung Channel WhatsApp</span>
+              </a>
+              <p className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest leading-relaxed">
+                Info lebih lanjut akan kami share di IG maupun CH WA
+              </p>
             </div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-              Tag <span className="text-emerald-600">@refreshbreeze</span> dan Oshimu bagikan momen seru kamu!
-            </p>
+
+            {/* IG Story Button */}
+            <div className="space-y-2">
+              <a 
+                href="https://instagram.com/refreshbreeze"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:from-purple-500 hover:to-orange-400 text-white py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all block"
+              >
+                <FaInstagram className="text-lg" /> Post Nota ke IG Story
+              </a>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                Tag <span className="text-emerald-600">@refreshbreeze</span> dan Oshimu bagikan momen seru kamu!
+              </p>
+            </div>
           </div>
         </div>
 
