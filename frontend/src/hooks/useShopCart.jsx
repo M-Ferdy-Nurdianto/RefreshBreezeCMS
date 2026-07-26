@@ -3,6 +3,15 @@ import { toast } from 'react-toastify'
 import { getMemberEmoji } from '../lib/memberUtils'
 import { showToast } from '../lib/toast'
 
+export const getSizePriceIncrement = (size) => {
+  if (!size) return 0;
+  const s = size.toUpperCase().trim();
+  if (s === 'XXL' || s === '2XL') return 5000;
+  if (s === '3XL' || s === 'XXXL') return 10000;
+  if (s === '4XL' || s === 'XXXXL') return 15000;
+  return 0;
+}
+
 export const useShopCart = (hargaMember, hargaGrup) => {
   const [cart, setCart] = useState(() => {
     try {
@@ -99,14 +108,6 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   }
 
   // --- Merch Cart Logic ---
-  const getSizePriceIncrement = (size) => {
-    if (!size) return 0;
-    const s = size.toUpperCase().trim();
-    if (s === 'XXL' || s === '2XL') return 5000;
-    if (s === '3XL' || s === 'XXXL') return 10000;
-    if (s === '4XL' || s === 'XXXXL') return 15000;
-    return 0;
-  }
 
   const addToMerchCart = (item, size = '') => {
     const cartId = size ? `${item.id}-${size}` : item.id
