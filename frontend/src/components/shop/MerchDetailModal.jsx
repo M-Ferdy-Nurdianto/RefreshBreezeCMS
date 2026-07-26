@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaPlus, FaMinus, FaChevronLeft, FaChevronRight, FaShoppingCart } from 'react-icons/fa'
+import { getSizePriceIncrement } from '../../hooks/useShopCart'
 
 const MerchDetailModal = ({ 
   selectedMerch, 
@@ -83,43 +84,52 @@ const MerchDetailModal = ({
           {/* Right: Content */}
           <div className="w-full md:w-1/2 p-8 sm:p-12 overflow-y-auto custom-scrollbar flex flex-col">
              <div className="flex-1 space-y-8">
-                <div>
-                   <p className="text-[10px] font-black text-[#079108] uppercase tracking-[0.2em] mb-2">Official Merchandise</p>
-                   <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight leading-tight">{selectedMerch.nama}</h2>
-                   <p className="text-2xl font-black text-[#079108] mt-2">IDR {selectedMerch.harga.toLocaleString()}</p>
-                </div>
+                 <div>
+                    <p className="text-[10px] font-black text-[#079108] uppercase tracking-[0.2em] mb-2">Official Merchandise</p>
+                    <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight leading-tight">{selectedMerch.nama}</h2>
+                    <div className="flex items-baseline gap-2 mt-2">
+                       <p className="text-2xl font-black text-[#079108]">
+                          IDR {(selectedMerch.harga + getSizePriceIncrement(selectedSize)).toLocaleString()}
+                       </p>
+                       {getSizePriceIncrement(selectedSize) > 0 && (
+                          <span className="text-xs font-bold text-emerald-600">
+                             (+IDR {getSizePriceIncrement(selectedSize).toLocaleString()} untuk {selectedSize})
+                          </span>
+                       )}
+                    </div>
+                 </div>
 
-                <div className="space-y-4">
-                   <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Deskripsi Produk</h4>
-                   <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-line">{selectedMerch.deskripsi || 'Tidak ada deskripsi.'}</p>
-                </div>
+                 <div className="space-y-4">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Deskripsi Produk</h4>
+                    <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-line">{selectedMerch.deskripsi || 'Tidak ada deskripsi.'}</p>
+                 </div>
 
-                {selectedMerch.sizes && selectedMerch.sizes.length > 0 && (
-                   <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pilih Ukuran</h4>
-                         {selectedMerch.size_chart_urls?.length > 0 && (
-                            <button 
-                              onClick={() => setActiveSlide(1)}
-                              className="text-[10px] font-black text-[#079108] uppercase tracking-widest hover:underline"
-                            >
-                               Size Chart
-                            </button>
-                         )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                         {selectedMerch.sizes.map(size => (
-                            <button 
-                               key={size}
-                               onClick={() => setSelectedSize(size)}
-                               className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedSize === size ? 'bg-[#079108] text-white shadow-lg shadow-[#079108]/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
-                            >
-                               {size}
-                            </button>
-                         ))}
-                      </div>
-                   </div>
-                )}
+                 {selectedMerch.sizes && selectedMerch.sizes.length > 0 && (
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pilih Ukuran</h4>
+                          {selectedMerch.size_chart_urls?.length > 0 && (
+                             <button 
+                               onClick={() => setActiveSlide(1)}
+                               className="text-[10px] font-black text-[#079108] uppercase tracking-widest hover:underline"
+                             >
+                                Size Chart
+                             </button>
+                          )}
+                       </div>
+                       <div className="flex flex-wrap gap-2">
+                          {selectedMerch.sizes.map(size => (
+                             <button 
+                                key={size}
+                                onClick={() => setSelectedSize(size)}
+                                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedSize === size ? 'bg-[#079108] text-white shadow-lg shadow-[#079108]/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                             >
+                                {size}
+                             </button>
+                          ))}
+                       </div>
+                    </div>
+                 )}
              </div>
 
              <div className="mt-12 pt-8 border-t border-gray-100">
