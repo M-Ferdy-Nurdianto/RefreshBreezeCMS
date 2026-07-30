@@ -75,7 +75,7 @@ Error generating stack: `+u.message+`
           color: white;
           background: var(--primary-green);
         }
-      `})]})},_m="/rara/assets/rara-nB2IOwK7.webp",vv=({onBack:E})=>{const{about:X,profile:G}=pe;return U.jsxs("div",{className:"about-wrapper animate-fade-in",children:[U.jsx("button",{onClick:E,className:"back-btn-top","aria-label":"Kembali",children:"←"}),U.jsxs("div",{className:"about-scrollable",children:[U.jsxs("div",{className:"profile-section",children:[U.jsx("div",{className:"photo-frame",children:U.jsx("img",{src:_m,alt:G.name,className:"profile-photo"})}),U.jsx("h1",{className:"username",children:G.name}),U.jsx("div",{className:"cat-decoration",children:X.decoration})]}),U.jsx("div",{className:"bio-card",children:U.jsx("div",{className:"bio-content",children:X.bio.map((v,Q)=>U.jsx("p",{children:v.split(`
+      `})]})},_m="/rara/assets/rara-nB2IOwK7.webp?v=2",vv=({onBack:E})=>{const{about:X,profile:G}=pe;return U.jsxs("div",{className:"about-wrapper animate-fade-in",children:[U.jsx("button",{onClick:E,className:"back-btn-top","aria-label":"Kembali",children:"←"}),U.jsxs("div",{className:"about-scrollable",children:[U.jsxs("div",{className:"profile-section",children:[U.jsx("div",{className:"photo-frame",children:U.jsx("img",{src:_m,alt:G.name,className:"profile-photo"})}),U.jsx("h1",{className:"username",children:G.name}),U.jsx("div",{className:"cat-decoration",children:X.decoration})]}),U.jsx("div",{className:"bio-card",children:U.jsx("div",{className:"bio-content",children:X.bio.map((v,Q)=>U.jsx("p",{children:v.split(`
 `).map((k,ml)=>U.jsxs(Py.Fragment,{children:[k,ml!==v.split(`
 `).length-1&&U.jsx("br",{})]},ml))},Q))})})]}),U.jsx("style",{jsx:!0,children:`
         .about-wrapper {
