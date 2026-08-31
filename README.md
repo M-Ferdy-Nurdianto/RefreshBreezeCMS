@@ -29,21 +29,155 @@ Website fullstack untuk penjualan Cheki (foto polaroid) dengan member Refresh Br
 - ✅ **JWT Authentication** - Secure login dengan bcrypt password hashing
 - ✅ **Dashboard Overview** - Real-time order statistics
 - ✅ **Multi-Filter System**:
-  - Status (Pending/Checked/Completed)
-  - Type (OTS/Pre-Order)
+  - Status (Unchecked/Pending, Checked/Lunas, Completed/Selesai)
+  - Type (All, OTS, PO, Special, Merch)
   - Event (filter by specific event)
   - Date Range (week/month/custom)
   - Search (nama/order number)
-- ✅ **OTS Orders** - Create manual orders untuk on-the-spot sales (with event selection)
-- ✅ **Excel Export** - Download filtered orders dengan **total pendapatan** calculation
-- ✅ **Bulk Delete** - Delete orders by: all, event, weeks, months
-- ✅ **Event Management** - Create/Edit/Delete events dengan lineup member
-- ✅ **Payment Proof Display** - Clickable links to Supabase Storage
-- ✅ **Detailed Items View** - Show "Cheki YanYee x2" format
+- ✅ **OTS Orders** - Create manual orders untuk on-the-spot sales (with member selector, event selection & auto pricing)
+- ✅ **Export Data (Excel & PDF)** - Download filtered orders atau per-event lengkap dengan detail item dan total revenue
+- ✅ **Bulk Delete** - Hapus order secara massal (berdasarkan event, rentang minggu/bulan, atau semua)
+- ✅ **Event Management** - Tambah/Edit/Hapus event regular & event bertema spesial dengan custom lineup member
+- ✅ **Merchandise Management** - Tambah/Edit/Hapus merch, upload foto & size chart, variasi ukuran (S-4XL), dan toggle status aktif
+- ✅ **Dynamic Price Settings** - Pengaturan harga Cheki PO dan OTS (Per Member & Group) langsung dari dashboard
+- ✅ **Payment Proof Viewer & Digital Receipt** - Modal detail order dengan preview bukti transfer & generator nota digital canvas
+- ✅ **Sales Recap & Chart** - Rekap penjualan per member/group (PO vs OTS) dan grafik visual otomatis
 - ✅ **Status Color Coding**:
-  - ⚪ **Putih** = Pending (baru masuk)
-  - 🔵 **Biru** = Checked (payment verified)
-  - 🟢 **Hijau** = Completed (cheki diambil)
+  - ⚪ **Putih** = Pending / Unchecked (order baru masuk)
+  - 🔵 **Biru** = Checked (pembayaran diverifikasi / lunas)
+  - 🟢 **Hijau** = Completed (cheki/item telah diambil customer)
+
+---
+
+## 📖 Panduan Lengkap Admin CMS (Admin Guide)
+
+Panduan praktis penggunaan seluruh tombol, modal, dan fitur operasional di halaman Admin CMS.
+
+```
+Admin Dashboard Navigation:
+├── 📋 Orders Tab (All Reg, OTS, PO, Special, Merch)
+├── 🎫 Events Tab (Event Regular & Event Spesial)
+├── 🛍️ Merch Tab (Katalog & Stok Merchandise)
+├── ⚙️ Settings Tab (Konfigurasi Harga PO & OTS)
+└── 📊 Rekap Tab (Statistik & Grafik Penjualan)
+```
+
+---
+
+### 1. 📋 Tab Orders (Manajemen Pesanan)
+
+Tab ini digunakan untuk memonitor, memfilter, mengubah status pesanan, serta input pesanan langsung di lokasi (OTS).
+
+#### A. Sub-Tab Filter Tipe Order
+* **`All (Reg)`**: Menampilkan seluruh pesanan regular (gabungan OTS dan PO biasa).
+* **`OTS`**: Khusus pesanan On-The-Spot yang diinput langsung oleh admin di venue.
+* **`PO`**: Khusus pesanan Pre-Order yang di-checkout customer melalui website.
+* **`Special`**: Khusus pesanan dari event bertema spesial (misal: Cheki Valentine, Halloween, dsb).
+* **`Merch`**: Khusus pesanan produk fisik merchandise (kaos, gantungan kunci, dll).
+
+#### B. Filter & Pencarian
+* **Input Cari**: Ketik nama customer atau nomor order (contoh: `#RB-12345` atau `Budi`).
+* **Dropdown Status**: Filter pesanan `Semua Status`, `Unchecked`, `Checked`, atau `Completed`.
+* **Dropdown Event**: Filter data order khusus pada event tertentu.
+* **Dropdown Waktu & Tanggal**: Filter pesanan `Semua Waktu`, `Minggu Ini`, `Bulan Ini`, atau `Custom Range` (memilih tanggal *From* dan *To*).
+
+#### C. Tombol-Tombol Aksi Utama
+* **`+ Order OTS` (Tombol Hijau)**:
+  * Membuka **Modal Input OTS**. Digunakan saat ada pembeli langsung di venue event.
+  * **Cara Pakai**:
+    1. Pilih event yang sedang berlangsung.
+    2. Masukkan **Nama Lengkap** pembeli.
+    3. Pilih **Metode Pembayaran** (Cash / Transfer / QRIS).
+    4. Klik kartu member atau All Member (Group) untuk menambah kuantitas cheki. Harga akan terkalkulasi otomatis.
+    5. Klik **Simpan Order** → Pesanan otomatis tersimpan sebagai status *Checked* (Lunas).
+* **`📊 Export Data` (Tombol Gradien Emerald)**:
+  * Mengunduh rekap order ke format **Excel (.xlsx)** atau dokumen **PDF**.
+  * **Langkah Export**:
+    1. Klik tombol **Export Data**.
+    2. Pilih format: **Excel** atau **PDF**.
+    3. Pilih cakupan data: **Sesuai Filter di Layar** atau pilih **Event Tertentu**.
+    4. Klik **Download** → File akan otomatis terunduh lengkap dengan daftar pesanan, rincian item, dan total nominal pendapatan.
+* **`🗑️ Hapus Data` (Tombol Merah Bulk Delete)**:
+  * Membuka modal pembersihan data order massal.
+  * **Pilihan Scope Penghapusan**:
+    * Berdasarkan event tertentu.
+    * Pesanan lebih dari 1 minggu / 1 bulan lalu.
+    * Hapus seluruh data order (memerlukan konfirmasi keamanan).
+
+#### D. Tindakan pada Tabel Order (Per Baris)
+* **Dropdown Ubah Status**:
+  * Ganti ke **Unchecked** (belum dicek).
+  * Ganti ke **Checked** (pembayaran valid/lunas).
+  * Ganti ke **Completed** (cheki/barang sudah diambil oleh fan).
+* **👁️ Tombol Lihat / Detail Order (Modal Detail)**:
+  * **Lihat Bukti Transfer**: Klik gambar/link bukti transfer untuk preview atau membuka di Google Drive/Supabase Storage.
+  * **Download Nota Digital**: Klik tombol **`Nota`** di header modal untuk menghasilkan struk receipt berformat gambar digital (Canvas) yang siap dibagikan ke customer.
+  * **Detail Item & Catatan**: Melihat list member yang dibeli, kuantitas, harga subtotal, serta pesan/catatan khusus customer.
+* **🗑️ Tombol Hapus Baris**: Menghapus satu order spesifik dengan konfirmasi SweetAlert2.
+
+---
+
+### 2. 🎫 Tab Events (Manajemen Event Regular & Spesial)
+
+Mengelola jadwal pertunjukan, lokasi, lineup member, dan status aktif event.
+
+* **`+ Tambah Event`**:
+  * Membuka modal formulir event.
+  * **Tipe Event**:
+    * **Regular**: Event pertunjukan standar dengan harga cheki regular.
+    * **Special Event**: Event bertema khusus (misal: *Summer Festival*, *Halloween Party*). Admin dapat memilih **Warna Tema** dan **Nama Tema**. Order dari event ini akan otomatis masuk ke tab *Special Orders*.
+  * **Lineup Member**: Klik foto/nama member yang tampil di event tersebut untuk mengikutsertakan mereka ke dalam lineup penjualan cheki.
+  * **Tanggal & Waktu**: Masukkan tanggal, bulan, tahun, jam open gate, dan jam sesi cheki.
+* **Tindakan Baris Event**:
+  * **Tombol Status (Aktif / Selesai)**: Menandai event sudah berakhir secara manual (event yang sudah lewat tanggal otomatis berstatus selesai).
+  * **✏️ Edit**: Mengubah nama, lokasi, tanggal, tema, atau lineup member.
+  * **🗑️ Hapus**: Menghapus data event.
+
+---
+
+### 3. 🛍️ Tab Merch (Manajemen Merchandise)
+
+Mengelola katalog produk merchandise fisik yang dijual di toko online.
+
+* **`+ Tambah Merch`**:
+  * **Nama & Deskripsi**: Isi nama produk dan keterangan detail barang.
+  * **Harga Produk**: Mendukung format fleksibel (contoh: ketik `135k`, `150rb`, `1.5jt`, atau angka langsung `150000`).
+  * **Stok**: Isi jumlah persediaan stok barang, atau kosongkan jika sistem Pre-Order (PO).
+  * **Ukuran Tersedia**: Klik badge ukuran (`S`, `M`, `L`, `XL`, `XXL`, `3XL`, `4XL`) untuk mengaktifkan/menonaktifkan variasi ukuran produk.
+  * **Upload Foto Utama**: Upload foto produk (mendukung kompresi otomatis).
+  * **Upload Size Chart**: Upload foto panduan ukuran/size chart.
+  * **Toggle Tampilkan di Shop**: Centang untuk menampilkan produk ke customer, atau uncheck jika produk ingin di-draft/disembunyikan.
+* **Aksi Daftar Merch**:
+  * **Toggle Status Aktif/Nonaktif**: Sakelar instan untuk menyembunyikan/menampilkan produk dari katalog publik.
+  * **✏️ Edit**: Mengubah info produk, harga, stok, atau mengganti gambar.
+  * **🗑️ Hapus**: Menghapus produk dari database.
+
+---
+
+### 4. ⚙️ Tab Settings (Pengaturan Harga Dinamis)
+
+Pusat kendali konfigurasi harga Cheki tanpa perlu mengubah kode program:
+
+* **Harga Pre-Order (PO)**:
+  * *Harga Cheki Per Member*: Tarif satuan cheki per-member untuk pemesanan online website (Default: Rp 25.000).
+  * *Harga Cheki Grup*: Tarif cheki bersama seluruh member (All Member) untuk pemesanan online (Default: Rp 30.000).
+* **Harga On The Spot (OTS)**:
+  * *Harga OTS Per Member*: Tarif satuan cheki per-member untuk pembelian langsung di lokasi (Default: Rp 25.000).
+  * *Harga OTS Grup*: Tarif cheki grup langsung di lokasi (Default: Rp 30.000).
+* **`Simpan Perubahan`**: Menyimpan konfigurasi ke database. Harga di halaman customer dan modal OTS admin akan otomatis ter-update seketika.
+
+---
+
+### 5. 📊 Tab Rekap (Laporan & Grafik Statistik)
+
+Menyajikan analisa data performa penjualan secara visual:
+
+* **Filter Event**: Memilih data performa untuk seluruh event atau satu event tertentu.
+* **Card Ringkasan**:
+  * **Total Pendapatan (Revenue)**: Akumulasi nominal uang dari pesanan berstatus *Checked* dan *Completed*.
+  * **Total Cheki Terjual**: Jumlah total lembar cheki/polaroid yang selesai diambil.
+* **Grafik Penjualan per Member**: Diagram batang (Bar Chart) interaktif yang membandingkan total penjualan cheki Pre-Order (Biru) vs OTS (Oranye) untuk masing-masing member dan grup.
+* **Tabel Rincian Member**: Menampilkan rincian kuantitas PO, kuantitas OTS, total quantity, dan total kontribusi revenue per member.
 
 ---
 
