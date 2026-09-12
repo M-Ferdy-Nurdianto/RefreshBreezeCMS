@@ -14,7 +14,11 @@
     "start:backend": "cd backend && npm start",
     "vercel-build": "npm run build"
   },
-  "keywords": ["refresh-breeze", "cheki", "idol"],
+  "keywords": [
+    "refresh-breeze",
+    "cheki",
+    "idol"
+  ],
   "author": "Refresh Breeze",
   "license": "ISC",
   "dependencies": {
@@ -24,15 +28,16 @@
     "dotenv": "^16.3.1",
     "exceljs": "^4.4.0",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.4.1",
+    "express-slow-down": "^2.1.0",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.34.5",
-    "uuid": "^9.0.1",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^7.4.1",
-    "express-slow-down": "^2.1.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "supabase": "^2.117.0"
   }
 }
