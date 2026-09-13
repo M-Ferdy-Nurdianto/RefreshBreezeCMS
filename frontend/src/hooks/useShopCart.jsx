@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { getMemberEmoji } from '../lib/memberUtils'
 import { rbToast } from '../components/ui/RBToast'
 
 export const getSizePriceIncrement = (size) => {

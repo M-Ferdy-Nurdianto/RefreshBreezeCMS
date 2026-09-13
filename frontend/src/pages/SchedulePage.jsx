@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { FaMapMarkerAlt, FaClock, FaHistory, FaCalendarAlt, FaStar, FaTag } from 'react-icons/fa'
 import Header from '../components/Header'
 import api from '../lib/api'
-import { getMemberEmoji, formatMemberName } from '../lib/memberUtils'
+import { formatMemberName } from '../lib/memberUtils'
 
 const SchedulePage = () => {
   const [events, setEvents] = useState([])

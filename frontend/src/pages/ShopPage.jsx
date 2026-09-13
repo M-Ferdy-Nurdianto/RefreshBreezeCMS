@@ -6,7 +6,6 @@ import { getAssetPath } from '../lib/pathUtils'
 import { rbToast } from '../components/ui/RBToast'
 import api from '../lib/api'
 import Header from '../components/Header'
-import { getMemberEmoji } from '../lib/memberUtils'
 import { useShopCart } from '../hooks/useShopCart'
 import { useFlyToCart } from '../context/FlyToCartContext'
 

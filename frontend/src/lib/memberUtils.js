@@ -1,57 +1,48 @@
-// Shared member data for consistent emoji and color usage across all pages
+// Shared member data for consistent color usage across all pages
 
 export const memberData = {
     'yanyee': {
         color: '#F97316',
-        emoji: '🍪',
         name: 'YanYee',
         gradient: 'from-orange-400 to-amber-500',
     },
     'sinta': {
         color: '#10B981',
-        emoji: '🍃',
         name: 'Sinta',
         gradient: 'from-green-400 to-emerald-500',
     },
     'cissi': {
         color: '#FBBF24',
-        emoji: '👑',
         name: 'Cissi',
         gradient: 'from-amber-400 to-yellow-500',
     },
     'channie': {
         color: '#6D28D9',
-        emoji: '✨',
         name: 'Channie',
         gradient: 'from-purple-600 to-indigo-600',
     },
     'acaa': {
         color: '#3B82F6',
-        emoji: '💙',
         name: 'Acaa',
         gradient: 'from-blue-500 to-blue-600',
     },
     'cally': {
         color: '#34D399',
-        emoji: '🪼',
         name: 'Cally',
         gradient: 'from-emerald-400 to-green-500',
     },
     'piya': {
         color: '#F472B6',
-        emoji: '🐰',
         name: 'Piya',
         gradient: 'from-pink-400 to-rose-500',
     },
     'rara': {
         color: '#9e1527',
-        emoji: '🎸',
         name: 'Rara',
         gradient: 'from-red-600 to-rose-800',
     },
     'group': {
         color: '#079108',
-        emoji: '💚',
         name: 'Group',
         gradient: 'from-green-500 to-emerald-600',
     }
@@ -61,14 +52,6 @@ export const memberData = {
 export const sanitizeName = (name) => {
     if (!name) return ''
     return name.toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-// Get member emoji by name
-export const getMemberEmoji = (name) => {
-    const clean = sanitizeName(name)
-    // Handle 'aca' vs 'acaa' mismatch
-    if (clean === 'aca') return memberData['acaa']?.emoji || '💚'
-    return memberData[clean]?.emoji || '💚'
 }
 
 // Get member color by name
@@ -92,9 +75,7 @@ export const getMemberDisplayName = (name) => {
     return memberData[clean]?.name || name
 }
 
-// Format member name with emoji
+// Format member name (tanpa emoji)
 export const formatMemberName = (name) => {
-    const cleanName = getMemberDisplayName(name)
-    const emoji = getMemberEmoji(name)
-    return `${cleanName} ${emoji}`
+    return getMemberDisplayName(name)
 }

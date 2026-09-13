@@ -11,7 +11,6 @@ const memberData = {
   'sinta': {
     color: '#10B981',
     gradient: 'from-green-400 to-emerald-500',
-    emoji: '🍃',
     namaPanggung: 'Sinta',
     tagline: 'Pemalu, Penasaran',
     jiko: '"Si pemalu tetapi suka hal-hal baru, haloo aku Sintaa"',
@@ -24,7 +23,6 @@ const memberData = {
   'cissi': {
     color: '#FBBF24',
     gradient: 'from-amber-400 to-yellow-500',
-    emoji: '👑',
     namaPanggung: 'Cissi',
     tagline: 'Imajinatif, Penari',
     jiko: '"Aiyaiya, i\'m your little butterfly~ Kupu-kupu yang suka menari dan bisa membuatmu bahagia, halo halo semuanya aku Cissi"',
@@ -37,7 +35,6 @@ const memberData = {
   'channie': {
     color: '#6D28D9',
     gradient: 'from-purple-600 to-indigo-600',
-    emoji: '✨',
     namaPanggung: 'Channie',
     tagline: 'Kreatif, Menghibur',
     jiko: '"Semungil bintang yang akan menerangi hatimu seperti bulan, halo semuanya aku Channie!"',
@@ -50,7 +47,6 @@ const memberData = {
   'acaa': {
     color: '#3B82F6',
     gradient: 'from-blue-500 to-blue-600',
-    emoji: '💙',
     namaPanggung: 'Acaa',
     tagline: 'Ceria, Usil, Lincah',
     jiko: '"Citcitcutcuit dengarlah kicauanku yang akan meramaikan hatimuuu"',
@@ -63,10 +59,9 @@ const memberData = {
   'cally': {
     color: '#34D399',
     gradient: 'from-emerald-400 to-green-500',
-    emoji: '🪼',
     namaPanggung: 'Cally',
     tagline: 'Lembut, Weirdo',
-    jiko: '"Mengapung lembut dihatimu seperti ubur ubur yang menari di laut🪼~ Hallo aku Cally!!!"',
+    jiko: '"Mengapung lembut dihatimu seperti ubur ubur yang menari di laut~ Hallo aku Cally!!!"',
     tanggalLahir: '5 September',
     hobi: 'Menonton film, mempertanyakan eksistensi diri sendiri, menyanyi',
     instagram: '@calismilikitiw',
@@ -76,10 +71,9 @@ const memberData = {
   'piya': {
     color: '#F472B6',
     gradient: 'from-pink-400 to-rose-500',
-    emoji: '🐰',
     namaPanggung: 'Piya',
     tagline: 'Periang, Lucu',
-    jiko: '"Pyon! pyon! seperti kelinci yang melompat tinggi aku akan melompat ke posisi tertinggi di hatimu 🐰 ~ Hallo aku Piya !!"',
+    jiko: '"Pyon! pyon! seperti kelinci yang melompat tinggi aku akan melompat ke posisi tertinggi di hatimu ~ Hallo aku Piya !!"',
     tanggalLahir: '1 Januari',
     hobi: 'Gambar dan main rosbloz',
     instagram: '@matcvie_',
@@ -89,7 +83,6 @@ const memberData = {
   'rara': {
     color: '#9e1527',
     gradient: 'from-red-600 to-rose-800',
-    emoji: '🎸',
     namaPanggung: 'Rara',
     objectPosition: 'center 20%',
     gallery: []
@@ -284,11 +277,6 @@ const MembersPage = () => {
                             <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight drop-shadow-lg">
                               {data.namaPanggung}
                             </h3>
-                            {data.emoji && (
-                              <span className="text-sm px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20">
-                                {data.emoji}
-                              </span>
-                            )}
                           </div>
                           <p className="text-white/80 text-xs font-medium">{data.tagline}</p>
                         </div>
@@ -379,15 +367,10 @@ const MembersPage = () => {
                           </div>
                           
                           <h1 
-                            className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-8 flex items-center gap-3 flex-wrap"
+                            className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-8"
                             style={{ color: data.color }}
                           >
                             {data.namaPanggung}
-                            {data.emoji && (
-                              <span className="text-2xl md:text-3xl p-2 rounded-2xl bg-white shadow-sm border border-gray-100 dark:bg-white/10 dark:border-white/10">
-                                {data.emoji}
-                              </span>
-                            )}
                           </h1>
 
                           {/* Minimal Bio */}
