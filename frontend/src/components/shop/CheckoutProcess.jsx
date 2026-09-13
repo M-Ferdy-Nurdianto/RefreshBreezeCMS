@@ -77,7 +77,7 @@ const InternalCartSummary = ({ items, type, updateQuantity, updateMerchQuantity,
           </div>
           <div className="flex-1 min-w-0 pt-1">
             <h4 className="font-black text-[11px] text-gray-900 dark:text-white uppercase tracking-tight leading-tight mb-1.5 break-words">
-              {(item.name || item.nama || '').replace(/cheki/gi, '').replace(/\p{Extended_Pictographic}/gu, '').trim()}
+              {(item.name || item.nama || '').replace(/cheki/gi, '').trim()}
             </h4>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[9px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-100/50 dark:border-emerald-500/20">IDR {(item.price || item.harga || 0).toLocaleString()}</span>
