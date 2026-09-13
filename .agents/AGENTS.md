@@ -1,4 +1,4 @@
-﻿# Project Manifesto: Refresh Breeze
+# Project Manifesto: Refresh Breeze
 
 ## Core Vision
 Refresh Breeze adalah platform manajemen dan shopping yang didesain khusus untuk komunitas idol dan fan, dengan fokus pada pengalaman yang premium, cepat, dan berkarakter. Project ini bukan sekadar CMS, melainkan perpanjangan dari identitas brand "Refresh Breeze".
@@ -47,6 +47,17 @@ Untuk menjaga kesan premium, gunakan aturan berikut:
 - `background: rgba(255, 255, 255, 0.05)`.
 - `border: 1px solid rgba(255, 255, 255, 0.1)`.
 - `box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8)`.
+
+## Dual-Theme Specification (WAJIB DIPATUHI)
+- **Light Mode (White Mode)**:
+  - Background: Putih / abu-abu terang bersih (`#f8faf9` / `#ffffff`).
+  - Kartu & Surface: **100% PUTIH BERSIH** (`bg-white` / `#ffffff`) dengan border abu-abu halus (`border-gray-100` / `border-gray-200`).
+  - Teks: **HITAM / SLATE GELAP** (`#0f172a`, `#1a1a1a`).
+  - *Larangan*: Jangan pernah menggunakan surface gelap / abu-abu kusam atau teks putih di Light Mode.
+- **Dark Mode (Metal Black Mode)**:
+  - Background: Deep Metal Dark (`#090d16` / `#060911`).
+  - Kartu & Surface: Glassmorphism gelap (`#111726` / `hsla(240, 10%, 12%, 0.7)`).
+  - Teks: **PUTIH CERAH** (`#ffffff`, `#f4f4f5`).
 
 ## Visual Elements
 - **Icons**: Gunakan `Lucide React` dengan stroke thin (1.5px).

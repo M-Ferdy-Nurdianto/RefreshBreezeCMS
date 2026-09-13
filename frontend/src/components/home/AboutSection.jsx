@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FaArrowRight } from 'react-icons/fa'
+import { FaArrowRight, FaBolt, FaLeaf, FaMagic, FaUsers } from 'react-icons/fa'
 
 const AboutSection = ({ navigate, getAssetPath }) => {
   return (
@@ -36,12 +36,22 @@ const AboutSection = ({ navigate, getAssetPath }) => {
             <p>Kami percaya bahwa setiap pertemuan adalah sebuah momen berharga yang patut dirayakan dengan senyuman dan keceriaan bersama.</p>
           </div>
           <div className="grid grid-cols-2 gap-4 pt-4">
-            {[ { label: 'Energy', icon: '⚡' }, { label: 'Fresh', icon: '🍃' }, { label: 'Youth', icon: '✨' }, { label: 'Together', icon: '🤝' } ].map((point, idx) => (
-              <motion.div key={idx} whileHover={{ scale: 1.05 }} className="flex items-center gap-3 p-4 bg-[#079108]/5 rounded-2xl border border-[#079108]/10">
-                <span className="text-xl">{point.icon}</span>
-                <span className="font-black text-[10px] uppercase tracking-widest text-[#079108]">{point.label}</span>
-              </motion.div>
-            ))}
+            {[ 
+              { label: 'Energy', icon: FaBolt, color: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/20' }, 
+              { label: 'Fresh', icon: FaLeaf, color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/20' }, 
+              { label: 'Youth', icon: FaMagic, color: 'text-sky-500', bg: 'bg-sky-500/10 border-sky-500/20' }, 
+              { label: 'Together', icon: FaUsers, color: 'text-[#079108]', bg: 'bg-[#079108]/10 border-[#079108]/20' } 
+            ].map((point, idx) => {
+              const Icon = point.icon
+              return (
+                <motion.div key={idx} whileHover={{ scale: 1.05 }} className="flex items-center gap-3.5 p-4 bg-white/80 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm transition-all">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${point.bg} ${point.color}`}>
+                    <Icon size={16} />
+                  </div>
+                  <span className="font-black text-[10px] uppercase tracking-widest text-gray-800 dark:text-gray-200">{point.label}</span>
+                </motion.div>
+              )
+            })}
           </div>
           <div className="pt-6 flex justify-start">
             <button onClick={() => navigate('/story')} className="group flex items-center gap-4 px-8 py-4 bg-[#4A90B5] text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-[#3a718f] transition-all shadow-xl hover:shadow-[#4A90B5]/30">

@@ -1,4 +1,4 @@
-﻿---
+---
 name: rb-ui-ux
 description: Use when working on advanced CSS, glassmorphism, animations, responsive design, admin layouts, or toast notifications.
 ---
@@ -37,6 +37,21 @@ Setiap panel atau kartu utama harus menggunakan kombinasi berikut:
 - **Layering**: Jangan menumpuk lebih dari 2 lapisan blur karena akan menurunkan performa (FPS drop) di perangkat mobile lama.
 - **Contrast**: Pastikan text di atas panel glass memiliki kontras yang cukup (selalu gunakan text putih/light untuk background gelap).
 - **Consistency**: Jangan gunakan border radius yang berbeda-beda dalam satu halaman.
+
+
+# Theme Philosophy: Strict Light vs Dark Mode Spec
+
+Aplikasi Refresh Breeze mendukung dua tema dengan aturan tegas:
+1. **Light Mode (White Mode)**:
+   - **Background Utama**: Putih / abu-abu sangat muda bersih (`#f8faf9` / `#ffffff`).
+   - **Kartu & Surface**: Harus **PUTIH SOLID** (`bg-white` / `#ffffff`) dengan border tipis terang (`border-gray-100` / `border-gray-200`).
+   - **Teks**: Wajib **HITAM / SLATE GELAP** (`#0f172a`, `#1a1a1a`, `#334155`).
+   - **DILARANG**: Memasang background gelap/kusam atau text putih transparan saat Light Mode aktif.
+2. **Dark Mode (Metal Black Mode)**:
+   - **Background Utama**: Deep Metal Dark (`#090d16` / `#060911`).
+   - **Kartu & Surface**: Glassmorphism gelap (`#111726` / `hsla(240, 10%, 12%, 0.7)`) dengan border tipis transparan (`border-white/10`).
+   - **Teks**: Wajib **PUTIH CERAH** (`#ffffff`, `#f4f4f5`, `#cbd5e1`).
+   - **Accent Highlight**: Neon emerald glow (`#079108`, `hsl(180, 100%, 45%)`).
 
 
 # Animation & Transition Guidelines

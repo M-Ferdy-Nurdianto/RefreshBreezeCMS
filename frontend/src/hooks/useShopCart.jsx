@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
 import { getMemberEmoji } from '../lib/memberUtils'
-import { showToast } from '../lib/toast'
+import { rbToast } from '../components/ui/RBToast'
 
 export const getSizePriceIncrement = (size) => {
   if (!size) return 0;
@@ -51,7 +50,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const addToCart = (type, member = null, getMemberImage) => {
     const isGroup = type === 'group'
     const imageUrl = isGroup ? '/images/members/group.webp' : getMemberImage(member)
-    
+
     const item = {
       id: isGroup ? 'group' : member.id,
       member_id: isGroup ? 'group' : member.id,
@@ -63,12 +62,9 @@ export const useShopCart = (hargaMember, hargaGrup) => {
 
     const existing = cart.find(i => i.id === item.id)
     const newQty = existing ? existing.quantity + 1 : 1
-    
-    showToast.cart(
-      item.name, 
-      isGroup ? '✨' : getMemberEmoji(member.id),
-      `Added to Cart ${newQty > 1 ? `(${newQty}x)` : ''}`
-    )
+
+    // Toast dipindahkan ke animasi melayang "Fly to Cart"
+    // rbToast.cart(item.name.replace('Cheki ', ''), emoji, newQty)
 
     setCart(prev => {
       const existingInPrev = prev.find(i => i.id === item.id)
@@ -82,7 +78,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const updateQuantity = (id, delta) => {
     const item = cart.find(i => i.id === id)
     if (item && item.quantity === 1 && delta === -1) {
-      showToast.error(item.name, 'Removed from Cart')
+      rbToast.error(item.name, 'Dihapus dari keranjang')
     }
 
     setCart(prev => {
@@ -102,7 +98,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const removeFromCart = (id) => {
     const item = cart.find(i => i.id === id)
     if (item) {
-      showToast.error(item.name, 'Removed from Cart')
+      rbToast.error(item.name, 'Dihapus dari keranjang')
     }
     setCart(prev => prev.filter(item => item.id !== id))
   }
@@ -113,11 +109,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
     const cartId = size ? `${item.id}-${size}` : item.id
     const existing = merchCart.find(i => i.cartId === cartId)
     const newQty = existing ? existing.quantity + 1 : 1
-    showToast.cart(
-      `${item.nama}${size ? ` (${size})` : ''}`,
-      '🛍️',
-      `Added to Cart ${newQty > 1 ? `(${newQty}x)` : ''}`
-    )
+    // rbToast.merch(`${item.nama}${size ? ` (${size})` : ''}`, newQty)
 
     setMerchCart(prev => {
       const ex = prev.find(i => i.cartId === cartId)

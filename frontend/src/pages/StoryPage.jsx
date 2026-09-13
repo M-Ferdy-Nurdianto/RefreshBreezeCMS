@@ -17,7 +17,7 @@ const StoryPage = () => {
             alt="Refresh Breeze Group" 
             className="w-full h-full object-cover scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/40 to-white"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/40 to-white dark:to-[#090d16]"></div>
         </div>
 
         <motion.div 

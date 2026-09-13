@@ -9,9 +9,24 @@
 
   body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f4f4f5;
+    background-color: #f8faf9;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(7, 145, 8, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
+      radial-gradient(at 100% 20%, rgba(56, 189, 248, 0.03) 0px, transparent 40%),
+      radial-gradient(at 10% 80%, rgba(195, 227, 163, 0.06) 0px, transparent 50%);
+    background-attachment: fixed;
     color: #1a1a1a;
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* When Dark Mode is active */
+  html.dark body,
+  body.dark-theme {
+    background-color: #090d16;
+    background-image: none;
+    color: #f4f4f5;
   }
 
   /* Snap Scroll for Mobile Carousels */
@@ -69,18 +84,9 @@
     text-orientation: mixed;
   }
 
-  /* Noise Texture Overlay */
+  /* Noise Texture Overlay (Disabled as requested) */
   .noise-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    content: "";
-    opacity: 0.15;
-    z-index: 9999;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    display: none;
   }
 
   /* Custom Scrollbar */
@@ -95,6 +101,228 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-gray-200 rounded-full hover:bg-gray-300;
   }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 hover:bg-slate-600;
+  }
+}
+
+/* =========================================================================
+   DARK MODE OVERRIDES (applied ONLY when .dark or .dark-theme is active)
+   When in White Mode, everything falls back to 100% original light styles!
+   ========================================================================= */
+.dark .glass-card,
+body.dark-theme .glass-card {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.dark .glass-panel,
+body.dark-theme .glass-panel {
+  background: rgba(18, 24, 41, 0.75);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.dark .text-glow-green,
+body.dark-theme .text-glow-green {
+  text-shadow: 0 0 10px rgba(7, 145, 8, 0.6), 0 0 20px rgba(7, 145, 8, 0.3);
+}
+
+.dark .border-glow-green,
+body.dark-theme .border-glow-green {
+  border-color: rgba(7, 145, 8, 0.4);
+  box-shadow: 0 0 20px rgba(7, 145, 8, 0.3);
+}
+
+/* Page background containers */
+.min-h-screen.bg-white {
+  background-color: transparent;
+}
+
+.dark .min-h-screen.bg-white,
+body.dark-theme .min-h-screen.bg-white {
+  background-color: #090d16;
+  color: #f4f4f5;
+}
+
+.dark .min-h-screen.bg-gradient-to-br,
+body.dark-theme .min-h-screen.bg-gradient-to-br {
+  background: #090d16;
+  color: #f4f4f5;
+}
+
+/* Text adjustments in Dark Mode */
+.dark .text-dark,
+body.dark-theme .text-dark {
+  color: #f4f4f5;
+}
+
+.dark .text-gray-900:not(.btn-primary *):not([style*="color: rgb(255, 255, 255)"]),
+body.dark-theme .text-gray-900:not(.btn-primary *):not([style*="color: rgb(255, 255, 255)"]) {
+  color: #f4f4f5;
+}
+
+.dark .text-gray-700,
+body.dark-theme .text-gray-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500,
+body.dark-theme .text-gray-600,
+body.dark-theme .text-gray-500 {
+  color: #94a3b8;
+}
+
+/* Card surfaces in Dark Mode */
+html.dark .bg-white:not(header *):not(.btn-primary):not(input):not(select):not(nav *),
+body.dark-theme .bg-white:not(header *):not(.btn-primary):not(input):not(select):not(nav *) {
+  background-color: #111726 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-100,
+body.dark-theme .bg-gray-50,
+body.dark-theme .bg-gray-100 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .bg-gray-50\/50,
+body.dark-theme .bg-gray-50\/50 {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Inputs & Textareas Dual Theme */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+body.dark-theme input:not([type="checkbox"]):not([type="radio"]),
+body.dark-theme textarea {
+  background-color: #0b101d !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+body.dark-theme input:focus,
+body.dark-theme textarea:focus {
+  background-color: #0e1526 !important;
+  border-color: #079108 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: #64748b !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light textarea,
+body.light-theme input:not([type="checkbox"]):not([type="radio"]),
+body.light-theme textarea {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light input:focus,
+html.light textarea:focus,
+body.light-theme input:focus,
+body.light-theme textarea:focus {
+  background-color: #ffffff !important;
+  border-color: #079108 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder,
+body.light-theme input::placeholder,
+body.light-theme textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Specific card rules for clean light mode fallback */
+html.light .bg-white,
+body.light-theme .bg-white {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+html.light .bg-gray-50,
+body.light-theme .bg-gray-50 {
+  background-color: #f8fafc;
+  color: #334155;
+}
+
+html.dark .border-gray-50,
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+body.dark-theme .border-gray-50,
+body.dark-theme .border-gray-100,
+body.dark-theme .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .border-white,
+body.dark-theme .border-white {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Footer in Dark Mode */
+.dark footer,
+body.dark-theme footer {
+  background-color: #060911;
+  color: #94a3b8;
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark footer h3,
+.dark footer h4,
+body.dark-theme footer h3,
+body.dark-theme footer h4 {
+  color: #f4f4f5;
+}
+
+.dark footer a:hover,
+body.dark-theme footer a:hover {
+  color: #079108;
+}
+
+/* Special sections & modal in Dark Mode */
+.dark section.bg-dark,
+body.dark-theme section.bg-dark {
+  background-color: #060911;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .bg-custom-cream,
+body.dark-theme .bg-custom-cream {
+  background-color: #0e1424;
+  color: #f4f4f5;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure buttons stay bright white text */
+.dark .btn-primary,
+body.dark-theme .btn-primary,
+.dark .bg-\[\#079108\],
+body.dark-theme .bg-\[\#079108\] {
+  color: #ffffff !important;
+}
+
+.dark .btn-primary *,
+body.dark-theme .btn-primary *,
+.dark .bg-\[\#079108\] *,
+body.dark-theme .bg-\[\#079108\] * {
+  color: #ffffff !important;
 }
 
 /* Animations */
@@ -221,5 +449,14 @@
 .table-status-select:focus {
   @apply ring-2 ring-offset-1 ring-slate-300;
 }
+
+/* Bottom Nav Safe Padding for Mobile */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+
 
 

@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FaShoppingCart, FaSpinner, FaTicketAlt, FaChevronDown } from 'react-icons/fa'
 import { AnimatePresence, motion } from 'framer-motion'
-import { toast } from 'react-toastify'
 import { getAssetPath } from '../lib/pathUtils'
-import { showToast } from '../lib/toast'
+import { rbToast } from '../components/ui/RBToast'
 import api from '../lib/api'
 import Header from '../components/Header'
 import { getMemberEmoji } from '../lib/memberUtils'
 import { useShopCart } from '../hooks/useShopCart'
+import { useFlyToCart } from '../context/FlyToCartContext'
 
 // Refactored Components
 import ChekiSection from '../components/shop/ChekiSection'
@@ -19,6 +19,7 @@ import CheckoutProcess from '../components/shop/CheckoutProcess'
 
 const ShopPage = () => {
   const navigate = useNavigate()
+  const { triggerFly } = useFlyToCart()
   const [config, setConfig] = useState(null)
   const [members, setMembers] = useState([])
   const [events, setEvents] = useState([])
@@ -183,7 +184,7 @@ const ShopPage = () => {
       const invalidItems = cartHook.cart.filter(item => item.member_id !== 'group' && !allowedMemberIds.includes(String(item.member_id)))
       if (invalidItems.length > 0) {
         const memberNames = invalidItems.map(i => i.name).join(', ')
-        showToast.error(`${memberNames} tidak terdapat di lineup event ini!`, 'Lineup Error')
+        rbToast.error(`${memberNames} tidak terdapat di lineup event ini!`, 'Cek lineup event kamu')
         return
       }
     }
@@ -222,38 +223,44 @@ const ShopPage = () => {
   const themeColor = isSpecialEvent ? (selectedEventForTheme.theme_color || '#FF6B9D') : '#079108'
 
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 dark:bg-[#090d16] dark:from-[#090d16] dark:via-[#090d16] dark:to-[#090d16] flex items-center justify-center">
         <FaSpinner className="text-4xl text-[#079108] animate-spin" />
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 text-gray-900">
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #079108; border-radius: 10px; }
-      `}</style>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 dark:bg-[#090d16] dark:from-[#090d16] dark:via-[#090d16] dark:to-[#090d16] text-gray-900 dark:text-white transition-colors duration-300">
       
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#079108]/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-40 right-20 w-96 h-96 bg-emerald-200/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Header cartCount={cartHook.cart.length + cartHook.merchCart.length} onCartClick={() => setStep(1)} />
+      <Header 
+        cartCount={cartHook.cart.length + cartHook.merchCart.length} 
+        onCartClick={() => {
+          if (step !== 1) setStep(1)
+          setTimeout(() => {
+            const cartEl = document.querySelector('.lg\\:col-span-1') || document.querySelector('.fixed.bottom-20')
+            if (cartEl) {
+              cartEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
+          }, 100)
+        }} 
+      />
       
-      <main className="relative pt-32 pb-30 container mx-auto max-w-7xl px-4">
+      <main className="relative pt-32 pb-44 lg:pb-30 container mx-auto max-w-7xl px-4">
         {step === 1 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
             <div className="lg:col-span-2 space-y-12">
                 {/* Event Selector */}
-                <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-xl">
+                <div className="relative z-30 bg-white dark:bg-[#111726] border border-gray-100 dark:border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-xl">
                   <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#079108] to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-[#079108]/20 shrink-0">
                       <FaTicketAlt className="text-lg sm:text-xl" />
                     </div>
                     <div>
-                      <h2 className="text-lg sm:text-2xl font-black uppercase tracking-tight leading-tight">Pilih Jadwal Event</h2>
+                      <h2 className="text-lg sm:text-2xl font-black uppercase tracking-tight leading-tight text-gray-900 dark:text-white">Pilih Jadwal Event</h2>
                       <p className="text-[9px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Wajib dipilih sebelum memesan cheki</p>
                     </div>
                   </div>
@@ -261,11 +268,11 @@ const ShopPage = () => {
                   <div className="relative custom-dropdown-container">
                     <div 
                       onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
-                      className={`w-full bg-gray-50 border-2 rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white shadow-md' : 'border-transparent hover:border-gray-200'}`}
+                      className={`w-full bg-gray-50 dark:bg-white/5 border-2 rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white dark:bg-white/10 shadow-md' : 'border-transparent hover:border-gray-200 dark:hover:border-white/10'}`}
                     >
                       <div className="flex items-center gap-3 sm:gap-4">
                         <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
-                        <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900' : 'text-gray-400'}`}>
+                        <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
                           {events.find(e => e.id === formData.event_id)?.nama || 'Klik untuk memilih event...'}
                         </span>
                       </div>
@@ -278,17 +285,17 @@ const ShopPage = () => {
                           initial={{ opacity: 0, y: -10 }} 
                           animate={{ opacity: 1, y: 0 }} 
                           exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50"
+                          className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#162035] rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50 dark:border-white/10"
                         >
                           <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
                             {events.length > 0 ? events.map(event => (
                               <div 
                                 key={event.id}
                                 onClick={() => { setFormData({...formData, event_id: event.id}); setEventDropdownOpen(false); }}
-                                className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${formData.event_id === event.id ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
+                                className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${formData.event_id === event.id ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
                               >
                                 <div className="flex flex-col">
-                                  <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${formData.event_id === event.id ? 'text-[#079108]' : 'text-gray-900'}`}>{event.nama}</span>
+                                  <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${formData.event_id === event.id ? 'text-[#079108] dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>{event.nama}</span>
                                   <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{event.tanggal} {event.bulan}</span>
                                 </div>
                                 {formData.event_id === event.id && (
@@ -308,13 +315,16 @@ const ShopPage = () => {
                 <ChekiSection 
                   loading={loading} members={members} hargaGrup={hargaGrup} hargaMember={hargaMember} 
                   selectedEvent={events.find(e => e.id === formData.event_id)}
-                    addToCart={(type, m) => {
+                  addToCart={(type, m, startPos) => {
                     if (type === 'member' || type === 'group') {
                       if (!formData.event_id) {
-                        showToast.info("Silakan pilih jadwal event terlebih dahulu!", "Info")
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        rbToast.info("Silakan pilih jadwal event dulu!", "Pilih event terlebih dahulu")
                         return;
                       }
+                    }
+                    if (startPos) {
+                      const imgUrl = type === 'group' ? getAssetPath('/images/members/group.webp') : getMemberImage(m)
+                      triggerFly(startPos, imgUrl)
                     }
                     cartHook.addToCart(type, m, getMemberImage);
                   }} 

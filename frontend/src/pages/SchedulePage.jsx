@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaMapMarkerAlt, FaClock, FaHistory, FaCalendarAlt } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaClock, FaHistory, FaCalendarAlt, FaStar, FaTag } from 'react-icons/fa'
 import Header from '../components/Header'
 import api from '../lib/api'
 import { getMemberEmoji, formatMemberName } from '../lib/memberUtils'
@@ -128,10 +128,10 @@ const SchedulePage = () => {
                               <h3 className="text-3xl md:text-4xl font-black text-dark tracking-tight">{event.nama}</h3>
                               {event.is_special && (
                                 <span 
-                                  className="px-4 py-1.5 rounded-full text-white text-xs font-bold shadow-md"
+                                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-xs font-bold shadow-md"
                                   style={{ backgroundColor: event.theme_color }}
                                 >
-                                  🎀 {event.theme_name || 'Special'}
+                                  <FaStar size={11} /> {event.theme_name || 'Special'}
                                 </span>
                               )}
                             </div>
@@ -155,14 +155,14 @@ const SchedulePage = () => {
                             {/* PRE-ORDER Label for special events */}
                             {event.is_special && (
                               <div 
-                                className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-bold border"
+                                className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-bold border"
                                 style={{ 
                                   backgroundColor: `${event.theme_color}15`,
                                   borderColor: event.theme_color,
                                   color: event.theme_color
                                 }}
                               >
-                                🏷️ PRE-ORDER ONLY
+                                <FaTag size={10} /> PRE-ORDER ONLY
                               </div>
                             )}
                           </div>

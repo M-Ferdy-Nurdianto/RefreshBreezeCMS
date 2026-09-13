@@ -3,6 +3,10 @@ import { FaTicketAlt, FaPlus } from 'react-icons/fa'
 import MemberCard from './MemberCard'
 import Skeleton from '../Skeleton'
 
+import { useTheme } from '../../context/ThemeContext'
+
+import { useFlyToCart } from '../../context/FlyToCartContext'
+
 const ChekiSection = ({ 
   loading, 
   members, 
@@ -13,9 +17,22 @@ const ChekiSection = ({
   getAssetPath,
   selectedEvent
 }) => {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+  const { triggerFly } = useFlyToCart()
+
   const isMemberInLineup = (memberId) => {
     if (!selectedEvent || !selectedEvent.event_lineup || selectedEvent.event_lineup.length === 0) return true;
     return selectedEvent.event_lineup.some(l => String(l.member_id) === String(memberId));
+  }
+
+  const handleGroupClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const startPos = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    }
+    addToCart('group', null, startPos)
   }
 
   return (
@@ -26,21 +43,30 @@ const ChekiSection = ({
         animate={{ opacity: 1, y: 0 }}
         className="relative"
       >
-         <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2 sm:mb-3 bg-gradient-to-r from-gray-900 via-gray-700 to-[#079108] bg-clip-text text-transparent">
+         <h1 
+           className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2 sm:mb-3 transition-colors duration-300"
+           style={{ color: isDark ? '#ffffff' : '#0f172a' }}
+         >
            Shop Tickets
          </h1>
-         <p className="text-gray-500 font-medium text-sm sm:text-base">Dapatkan tiket cheki eksklusif bersama member favoritmu!</p>
+         <p 
+           className="font-semibold text-sm sm:text-base transition-colors duration-300"
+           style={{ color: isDark ? '#94a3b8' : '#475569' }}
+         >
+           Dapatkan tiket cheki eksklusif bersama member favoritmu!
+         </p>
          <div className="absolute -bottom-4 left-0 w-16 sm:w-24 h-1.5 bg-gradient-to-r from-[#079108] to-emerald-300 rounded-full"></div>
       </motion.div>
 
       {/* Group Cheki Hero Banner */}
       <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.5 }}
           className="relative w-full h-56 sm:h-64 md:h-72 lg:h-96 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 group cursor-pointer"
-          onClick={() => addToCart('group')}
+          onClick={handleGroupClick}
       >
           <div className="absolute inset-0">
               <img 

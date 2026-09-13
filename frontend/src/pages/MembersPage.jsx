@@ -12,7 +12,7 @@ const memberData = {
     color: '#10B981',
     gradient: 'from-green-400 to-emerald-500',
     emoji: '🍃',
-    namaPanggung: '🍃 Sinta 🍃',
+    namaPanggung: 'Sinta',
     tagline: 'Pemalu, Penasaran',
     jiko: '"Si pemalu tetapi suka hal-hal baru, haloo aku Sintaa"',
     tanggalLahir: '12 Oktober',
@@ -25,7 +25,7 @@ const memberData = {
     color: '#FBBF24',
     gradient: 'from-amber-400 to-yellow-500',
     emoji: '👑',
-    namaPanggung: '👑 Cissi 👑',
+    namaPanggung: 'Cissi',
     tagline: 'Imajinatif, Penari',
     jiko: '"Aiyaiya, i\'m your little butterfly~ Kupu-kupu yang suka menari dan bisa membuatmu bahagia, halo halo semuanya aku Cissi"',
     tanggalLahir: '22 Agustus',
@@ -38,7 +38,7 @@ const memberData = {
     color: '#6D28D9',
     gradient: 'from-purple-600 to-indigo-600',
     emoji: '✨',
-    namaPanggung: '✨ Channie ✨',
+    namaPanggung: 'Channie',
     tagline: 'Kreatif, Menghibur',
     jiko: '"Semungil bintang yang akan menerangi hatimu seperti bulan, halo semuanya aku Channie!"',
     tanggalLahir: '8 September',
@@ -51,7 +51,7 @@ const memberData = {
     color: '#3B82F6',
     gradient: 'from-blue-500 to-blue-600',
     emoji: '💙',
-    namaPanggung: '💙 Acaa 💙',
+    namaPanggung: 'Acaa',
     tagline: 'Ceria, Usil, Lincah',
     jiko: '"Citcitcutcuit dengarlah kicauanku yang akan meramaikan hatimuuu"',
     tanggalLahir: '25 Agustus',
@@ -64,7 +64,7 @@ const memberData = {
     color: '#34D399',
     gradient: 'from-emerald-400 to-green-500',
     emoji: '🪼',
-    namaPanggung: '🪼 Cally 🪼',
+    namaPanggung: 'Cally',
     tagline: 'Lembut, Weirdo',
     jiko: '"Mengapung lembut dihatimu seperti ubur ubur yang menari di laut🪼~ Hallo aku Cally!!!"',
     tanggalLahir: '5 September',
@@ -77,7 +77,7 @@ const memberData = {
     color: '#F472B6',
     gradient: 'from-pink-400 to-rose-500',
     emoji: '🐰',
-    namaPanggung: '🐰 Piya 🐰',
+    namaPanggung: 'Piya',
     tagline: 'Periang, Lucu',
     jiko: '"Pyon! pyon! seperti kelinci yang melompat tinggi aku akan melompat ke posisi tertinggi di hatimu 🐰 ~ Hallo aku Piya !!"',
     tanggalLahir: '1 Januari',
@@ -90,7 +90,7 @@ const memberData = {
     color: '#9e1527',
     gradient: 'from-red-600 to-rose-800',
     emoji: '🎸',
-    namaPanggung: '🎸 Rara 🎸',
+    namaPanggung: 'Rara',
     objectPosition: 'center 20%',
     gallery: []
   }
@@ -284,6 +284,11 @@ const MembersPage = () => {
                             <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight drop-shadow-lg">
                               {data.namaPanggung}
                             </h3>
+                            {data.emoji && (
+                              <span className="text-sm px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20">
+                                {data.emoji}
+                              </span>
+                            )}
                           </div>
                           <p className="text-white/80 text-xs font-medium">{data.tagline}</p>
                         </div>
@@ -330,7 +335,7 @@ const MembersPage = () => {
                     </motion.button>
 
                     {/* Profile Hero - Polaroid Style Redesign */}
-                    <div className="relative mb-12 flex flex-col lg:flex-row items-center lg:items-center rounded-[3rem] overflow-hidden bg-[#fafafa] shadow-xl border border-gray-100 p-6 md:p-12 gap-8 md:gap-16">
+                    <div className="relative mb-12 flex flex-col lg:flex-row items-center lg:items-center rounded-[3rem] overflow-hidden bg-white dark:bg-[#111726]/90 shadow-xl border border-gray-100 dark:border-white/10 p-6 md:p-12 gap-8 md:gap-16">
                       
                       {/* Visual Stage - Polaroid Frame */}
                       <motion.div 
@@ -338,9 +343,9 @@ const MembersPage = () => {
                         animate={{ rotate: -1, scale: 1, opacity: 1 }}
                         whileHover={{ rotate: 0, scale: 1.02 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="relative w-full lg:w-[45%] aspect-[4/5] bg-white p-4 pb-16 md:p-6 md:pb-24 shadow-2xl rounded-sm border-t border-l border-gray-50 flex-shrink-0"
+                        className="relative w-full lg:w-[45%] aspect-[4/5] bg-white dark:bg-[#182238] p-4 pb-16 md:p-6 md:pb-24 shadow-2xl rounded-sm border-t border-l border-gray-100 dark:border-white/10 flex-shrink-0"
                       >
-                        <div className="w-full h-full overflow-hidden bg-gray-100 rounded-sm">
+                        <div className="w-full h-full overflow-hidden bg-gray-50 dark:bg-[#0c1220] rounded-sm">
                           <img 
                             src={getProfileImage(selectedMember)} 
                             alt={data.namaPanggung}
@@ -351,7 +356,7 @@ const MembersPage = () => {
                         
                         {/* Decorative Tape or Label could go here, but keeping it clean for now */}
                         <div className="absolute bottom-4 md:bottom-8 left-0 right-0 text-center">
-                          <span className="font-marker text-2xl md:text-3xl text-gray-400 opacity-40 select-none">
+                          <span className="font-marker text-2xl md:text-3xl text-gray-400 dark:text-gray-300 opacity-40 select-none">
                             {data.namaPanggung}
                           </span>
                         </div>
@@ -378,10 +383,15 @@ const MembersPage = () => {
                             style={{ color: data.color }}
                           >
                             {data.namaPanggung}
+                            {data.emoji && (
+                              <span className="text-2xl md:text-3xl p-2 rounded-2xl bg-white shadow-sm border border-gray-100 dark:bg-white/10 dark:border-white/10">
+                                {data.emoji}
+                              </span>
+                            )}
                           </h1>
 
                           {/* Minimal Bio */}
-                          <div className="mb-10 text-gray-600">
+                          <div className="mb-10 text-gray-600 dark:text-gray-300">
                              <p className="text-lg md:text-xl leading-relaxed italic font-medium border-l-4 pl-6" style={{ borderColor: data.color }}>
                                 "{data.jiko || selectedMember.jikoshoukai || 'Salam kenal semuanya!'}"
                              </p>
@@ -389,13 +399,13 @@ const MembersPage = () => {
 
                           {/* Stats Grid - Clean Cards */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50" style={{ color: data.color }}>
+                            <div className="bg-white dark:bg-white/5 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-4 hover:shadow-md transition-shadow">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 dark:bg-white/10" style={{ color: data.color }}>
                                 <FaBirthdayCake />
                               </div>
                               <div>
                                 <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Birthday</p>
-                                <p className="font-bold text-gray-900 text-sm">{data.tanggalLahir}</p>
+                                <p className="font-bold text-gray-900 dark:text-white text-sm">{data.tanggalLahir}</p>
                               </div>
                             </div>
 
@@ -403,24 +413,24 @@ const MembersPage = () => {
                               href={`https://instagram.com/${data.instagram?.replace('@', '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow group"
+                              className="bg-white dark:bg-white/5 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-4 hover:shadow-md transition-shadow group"
                             >
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 group-hover:bg-[#E1306C] group-hover:text-white transition-colors" style={{ color: data.color }}>
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 dark:bg-white/10 group-hover:bg-[#E1306C] group-hover:text-white transition-colors" style={{ color: data.color }}>
                                 <FaInstagram />
                               </div>
                               <div>
                                 <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Contact</p>
-                                <p className="font-bold text-gray-900 text-sm group-hover:text-[#E1306C] transition-colors">{data.instagram}</p>
+                                <p className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-[#E1306C] transition-colors">{data.instagram}</p>
                               </div>
                             </a>
                             
-                            <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-shadow">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 flex-shrink-0" style={{ color: data.color }}>
+                            <div className="md:col-span-2 bg-white dark:bg-white/5 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 flex items-start gap-4 hover:shadow-md transition-shadow">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 dark:bg-white/10 flex-shrink-0" style={{ color: data.color }}>
                                 <FaPalette />
                               </div>
                               <div className="flex-1">
                                 <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Hobbies & Interests</p>
-                                <p className="font-bold text-gray-900 text-sm leading-snug">{data.hobi}</p>
+                                <p className="font-bold text-gray-900 dark:text-white text-sm leading-snug">{data.hobi}</p>
                               </div>
                             </div>
                           </div>

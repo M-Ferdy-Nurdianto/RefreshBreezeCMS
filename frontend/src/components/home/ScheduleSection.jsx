@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FaMapMarkerAlt, FaClock, FaArrowRight } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaClock, FaArrowRight, FaStar } from 'react-icons/fa'
 
 const ScheduleSection = ({ events, navigate }) => {
   return (
@@ -29,8 +29,8 @@ const ScheduleSection = ({ events, navigate }) => {
                       return (
                           <motion.div 
                               key={event.id} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
-                              className={`p-5 sm:p-6 rounded-[2rem] md:rounded-[3rem] flex flex-col md:flex-row items-center gap-6 sm:gap-8 hover:shadow-xl transition-all group bg-white border-2 cursor-pointer ${isSpecial ? 'border-theme/20' : 'border-gray-50'}`}
-                              style={{ borderColor: isSpecial ? `${themeColor}33` : '#F9FAFB', background: isSpecial ? `linear-gradient(135deg, ${themeColor}05 0%, white 50%)` : 'white' }}
+                              className={`p-5 sm:p-6 rounded-[2rem] md:rounded-[3rem] flex flex-col md:flex-row items-center gap-6 sm:gap-8 hover:shadow-xl transition-all group bg-white dark:bg-[#111726]/80 border-2 cursor-pointer ${isSpecial ? 'border-theme/20 dark:border-white/10' : 'border-gray-50 dark:border-white/10'}`}
+                              style={{ borderColor: isSpecial ? `${themeColor}33` : undefined }}
                               onClick={() => navigate('/schedule')}
                           >
                               <div className="text-white w-20 h-20 sm:w-28 sm:h-28 rounded-[1.5rem] sm:rounded-[2rem] flex flex-col items-center justify-center shadow-lg group-hover:scale-105 transition-transform shrink-0" style={{ backgroundColor: themeColor }}>
@@ -39,8 +39,12 @@ const ScheduleSection = ({ events, navigate }) => {
                               </div>
                               <div className="flex-1 space-y-3 text-center md:text-left min-w-0">
                                 <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
-                                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-dark tracking-tight truncate max-w-full">{event.nama}</h3>
-                                  {isSpecial && <span className="px-3 py-1 rounded-full text-white text-[8px] font-black uppercase tracking-widest shadow-sm" style={{ backgroundColor: themeColor }}>🎀 SPECIAL</span>}
+                                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-dark dark:text-white tracking-tight truncate max-w-full">{event.nama}</h3>
+                                  {isSpecial && (
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-white text-[8px] font-black uppercase tracking-widest shadow-sm" style={{ backgroundColor: themeColor }}>
+                                      <FaStar size={9} /> SPECIAL
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-4 sm:gap-6 text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
                                   <div className="flex items-center gap-2"><FaMapMarkerAlt style={{ color: themeColor }} /><span>{event.lokasi}</span></div>

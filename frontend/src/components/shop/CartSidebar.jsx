@@ -20,13 +20,13 @@ const CartSidebar = ({
       {/* Desktop Sidebar */}
       <div className="hidden lg:block lg:col-span-1">
         <div className="sticky top-32">
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-[#111726] rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-white/10 transition-colors duration-300">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#079108]">
+              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-[#079108]">
                 <FaShoppingCart className="text-xl" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Keranjang</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Keranjang</h3>
                 <p className="text-xs text-gray-400">{cart.length + merchCart.length} item dipilih</p>
               </div>
             </div>
@@ -43,18 +43,18 @@ const CartSidebar = ({
                     exit={{ opacity: 0 }}
                     className="flex items-center gap-4 group"
                   >
-                    <div className="w-16 h-16 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100">
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-white/5 flex-shrink-0 overflow-hidden border border-gray-100 dark:border-white/10">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{item.name}</h4>
                       <p className="text-xs text-emerald-600 font-medium">Rp {item.price.toLocaleString()}</p>
                       
                       <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center bg-gray-50 rounded-lg p-1">
-                          <button onClick={() => updateQuantity(item.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaMinus className="text-[8px] text-gray-400" /></button>
-                          <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, 1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaPlus className="text-[8px] text-emerald-600" /></button>
+                        <div className="flex items-center bg-gray-50 dark:bg-white/5 rounded-lg p-1">
+                          <button onClick={() => updateQuantity(item.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-white dark:hover:bg-white/10 rounded transition-colors"><FaMinus className="text-[8px] text-gray-400" /></button>
+                          <span className="w-6 text-center text-xs font-bold dark:text-white">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.id, 1)} className="w-5 h-5 flex items-center justify-center hover:bg-white dark:hover:bg-white/10 rounded transition-colors"><FaPlus className="text-[8px] text-emerald-600" /></button>
                         </div>
                         <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
                           <FaTrash className="text-[10px]" />
@@ -74,7 +74,7 @@ const CartSidebar = ({
                     exit={{ opacity: 0 }}
                     className="flex items-center gap-4 group"
                   >
-                    <div className="w-16 h-16 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100 relative">
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-white/5 flex-shrink-0 overflow-hidden border border-gray-100 dark:border-white/10 relative">
                       {item.gambar_url ? (
                         <img src={item.gambar_url} alt={item.nama} className="w-full h-full object-cover" />
                       ) : (
@@ -82,17 +82,17 @@ const CartSidebar = ({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-gray-900 truncate">{item.nama}</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{item.nama}</h4>
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-emerald-600 font-medium">Rp {item.harga.toLocaleString()}</p>
-                        {item.size && <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 font-bold uppercase">{item.size}</span>}
+                        {item.size && <span className="text-[10px] bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-gray-500 dark:text-slate-300 font-bold uppercase">{item.size}</span>}
                       </div>
                       
                       <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center bg-gray-50 rounded-lg p-1">
-                          <button onClick={() => updateMerchQuantity(item.cartId, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaMinus className="text-[8px] text-gray-400" /></button>
-                          <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
-                          <button onClick={() => updateMerchQuantity(item.cartId, 1)} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded transition-colors"><FaPlus className="text-[8px] text-emerald-600" /></button>
+                        <div className="flex items-center bg-gray-50 dark:bg-white/5 rounded-lg p-1">
+                          <button onClick={() => updateMerchQuantity(item.cartId, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-white dark:hover:bg-white/10 rounded transition-colors"><FaMinus className="text-[8px] text-gray-400" /></button>
+                          <span className="w-6 text-center text-xs font-bold dark:text-white">{item.quantity}</span>
+                          <button onClick={() => updateMerchQuantity(item.cartId, 1)} className="w-5 h-5 flex items-center justify-center hover:bg-white dark:hover:bg-white/10 rounded transition-colors"><FaPlus className="text-[8px] text-emerald-600" /></button>
                         </div>
                         <button onClick={() => removeFromMerchCart(item.cartId)} className="text-gray-300 hover:text-red-500 transition-colors"><FaTrash className="text-[10px]" /></button>
                       </div>
@@ -103,7 +103,7 @@ const CartSidebar = ({
 
               {!hasItems && (
                 <div className="py-10 text-center">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-200">
+                  <div className="w-16 h-16 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-200 dark:text-white/20">
                     <FaShoppingCart className="text-2xl" />
                   </div>
                   <p className="text-gray-400 text-sm">Keranjang belanja kosong</p>
@@ -113,10 +113,10 @@ const CartSidebar = ({
             </div>
 
             {hasItems && (
-              <div className="mt-8 pt-8 border-t border-gray-100">
+              <div className="mt-8 pt-8 border-t border-gray-100 dark:border-white/10">
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-sm text-gray-500">Total Pembayaran</span>
-                  <span className="text-xl font-bold text-gray-900">Rp {(totalHarga + totalMerchHarga).toLocaleString()}</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400">Total Pembayaran</span>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white">Rp {(totalHarga + totalMerchHarga).toLocaleString()}</span>
                 </div>
                 
                 <button 
@@ -143,24 +143,24 @@ const CartSidebar = ({
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
-            className="fixed bottom-8 left-4 right-4 z-50 lg:hidden"
+            className="fixed bottom-20 left-4 right-4 z-40 lg:hidden"
           >
             <button 
               onClick={onCheckout}
-              className="w-full bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between"
+              className="w-full bg-white dark:bg-[#111726] text-gray-900 dark:text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between border border-gray-200 dark:border-white/10 backdrop-blur-md transition-all active:scale-[0.98]"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#079108] rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#079108] rounded-xl flex items-center justify-center shadow-md shadow-[#079108]/30" data-cart-icon>
                   <FaShoppingCart className="text-white text-sm" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Checkout</span>
-                  <span className="text-sm font-bold">{cart.length + merchCart.length} item dipilih</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">Checkout</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">{cart.length + merchCart.length} item dipilih</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-base font-bold">Rp {(totalHarga + totalMerchHarga).toLocaleString()}</span>
-                <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                <span className="text-base font-bold text-[#079108] dark:text-emerald-400">Rp {(totalHarga + totalMerchHarga).toLocaleString()}</span>
+                <div className="w-8 h-8 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-full flex items-center justify-center">
                   <FaChevronRight className="text-[10px]" />
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useEffect, Suspense, lazy } from 'react'
 import AOS from 'aos'
 import { ToastContainer, Zoom } from 'react-toastify'
+import { RBToastContainer } from './components/ui/RBToast'
 import LoadingSpinner from './components/LoadingSpinner'
 
 // Lazy Load Pages
@@ -16,6 +17,9 @@ const ShopPage = lazy(() => import('./pages/ShopPage'))
 const FAQPage = lazy(() => import('./pages/FAQPage'))
 const StoryPage = lazy(() => import('./pages/StoryPage'))
 
+import { ThemeProvider } from './context/ThemeContext'
+import { FlyToCartProvider } from './context/FlyToCartContext'
+
 function App() {
   useEffect(() => {
     AOS.init({
@@ -28,36 +32,43 @@ function App() {
   }, [])
 
   return (
-    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <ToastContainer
-        position="bottom-center"
-        autoClose={1500}
-        hideProgressBar={true}
-        newestOnTop={true}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-        transition={Zoom}
-        toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
-      />
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/members" element={<MembersPage />} />
-          <Route path="/music" element={<MusicPage />} />
-          <Route path="/media" element={<MediaPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/story" element={<StoryPage />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminPage />} />
-        </Routes>
-      </Suspense>
-    </Router>
+    <ThemeProvider>
+      <FlyToCartProvider>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        {/* RBToast — custom shop/global notifications (dual-theme, centered) */}
+        <RBToastContainer />
+        {/* Legacy ToastContainer — kept for admin pages */}
+        <ToastContainer
+          position="bottom-center"
+          autoClose={1500}
+          hideProgressBar={true}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+          transition={Zoom}
+          toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
+        />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/members" element={<MembersPage />} />
+            <Route path="/music" element={<MusicPage />} />
+            <Route path="/media" element={<MediaPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/story" element={<StoryPage />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </Suspense>
+      </Router>
+      </FlyToCartProvider>
+    </ThemeProvider>
   )
 }
 

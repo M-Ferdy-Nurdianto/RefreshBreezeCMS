@@ -1,10 +1,22 @@
 import { motion } from 'framer-motion'
 import { FaPlus } from 'react-icons/fa'
 import { getMemberColor, formatMemberName } from '../../lib/memberUtils'
+import { useFlyToCart } from '../../context/FlyToCartContext'
 
 const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLineup = true }) => {
   const accentColor = getMemberColor(member.nama_panggung)
+  const { triggerFly } = useFlyToCart()
   
+  const handleClick = (e) => {
+    if (!inLineup) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const startPos = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    }
+    addToCart('member', member, startPos)
+  }
+
   return (
     <motion.div 
        initial={{ opacity: 0, y: 30 }}
@@ -12,12 +24,12 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
        transition={{ delay: idx * 0.1 }}
        whileHover={inLineup ? { y: -8, scale: 1.02 } : {}}
        className={`group relative aspect-[3/4] rounded-3xl overflow-hidden ${inLineup ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-       onClick={() => inLineup && addToCart('member', member)}
+       onClick={handleClick}
        style={{
          boxShadow: inLineup ? `0 4px 30px ${accentColor}20` : 'none'
        }}
     >
-      <div className={`absolute inset-0 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl transition-all duration-500 ${inLineup ? 'group-hover:bg-white/90 group-hover:border-white/80' : 'grayscale opacity-80'}`}></div>
+      <div className={`absolute inset-0 bg-white dark:bg-[#111726] border border-gray-200/80 dark:border-white/10 rounded-3xl transition-all duration-500 shadow-sm ${inLineup ? 'group-hover:shadow-xl dark:group-hover:bg-[#151c2e]' : 'grayscale opacity-80'}`}></div>
       
       <div 
         className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -26,7 +38,7 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
         }}
       ></div>
 
-      <div className={`absolute inset-3 top-3 bottom-24 rounded-2xl overflow-hidden bg-gradient-to-b from-white/20 to-white/40 backdrop-blur-sm border border-white/30 ${!inLineup ? 'grayscale' : ''}`}>
+      <div className={`absolute inset-3 top-3 bottom-24 rounded-2xl overflow-hidden bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 ${!inLineup ? 'grayscale' : ''}`}>
          <img 
             src={getMemberImage(member)}
             alt={member.nama_panggung} 
@@ -46,7 +58,7 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
              className="w-2 h-2 rounded-full"
              style={{ backgroundColor: inLineup ? accentColor : '#cbd5e1' }}
            ></span>
-           <h4 className="text-lg font-black uppercase tracking-tight text-gray-900 truncate">{formatMemberName(member.nama_panggung)}</h4>
+           <h4 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white truncate">{formatMemberName(member.nama_panggung)}</h4>
          </div>
          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">2-Shot Ticket</p>
          <div className="flex items-center justify-between pt-1">
