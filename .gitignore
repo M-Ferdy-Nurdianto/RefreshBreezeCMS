@@ -45,10 +45,12 @@ fix_database.sql
 *.bak
 *.tmp
 
-# Database dumps & dump folders
+# Database folder & dumps
 *.sql.backup
 *.dump
 dump/
+database/
+db/
 
 vercel-env-import.txt
 
