@@ -1,10 +1,34 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import fs from 'fs'
+import path from 'path'
+
+// Middleware to serve static public member landing pages (/aca/, /cally/, etc.)
+const staticMemberLandingPlugin = () => ({
+  name: 'static-member-landing-plugin',
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const url = req.url ? req.url.split('?')[0] : ''
+      const memberFolders = ['aca', 'cally', 'channie', 'cissi', 'piya', 'rara', 'sinta', 'yanyee']
+      const matched = memberFolders.find(f => url === `/${f}` || url === `/${f}/`)
+      if (matched) {
+        const filePath = path.join(__dirname, 'public', matched, 'index.html')
+        if (fs.existsSync(filePath)) {
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'text/html')
+          return res.end(fs.readFileSync(filePath, 'utf-8'))
+        }
+      }
+      next()
+    })
+  }
+})
 
 export default defineConfig({
   base: '/',
   plugins: [
+    staticMemberLandingPlugin(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',

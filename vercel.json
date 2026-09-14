@@ -20,6 +20,14 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/(aca|cally|channie|cissi|piya|rara|sinta|yanyee)/",
+      "destination": "/$1/index.html"
+    },
+    {
+      "source": "/(aca|cally|channie|cissi|piya|rara|sinta|yanyee)",
+      "destination": "/$1/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
