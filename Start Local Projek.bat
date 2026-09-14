@@ -49,11 +49,16 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3/5] Starting Supabase Local Environment...
-call npx supabase start
+call npx supabase status >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Failed to start Supabase. Please check Docker and try again.
-    pause
-    exit /b %errorlevel%
+    call npx supabase start
+    if !errorlevel! neq 0 (
+        echo [ERROR] Failed to start Supabase. Please check Docker and try again.
+        pause
+        exit /b !errorlevel!
+    )
+) else (
+    echo Supabase local environment is already running!
 )
 
 echo.

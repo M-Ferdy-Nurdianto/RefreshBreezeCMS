@@ -21,7 +21,7 @@ const api = axios.create({
 
 // Debug: Log API URL in production to help troubleshooting
 if (import.meta.env.MODE === 'production') {
-  // console.log('🌐 API Base URL:', API_URL)
+  // console.log('[API] Base URL:', API_URL)
 }
 
 // Add auth token to requests and handle Content-Type
@@ -75,10 +75,9 @@ const originalGet = api.get
 
 api.get = async (url, config) => {
   const token = localStorage.getItem('admin_token')
-  const isMetadata = url.startsWith('/members') || url.startsWith('/events') || url.startsWith('/config') || url.startsWith('/merchandise')
 
-  // Skip cache if explicitly disabled, or if admin is logged in and it's not metadata (like orders)
-  if (config?.skipCache || (token && !isMetadata)) {
+  // Always bypass cache for logged-in admin or if skipCache is set
+  if (config?.skipCache || token) {
     return originalGet.call(api, url, config)
   }
 

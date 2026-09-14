@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaPlay, FaImage, FaYoutube, FaInstagram, FaTwitter, FaTiktok, FaExpand } from 'react-icons/fa'
+import { FaPlay, FaImage, FaYoutube, FaInstagram, FaTwitter, FaTiktok, FaExpand, FaTimes } from 'react-icons/fa'
 import Header from '../components/Header'
 import { getAssetPath } from '../lib/pathUtils'
 
@@ -193,10 +193,11 @@ const MediaPage = () => {
             onClick={() => setSelectedImage(null)}
           >
             <motion.button
-              className="absolute top-8 right-8 text-white text-4xl font-light hover:rotate-90 transition-transform"
+              className="absolute top-8 right-8 text-white text-2xl hover:scale-110 transition-transform p-2 bg-white/10 rounded-full"
               onClick={() => setSelectedImage(null)}
+              title="Tutup"
             >
-              ✕
+              <FaTimes />
             </motion.button>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}

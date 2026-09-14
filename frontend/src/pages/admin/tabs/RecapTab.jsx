@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaFilter, FaShoppingCart, FaCheck } from 'react-icons/fa'
+
 import CustomSelect from '../components/CustomSelect'
 import {
   Chart as ChartJS,
@@ -29,6 +29,8 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
     : orders.filter(o => o.event_id === recapEventFilter))
     .filter(o => o.status === 'checked' || o.status === 'completed')
 
+  const hasData = filteredRecapOrders.length > 0
+
   const totalRevenue = filteredRecapOrders.reduce((sum, order) => sum + (order.total_harga || 0), 0)
 
   const totalPolaroidRecap = filteredRecapOrders
@@ -39,6 +41,11 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
         return pSum + (isCheki ? (item.quantity || 0) : 0)
       }, 0) || 0)
     }, 0)
+
+  const otsCount = filteredRecapOrders.filter(o => o.is_ots).length
+  const poCount = filteredRecapOrders.filter(o => !o.is_ots).length
+  const unchecked = filteredRecapOrders.filter(o => o.status === 'pending').length
+  const completed = filteredRecapOrders.filter(o => o.status === 'completed').length
 
   const memberStats = {}
 
@@ -73,11 +80,22 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
   const chartOptions = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'Statistik Penjualan per Member' },
+      legend: {
+        position: 'top',
+        labels: { color: '#e4e4e7', font: { weight: 'bold', size: 11 }, boxWidth: 12, padding: 16 }
+      },
+      title: { display: false },
     },
     scales: {
-      x: { beginAtZero: true }
+      x: {
+        ticks: { color: '#a1a1aa', font: { size: 11 } },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+      },
+      y: {
+        ticks: { color: '#a1a1aa', font: { size: 11 } },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+        beginAtZero: true
+      }
     }
   }
 
@@ -87,16 +105,18 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
       {
         label: 'Pre-Order',
         data: poData,
-        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-        borderColor: 'rgb(54, 162, 235)',
+        backgroundColor: 'rgba(6, 182, 212, 0.7)',
+        borderColor: '#06b6d4',
         borderWidth: 1,
+        borderRadius: 6
       },
       {
         label: 'OTS',
         data: otsData,
-        backgroundColor: 'rgba(255, 159, 64, 0.7)',
-        borderColor: 'rgb(255, 159, 64)',
+        backgroundColor: 'rgba(245, 158, 11, 0.7)',
+        borderColor: '#f59e0b',
         borderWidth: 1,
+        borderRadius: 6
       }
     ]
   }
@@ -107,70 +127,110 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
       {
         label: 'Total Pendapatan (Rp)',
         data: revenueData,
-        backgroundColor: 'rgba(75, 192, 192, 0.7)',
-        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(7, 145, 8, 0.7)',
+        borderColor: '#079108',
         borderWidth: 1,
+        borderRadius: 6
       }
     ]
   }
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Rekapitulasi Penjualan</h2>
+  // Kartu status order — dikelompokkan jadi satu baris kecil, bukan card besar sejajar
+  const statusItems = [
+    { label: 'Total Order', value: filteredRecapOrders.length },
+    { label: 'Pre-Order', value: poCount },
+    { label: 'OTS', value: otsCount },
+    { label: 'Belum Dicek', value: unchecked },
+    { label: 'Selesai', value: completed },
+  ]
 
-        <div className="flex items-center gap-2">
-          <FaFilter className="text-gray-500" />
-          <CustomSelect
-            value={recapEventFilter}
-            onChange={(e) => setRecapEventFilter(e.target.value)}
-            options={[
-              { value: 'all', label: 'Semua Event' },
-              ...events.map(ev => ({ value: ev.id, label: `${ev.nama} - ${ev.bulan} ${ev.tahun}` }))
-            ]}
-          />
+  const EmptyChartState = ({ message }) => (
+    <div className="flex flex-col items-center justify-center h-64 text-center gap-2">
+      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+        <svg className="w-5 h-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3v18h18M7 14l4-4 4 4 5-5" />
+        </svg>
+      </div>
+      <p className="text-sm text-zinc-500 font-medium">{message}</p>
+    </div>
+  )
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">Rekapitulasi <span className="text-[#079108]">Penjualan</span></h2>
+          <p className="text-xs text-zinc-400 font-medium mt-0.5">Analisis omset, jumlah order, dan performa per member.</p>
+        </div>
+
+        <CustomSelect
+          value={recapEventFilter}
+          onChange={(e) => setRecapEventFilter(e.target.value)}
+          options={[
+            { value: 'all', label: 'Semua Event' },
+            ...events.map(ev => ({ value: ev.id, label: `${ev.nama} - ${ev.bulan} ${ev.tahun}` }))
+          ]}
+        />
+      </div>
+
+      {/* Baris utama: 1 angka hero (Pemasukan) + 1 pendukung (Cheki), sisanya jadi strip kecil */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-gradient-to-br from-[#079108]/15 to-[#111726]/80 backdrop-blur-xl border border-[#079108]/25 p-6 rounded-2xl flex items-center justify-between">
+          <div>
+            <div className="text-xs font-semibold text-emerald-300/80 mb-1">Total Pemasukan</div>
+            <div className="text-3xl md:text-4xl font-black text-white tracking-tight">
+              Rp {totalRevenue.toLocaleString('id-ID')}
+            </div>
+          </div>
+          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-[#079108]/20 items-center justify-center shrink-0">
+            <svg className="w-6 h-6 text-[#079108]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <div className="bg-[#111726]/80 backdrop-blur-xl border border-white/10 p-6 rounded-2xl flex items-center justify-between">
+          <div>
+            <div className="text-xs font-semibold text-zinc-400 mb-1">Total Cheki Tercetak</div>
+            <div className="text-3xl font-black text-white tracking-tight">{totalPolaroidRecap} <span className="text-base font-semibold text-zinc-500">pcs</span></div>
+          </div>
+          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-pink-500/10 items-center justify-center shrink-0">
+            <svg className="w-6 h-6 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <circle cx="12" cy="13" r="3.5" strokeWidth={1.8} />
+            </svg>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[
-          { label: 'Total Orders', value: filteredRecapOrders.length, color: 'bg-blue-500', icon: <FaShoppingCart /> },
-          { label: 'Order OTS', value: filteredRecapOrders.filter(o => o.is_ots).length, color: 'bg-orange-500', icon: <span className="text-xl">🏪</span> },
-          { label: 'Pre-Order', value: filteredRecapOrders.filter(o => !o.is_ots).length, color: 'bg-blue-600', icon: <span className="text-xl">📦</span> },
-          { label: 'Unchecked', value: filteredRecapOrders.filter(o => o.status === 'pending').length, color: 'bg-gray-400', icon: <span className="text-xl">⏳</span> },
-          { label: 'Completed', value: filteredRecapOrders.filter(o => o.status === 'completed').length, color: 'bg-green-600', icon: <FaCheck /> },
-          { label: 'Total Polaroid', value: `${totalPolaroidRecap} pcs`, color: 'bg-emerald-600', icon: <span className="text-xl">📸</span> },
-          { label: 'Total Pemasukan', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, color: 'bg-custom-green', icon: <span className="text-xl font-bold">Rp</span>, wide: true }
-        ].map((stat, index) => (
-          <div key={index} className={`bg-white p-4 rounded-xl shadow-md ${stat.wide ? 'col-span-2 md:col-span-1 lg:col-span-1' : ''}`}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`w-10 h-10 ${stat.color} rounded-full flex items-center justify-center text-white`}>
-                {stat.icon}
-              </div>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</div>
-            </div>
-            <div className={`${typeof stat.value === 'string' && stat.value.length > 10 ? 'text-xl' : 'text-3xl'} font-bold text-gray-800`}>
-              {stat.value}
-            </div>
+      {/* Strip status order — kecil & rata, bukan card gede sejajar sama hero stat */}
+      <div className="bg-[#111726]/60 border border-white/5 rounded-2xl px-2 py-1 flex flex-wrap divide-x divide-white/5">
+        {statusItems.map((item, i) => (
+          <div key={i} className="flex-1 min-w-[110px] px-4 py-3 text-center sm:text-left">
+            <div className="text-[11px] text-zinc-500 font-medium">{item.label}</div>
+            <div className="text-lg font-bold text-white">{item.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="text-lg font-bold text-gray-700 mb-4 text-center">Total Cheki per Member</h3>
-          <Bar options={chartOptions} data={quantityChartData} />
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-[#111726]/80 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+          <h3 className="text-sm font-bold text-white mb-4">Cheki per Member — Pre-Order vs OTS</h3>
+          {hasData
+            ? <Bar options={chartOptions} data={quantityChartData} />
+            : <EmptyChartState message="Belum ada data cheki untuk event ini." />}
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="text-lg font-bold text-gray-700 mb-4 text-center">Total Rupiah per Member</h3>
-          <Bar
-            options={{
-              ...chartOptions,
-              plugins: { ...chartOptions.plugins, title: { display: false } }
-            }}
-            data={revenueChartData}
-          />
+        <div className="bg-[#111726]/80 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+          <h3 className="text-sm font-bold text-white mb-4">Total Pemasukan per Member</h3>
+          {hasData
+            ? <Bar
+                options={{ ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: false } } }}
+                data={revenueChartData}
+              />
+            : <EmptyChartState message="Belum ada data pemasukan untuk event ini." />}
         </div>
       </div>
     </div>

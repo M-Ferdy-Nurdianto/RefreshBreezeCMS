@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Swal from 'sweetalert2'
-import { FaShoppingCart, FaPlus, FaFileExcel, FaBox, FaEye, FaTrash } from 'react-icons/fa'
+import { FaShoppingCart, FaPlus, FaTimes, FaFileExcel, FaBox, FaEye, FaTrash, FaStar, FaTruck, FaClipboardList } from 'react-icons/fa'
 import RenderTable from '../components/RenderTable'
-
 import CustomSelect from '../components/CustomSelect'
+import ExportModal from '../../../components/ExportModal'
+import OTSOrderInlineForm from '../components/OTSOrderInlineForm'
 
 const OrdersTab = ({
   orders,
@@ -40,7 +41,11 @@ const OrdersTab = ({
   onDeleteMerchOrder,
   onFetchMerchOrders,
   onExportMerchExcel,
-  onExportMerchPdf
+  onExportMerchPdf,
+  members = [],
+  hargaOtsPerMember = 25000,
+  hargaOtsGrup = 30000,
+  onRefreshOrders
 }) => {
   // Helper to check if order is from special event
   const isSpecialOrder = (order) => {
@@ -53,102 +58,91 @@ const OrdersTab = ({
   const otsOrders = orders.filter(o => o.is_ots && !isSpecialOrder(o))
   const poOrders = orders.filter(o => !o.is_ots && !isSpecialOrder(o))
 
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [showInlineOTS, setShowInlineOTS] = useState(false)
+
+  const handleTriggerExport = async (exportData) => {
+    const { format, scope, value } = exportData
+    if (format === 'excel') {
+      await onExportExcel({ scope, value })
+    } else {
+      await onExportPdf({ scope, value })
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Inline OTS Form (Collapsible, Direct in Page) */}
+      {showInlineOTS && (
+        <OTSOrderInlineForm
+          members={members}
+          events={events}
+          onClose={() => setShowInlineOTS(false)}
+          onSuccess={() => {
+            if (onRefreshOrders) onRefreshOrders()
+          }}
+          hargaOtsPerMember={hargaOtsPerMember}
+          hargaOtsGrup={hargaOtsGrup}
+        />
+      )}
       {/* Sub-tabs */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="flex border-b overflow-x-auto">
-          <button
-            onClick={() => setOrderSubTab('all')}
-            className={`flex-1 min-w-[120px] px-4 py-4 font-semibold transition-colors ${
-              orderSubTab === 'all'
-                ? 'bg-custom-green text-white border-b-4 border-green-700'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <FaShoppingCart /> All (Reg)
-            </span>
-          </button>
-          <button
-            onClick={() => setOrderSubTab('ots')}
-            className={`flex-1 min-w-[120px] px-4 py-4 font-semibold transition-colors ${
-              orderSubTab === 'ots'
-                ? 'bg-orange-500 text-white border-b-4 border-orange-700'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              OTS
-            </span>
-          </button>
-          <button
-            onClick={() => setOrderSubTab('po')}
-            className={`flex-1 min-w-[120px] px-4 py-4 font-semibold transition-colors ${
-              orderSubTab === 'po'
-                ? 'bg-blue-500 text-white border-b-4 border-blue-700'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              PO
-            </span>
-          </button>
-          <button
-            onClick={() => setOrderSubTab('special')}
-            className={`flex-1 min-w-[120px] px-4 py-4 font-semibold transition-colors ${
-              orderSubTab === 'special'
-                ? 'bg-pink-500 text-white border-b-4 border-pink-700'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              Special
-            </span>
-          </button>
-          <button
-            onClick={() => { setOrderSubTab('merch'); onFetchMerchOrders() }}
-            className={`flex-1 min-w-[120px] px-4 py-4 font-semibold transition-colors ${
-              orderSubTab === 'merch'
-                ? 'bg-custom-green text-white border-b-4 border-green-700'
-                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <FaBox /> Merch
-            </span>
-          </button>
+      <div className="bg-[#111726]/80 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-xl relative">
+        <div className="flex overflow-x-auto gap-2 custom-scrollbar snap-x snap-mandatory scroll-smooth pr-8">
+          {[
+            { id: 'all', label: 'All (Reg)', icon: FaShoppingCart, color: 'bg-[#079108] text-white shadow-[0_0_15px_rgba(7,145,8,0.4)]' },
+            { id: 'ots', label: 'OTS', icon: null, color: 'bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]' },
+            { id: 'po', label: 'PO', icon: null, color: 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]' },
+            { id: 'special', label: 'Special', icon: null, color: 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)]' },
+            { id: 'merch', label: 'Merch', icon: FaBox, color: 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]', onClick: () => { setOrderSubTab('merch'); onFetchMerchOrders() } }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={tab.onClick || (() => setOrderSubTab(tab.id))}
+              className={`flex-1 min-w-[100px] snap-start shrink-0 px-4 py-3 rounded-xl font-bold text-xs transition-all duration-200 ${
+                orderSubTab === tab.id
+                  ? `${tab.color} scale-[1.02]`
+                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-2">
+                {tab.icon && <tab.icon className="text-sm" />}
+                {tab.label}
+              </span>
+            </button>
+          ))}
         </div>
+        {/* Right fade gradient hint for horizontal scrolling */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#111726] to-transparent pointer-events-none rounded-r-2xl" />
       </div>
 
       {/* Status Legend */}
-      <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-start md:items-center text-sm text-blue-800">
-        <span className="font-bold whitespace-nowrap">Panduan Status:</span>
+      <div className="bg-[#161f33]/80 border border-white/10 p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-start md:items-center text-xs text-zinc-300 backdrop-blur-md">
+        <span className="font-bold uppercase tracking-wider text-[#00e5e5]">Panduan Status:</span>
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-white border border-gray-300"></span>
-            <span><strong>Unchecked:</strong> Order baru</span>
+            <span className="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/50"></span>
+            <span><strong className="text-amber-300">Unchecked:</strong> Order Baru</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-100 border border-blue-400"></span>
-            <span><strong>Checked:</strong> Lunas (Valid)</span>
+            <span className="w-3 h-3 rounded-full bg-[#00e5e5]/20 border border-[#00e5e5]/50"></span>
+            <span><strong className="text-[#00e5e5]">Checked:</strong> Lunas (Valid)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-green-100 border border-green-400"></span>
-            <span><strong>Completed:</strong> Selesai (Diambil)</span>
+            <span className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50"></span>
+            <span><strong className="text-emerald-300">Completed:</strong> Selesai (Diambil)</span>
           </div>
         </div>
       </div>
 
       {/* Filters & Actions */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <div className="bg-[#111726]/80 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-xl space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <input
             type="text"
             placeholder="Cari nama atau order number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="filter-input"
+            className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-base focus:outline-none focus:border-[#079108] focus:ring-1 focus:ring-[#079108] transition-all"
           />
 
           <CustomSelect
@@ -184,142 +178,45 @@ const OrdersTab = ({
         </div>
 
         {dateFilter === 'custom' && (
-          <div className="grid grid-cols-2 gap-4 mt-4 mb-4">
+          <div className="grid grid-cols-2 gap-3 pt-1">
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-base rounded-xl focus:border-[#079108]"
             />
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-base rounded-xl focus:border-[#079108]"
             />
           </div>
         )}
 
-        <div className="flex gap-3 justify-end border-t pt-4">
+        <div className="flex gap-3 justify-end border-t border-white/10 pt-4 flex-wrap">
           <button
-            onClick={async () => {
-              const { value: format } = await Swal.fire({
-                title: 'Export Data',
-                input: 'radio',
-                inputOptions: {
-                  'excel': '📊 Excel (.xlsx)',
-                  'pdf': '📄 PDF Document'
-                },
-                inputValidator: (value) => {
-                  if (!value) return 'Pilih format export!'
-                },
-                confirmButtonText: 'Lanjut →',
-                confirmButtonColor: '#079108',
-                showCancelButton: true,
-                cancelButtonText: 'Batal'
-              })
-
-              if (!format) return
-
-              const eventOptions = { 'current': '📋 Sesuai Filter di Layar' }
-              events.forEach(ev => {
-                eventOptions[`event_${ev.id}`] = `🎫 ${ev.nama} (${ev.bulan} ${ev.tahun})`
-              })
-
-              const { value: scope } = await Swal.fire({
-                title: 'Pilih Cakupan Data',
-                width: '600px',
-                html: `
-                  <table class="excel-table">
-                    <thead>
-                      <tr>
-                        <th class="col-no">No</th>
-                        <th class="col-name">Nama Event / Cakupan</th>
-                        <th class="col-radio">Pilih</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="selected" onclick="this.querySelector('input').click()">
-                        <td class="col-no">1</td>
-                        <td class="col-name">Sesuai Filter di Layar (Data Saat Ini)</td>
-                        <td class="col-radio">
-                          <input type="radio" name="export-scope" value="current" checked>
-                        </td>
-                      </tr>
-                      ${events.map((ev, idx) => {
-                        const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 }
-                        const eventDate = new Date(ev.tahun, months[ev.bulan] || 0, ev.tanggal)
-                        const today = new Date()
-                        today.setHours(0, 0, 0, 0)
-                        const isPast = ev.is_past || eventDate < today
-
-                        return `
-                          <tr class="${isPast ? 'text-gray-400' : ''}" onclick="this.querySelector('input').click()">
-                            <td class="col-no">${idx + 2}</td>
-                            <td class="col-name">
-                              ${ev.nama} (${ev.bulan} ${ev.tahun})
-                              ${isPast ? '<span class="text-[10px] bg-gray-100 px-1 rounded ml-1">SELESAI</span>' : ''}
-                            </td>
-                            <td class="col-radio">
-                              <input type="radio" name="export-scope" value="event_${ev.id}">
-                            </td>
-                          </tr>
-                        `
-                      }).join('')}
-                    </tbody>
-                  </table>
-                `,
-                didOpen: () => {
-                  const container = Swal.getHtmlContainer()
-                  const rows = container.querySelectorAll('tr')
-                  rows.forEach(row => {
-                    const radio = row.querySelector('input')
-                    if (radio) {
-                      radio.addEventListener('change', () => {
-                        rows.forEach(r => r.classList.remove('selected'))
-                        if (radio.checked) row.classList.add('selected')
-                      })
-                    }
-                  })
-                },
-                preConfirm: () => {
-                  const checked = Swal.getHtmlContainer().querySelector('input[name="export-scope"]:checked')
-                  if (!checked) {
-                    Swal.showValidationMessage('Silakan pilih salah satu!')
-                    return false
-                  }
-                  return checked.value
-                },
-                confirmButtonText: format === 'excel' ? '📊 Download Excel' : '📄 Download PDF',
-                confirmButtonColor: format === 'excel' ? '#079108' : '#EF4444',
-                showCancelButton: true,
-                cancelButtonText: 'Batal',
-                customClass: {
-                  popup: 'rounded-xl',
-                  title: 'text-lg font-bold pt-6 pb-2',
-                  confirmButton: 'rounded-lg px-6 py-2.5 font-bold text-xs uppercase tracking-wider',
-                  cancelButton: 'rounded-lg px-6 py-2.5 font-bold text-xs uppercase tracking-wider'
-                }
-              })
-
-              if (!scope) return
-
-              const isEvent = scope.startsWith('event_')
-              const eventId = isEvent ? scope.replace('event_', '') : null
-
-              if (format === 'excel') {
-                await onExportExcel({ scope: isEvent ? 'event' : 'current', value: eventId })
-              } else {
-                await onExportPdf({ scope: isEvent ? 'event' : 'current', value: eventId })
-              }
+            onClick={() => {
+              setShowInlineOTS(prev => !prev)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-bold active:scale-95"
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-[0_0_15px_rgba(7,145,8,0.3)] active:scale-95 ${
+              showInlineOTS
+                ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
+                : 'bg-[#079108] hover:bg-[#067a07] text-white'
+            }`}
+          >
+            {showInlineOTS ? <><FaTimes /> Tutup Form OTS</> : <><FaPlus /> Order OTS</>}
+          </button>
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-xs font-bold border border-white/10 active:scale-95"
           >
             <FaFileExcel /> Export Data
           </button>
           <button
             onClick={onShowBulkDeleteModal}
-            className="bg-[#dc2626] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#b91c1c] transition-colors flex items-center gap-2"
+            className="bg-red-500/10 border border-red-500/20 text-red-400 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-red-500/20 hover:text-red-300 transition-colors flex items-center gap-2"
           >
             <FaTrash /> Hapus Data
           </button>
@@ -331,7 +228,7 @@ const OrdersTab = ({
         <RenderTable
           data={specialOrders}
           title="Special Event Orders"
-          icon={<span className="text-xl"></span>}
+          icon={<FaStar className="text-[#079108]" />}
           emptyMessage="Tidak ada order special event"
           loading={loading}
           onView={onViewOrder}
@@ -344,7 +241,7 @@ const OrdersTab = ({
         <RenderTable
           data={otsOrders}
           title="Order OTS (On The Spot)"
-          icon={<span className="text-xl"></span>}
+          icon={<FaTruck className="text-[#079108]" />}
           emptyMessage="Tidak ada data OTS"
           loading={loading}
           onView={onViewOrder}
@@ -352,10 +249,17 @@ const OrdersTab = ({
           onStatusChange={onStatusChange}
           action={
             <button
-              onClick={onShowOTSModal}
-              className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2 text-sm"
+              onClick={() => {
+                setShowInlineOTS(prev => !prev)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(7,145,8,0.3)] active:scale-95 ${
+                showInlineOTS 
+                  ? 'bg-zinc-700 hover:bg-zinc-600 text-white' 
+                  : 'bg-[#079108] hover:bg-[#067a07] text-white'
+              }`}
             >
-              <FaPlus /> Order OTS
+              {showInlineOTS ? <><FaTimes /> Tutup Form OTS</> : <><FaPlus /> Order OTS</>}
             </button>
           }
         />
@@ -365,7 +269,7 @@ const OrdersTab = ({
         <RenderTable
           data={poOrders}
           title="Pre-Order (Online)"
-          icon={<span className="text-xl"></span>}
+          icon={<FaClipboardList className="text-[#079108]" />}
           emptyMessage="Tidak ada data Pre-Order"
           loading={loading}
           onView={onViewOrder}
@@ -377,14 +281,14 @@ const OrdersTab = ({
       {orderSubTab === 'merch' && (
         <div className="space-y-4">
           <div className="flex justify-between items-center flex-wrap gap-3">
-            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">Order Merch</h3>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">Order Merch</h3>
             <div className="flex gap-2">
               <button
                 onClick={async () => {
                   const { value: format } = await Swal.fire({
                     title: 'Export Merch Data',
                     input: 'radio',
-                    inputOptions: { 'excel': '📊 Excel', 'pdf': '📄 PDF' },
+                    inputOptions: { 'excel': 'Excel', 'pdf': 'PDF' },
                     inputValidator: v => !v && 'Pilih format!',
                     confirmButtonText: 'Download',
                     confirmButtonColor: '#079108',
@@ -393,31 +297,31 @@ const OrdersTab = ({
                   if (format === 'excel') await onExportMerchExcel()
                   else if (format === 'pdf') await onExportMerchPdf()
                 }}
-                className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 flex items-center gap-2 text-sm"
+                className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 flex items-center gap-2 text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
               >
                 <FaFileExcel /> Export Merch
               </button>
               <button
                 onClick={onFetchMerchOrders}
-                className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2 text-sm"
+                className="bg-[#079108] text-white px-4 py-2 rounded-xl font-bold hover:bg-[#067a07] flex items-center gap-2 text-xs transition-all"
               >
                 Refresh
               </button>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-md flex flex-wrap gap-3">
+          <div className="bg-[#111726]/80 p-4 rounded-2xl border border-white/10 shadow-xl flex flex-wrap gap-3">
             <input
               type="text"
               placeholder="Cari nama / WA / order..."
               value={merchOrderSearch}
               onChange={e => setMerchOrderSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && onFetchMerchOrders()}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green flex-1 min-w-[180px]"
+              className="px-4 py-2 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-[#079108] flex-1 min-w-[180px]"
             />
             <select
               value={merchOrderStatusFilter}
               onChange={e => setMerchOrderStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
+              className="px-4 py-2 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-[#079108]"
             >
               <option value="all">Semua Status</option>
               <option value="pending">Pending</option>
@@ -425,65 +329,57 @@ const OrdersTab = ({
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <button onClick={onFetchMerchOrders} className="bg-custom-green text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">Cari</button>
+            <button onClick={onFetchMerchOrders} className="bg-[#079108] text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-[#067a07]">Cari</button>
           </div>
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-custom-green text-white">
+          <div className="bg-[#111726]/90 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left">
+                <thead className="bg-[#182035] text-zinc-300 uppercase text-[11px] font-bold tracking-wider border-b border-white/10">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase">Order</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase">Pembeli</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase">Items</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase">Total</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase">Catatan</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold uppercase">Status</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold uppercase">Aksi</th>
+                    <th className="px-4 py-3.5">Order</th>
+                    <th className="px-4 py-3.5">Pembeli</th>
+                    <th className="px-4 py-3.5">Items</th>
+                    <th className="px-4 py-3.5">Total</th>
+                    <th className="px-4 py-3.5">Catatan</th>
+                    <th className="px-4 py-3.5 text-center">Status</th>
+                    <th className="px-4 py-3.5 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5 text-sm text-zinc-200">
                   {loadingMerchOrders ? (
-                    <tr><td colSpan="7" className="text-center py-10 text-gray-400">Loading...</td></tr>
+                    <tr><td colSpan="7" className="text-center py-10 text-zinc-400">Loading...</td></tr>
                   ) : merchOrders.length === 0 ? (
-                    <tr><td colSpan="7" className="text-center py-10 text-gray-400">Belum ada order merch</td></tr>
+                    <tr><td colSpan="7" className="text-center py-10 text-zinc-400">Belum ada order merch</td></tr>
                   ) : (
                     merchOrders.map((order) => (
-                      <tr key={order.id} className={`border-b hover:bg-gray-50 transition-colors ${
-                        order.status === 'pending' ? '' : order.status === 'checked' ? 'bg-blue-50/30' : order.status === 'completed' ? 'bg-green-50/30' : 'bg-red-50/30'
-                      }`}>
-                        <td className="px-4 py-3">
-                          <p className="font-bold text-gray-800 text-sm">{order.order_number}</p>
-                          <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString('id-ID')}</p>
+                      <tr key={order.id} className="hover:bg-white/[0.04] transition-colors">
+                        <td className="px-4 py-3.5 font-mono text-xs">
+                          <p className="font-bold text-white">{order.order_number}</p>
+                          <p className="text-[10px] text-zinc-400">{new Date(order.created_at).toLocaleDateString('id-ID')}</p>
                         </td>
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-gray-800 text-sm">{order.nama_lengkap || '-'}</p>
-                          <p className="text-xs text-gray-500">WA: {order.whatsapp}</p>
-                          {order.instagram && <p className="text-xs text-gray-500">IG: {order.instagram}</p>}
+                        <td className="px-4 py-3.5">
+                          <p className="font-bold text-white">{order.nama_lengkap || '-'}</p>
+                          <p className="text-xs text-[#00e5e5]">WA: {order.whatsapp}</p>
+                          {order.instagram && <p className="text-xs text-zinc-400">IG: {order.instagram}</p>}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3.5">
                           <div className="space-y-0.5">
                             {order.merch_order_items?.map((item, i) => (
-                              <p key={i} className="text-xs text-gray-600">
-                                {item.item_name} {item.size && <span className="text-gray-400 font-normal">({item.size})</span>} <span className="font-bold text-custom-green">x{item.quantity}</span>
+                              <p key={i} className="text-xs text-zinc-300">
+                                {item.item_name} {item.size && <span className="text-zinc-400">({item.size})</span>} <span className="font-bold text-[#079108]">x{item.quantity}</span>
                               </p>
                             ))}
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-bold text-custom-green">Rp {order.total_harga.toLocaleString('id-ID')}</td>
-                        <td className="px-4 py-3 text-xs text-gray-600 max-w-[150px]">
+                        <td className="px-4 py-3.5 font-bold text-[#079108]">Rp {order.total_harga.toLocaleString('id-ID')}</td>
+                        <td className="px-4 py-3.5 text-xs text-zinc-400 max-w-[150px]">
                           <p className="truncate" title={order.catatan}>{order.catatan || '-'}</p>
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-4 py-3.5 text-center">
                           <CustomSelect
                             value={order.status}
                             onChange={e => onMerchOrderStatusChange(order.id, e.target.value)}
                             variant="status"
-                            className={
-                              order.status === 'pending' ? 'bg-white text-gray-600 border-gray-300' :
-                              order.status === 'checked' ? 'bg-blue-100 text-blue-700 border-blue-400' :
-                              order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-400' :
-                              'bg-red-100 text-red-700 border-red-400'
-                            }
                             options={[
                               { value: 'pending', label: 'Pending' },
                               { value: 'checked', label: 'Checked' },
@@ -492,15 +388,15 @@ const OrdersTab = ({
                             ]}
                           />
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center justify-center gap-2">
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center justify-center gap-1.5">
                             {order.payment_proof_url && (
                               <a href={order.payment_proof_url} target="_blank" rel="noreferrer"
-                                className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg"
+                                className="text-zinc-400 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
                                 title="Lihat Bukti Bayar"
                               ><FaEye /></a>
                             )}
-                            <button onClick={() => onDeleteMerchOrder(order.id)} className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                            <button onClick={() => onDeleteMerchOrder(order.id)} className="text-red-400 hover:text-red-300 p-2 hover:bg-red-500/10 rounded-lg transition-colors"><FaTrash /></button>
                           </div>
                         </td>
                       </tr>
@@ -511,6 +407,15 @@ const OrdersTab = ({
             </div>
           </div>
         </div>
+      )}
+
+      {showExportModal && (
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          onExport={handleTriggerExport}
+          events={events}
+        />
       )}
     </div>
   )

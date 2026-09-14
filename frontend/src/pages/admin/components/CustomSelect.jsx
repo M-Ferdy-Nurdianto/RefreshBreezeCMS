@@ -96,15 +96,29 @@ const CustomSelect = ({
 
   const selectedOption = options.find(opt => opt.value === value)
 
+  // Helper for status styling in dark mode
+  const getStatusStyle = (statusVal) => {
+    switch (statusVal) {
+      case 'pending':
+        return 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+      case 'checked':
+        return 'bg-[#00e5e5]/10 text-[#00e5e5] border-[#00e5e5]/30 hover:bg-[#00e5e5]/20'
+      case 'completed':
+        return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+      default:
+        return 'bg-white/10 text-zinc-300 border-white/10 hover:bg-white/15'
+    }
+  }
+
   return (
     <div className="relative inline-block w-full custom-dropdown-container" ref={containerRef}>
       <button
         type="button"
         onClick={handleOpen}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border-2 border-transparent outline-none ${
+        className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border outline-none ${
           variant === 'filter' 
-            ? 'bg-slate-100/50 text-slate-700 hover:bg-slate-100 hover:border-slate-200 min-w-[140px]' 
-            : `cursor-pointer ${className}`
+            ? 'bg-[#182032] text-white border-white/10 hover:bg-white/10 hover:border-white/20 min-w-[140px]' 
+            : `cursor-pointer ${getStatusStyle(value)} ${className}`
         }`}
       >
         <span className="truncate">{selectedOption?.label || value}</span>
@@ -113,12 +127,12 @@ const CustomSelect = ({
 
       {isOpen && createPortal(
         <div 
-          className={`absolute bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-[9999] custom-dropdown-portal-menu animate-in fade-in slide-in-from-${openUp ? 'bottom' : 'top'}-2 duration-200`}
+          className={`absolute bg-[#161f33] rounded-xl shadow-2xl border border-white/15 py-1.5 z-[9999] custom-dropdown-portal-menu animate-in fade-in slide-in-from-${openUp ? 'bottom' : 'top'}-2 duration-200 backdrop-blur-xl`}
           style={{
             position: 'absolute',
             top: `${openUp ? coords.top - 4 : coords.top + 4}px`,
             left: `${coords.left}px`,
-            width: `${Math.max(coords.width, 160)}px`, // minimum width 160px for elegant layout
+            width: `${Math.max(coords.width, 160)}px`,
             transform: openUp ? 'translateY(-100%)' : 'none',
           }}
         >
@@ -128,11 +142,11 @@ const CustomSelect = ({
                 key={opt.value}
                 type="button"
                 onClick={() => handleSelect(opt.value)}
-                className={`w-full text-left px-4 py-2 text-xs transition-colors
-                  ${opt.value === value 
-                    ? 'bg-[#079108]/10 text-[#079108] font-bold' 
-                    : 'text-slate-600 hover:bg-slate-50'
-                  }`}
+                className={`w-full text-left px-4 py-2 text-xs font-medium transition-colors ${
+                  opt.value === value 
+                    ? 'bg-[#079108]/20 text-[#079108] font-bold border-l-2 border-[#079108]' 
+                    : 'text-zinc-200 hover:bg-white/10 hover:text-white'
+                }`}
               >
                 {opt.label}
               </button>

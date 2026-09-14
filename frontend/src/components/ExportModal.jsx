@@ -1,10 +1,10 @@
 import React, { useState, useEffect, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaFilePdf, FaFileExcel, FaCalendarAlt, FaTicketAlt, FaLayerGroup } from 'react-icons/fa'
+import { FaFilePdf, FaFileExcel, FaCalendarAlt, FaTicketAlt, FaLayerGroup, FaTimes, FaCheck, FaDownload } from 'react-icons/fa'
 
 const ExportModal = memo(({ isOpen, onClose, onExport, events = [] }) => {
   const [format, setFormat] = useState('excel') // 'excel' | 'pdf'
-  const [scope, setScope] = useState('current') // 'current' (screen filter) | 'event' | 'month' | 'all'
+  const [scope, setScope] = useState('current') // 'current' | 'event' | 'month'
   const [selectedEventId, setSelectedEventId] = useState('')
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)) // YYYY-MM
 
@@ -27,9 +27,6 @@ const ExportModal = memo(({ isOpen, onClose, onExport, events = [] }) => {
     onClose()
   }
 
-  // Filter events (active/past doesn't matter for export, but maybe we want all)
-  // Assuming 'events' passed are already comprehensive or we just show what's available
-  
   return (
     <AnimatePresence>
       {isOpen && (
@@ -39,187 +36,202 @@ const ExportModal = memo(({ isOpen, onClose, onExport, events = [] }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
           />
-          
+
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            className="relative bg-[#111726] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-white z-10"
           >
             {/* Header */}
-            <div className="bg-gray-900 px-6 py-5 flex items-center justify-between">
-              <h3 className="text-xl font-black text-white uppercase tracking-wider">Export Data</h3>
-              <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-                ✕
+            <div className="bg-[#161f33] px-6 py-4 border-b border-white/10 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <FaDownload className="text-[#079108]" />
+                  Export Data Order
+                </h3>
+                <p className="text-[11px] text-zinc-400">Unduh laporan transaksi dalam format Excel atau PDF</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+                title="Tutup"
+              >
+                <FaTimes size={16} />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
-              {/* 1. Choose Format */}
+              {/* 1. Format Selection */}
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 block">1. Pilih Format</label>
+                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2.5 block">
+                  1. Pilih Format File
+                </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
+                    type="button"
                     onClick={() => setFormat('excel')}
-                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
-                      format === 'excel' 
-                        ? 'border-[#079108] bg-[#079108]/5 text-[#079108]' 
-                        : 'border-gray-100 hover:border-gray-200 text-gray-600'
+                    className={`relative p-3.5 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                      format === 'excel'
+                        ? 'border-[#079108] bg-[#079108]/15 text-[#22c55e] shadow-[0_0_15px_rgba(7,145,8,0.25)]'
+                        : 'border-white/10 bg-[#161f33] text-zinc-400 hover:border-white/20 hover:text-zinc-200'
                     }`}
                   >
                     <FaFileExcel className="text-2xl" />
-                    <span className="font-bold text-sm">Excel (.xlsx)</span>
+                    <span className="font-bold text-xs">Excel (.xlsx)</span>
                     {format === 'excel' && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#079108]"></div>
+                      <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#079108] flex items-center justify-center text-[10px] text-white">
+                        <FaCheck size={8} />
+                      </span>
                     )}
                   </button>
-                  
+
                   <button
+                    type="button"
                     onClick={() => setFormat('pdf')}
-                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
-                      format === 'pdf' 
-                        ? 'border-red-500 bg-red-50 text-red-500' 
-                        : 'border-gray-100 hover:border-gray-200 text-gray-600'
+                    className={`relative p-3.5 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                      format === 'pdf'
+                        ? 'border-red-500 bg-red-500/15 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.25)]'
+                        : 'border-white/10 bg-[#161f33] text-zinc-400 hover:border-white/20 hover:text-zinc-200'
                     }`}
                   >
                     <FaFilePdf className="text-2xl" />
-                    <span className="font-bold text-sm">PDF Document</span>
+                    <span className="font-bold text-xs">PDF Document</span>
                     {format === 'pdf' && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500"></div>
+                      <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-[10px] text-white">
+                        <FaCheck size={8} />
+                      </span>
                     )}
                   </button>
                 </div>
               </div>
 
-              {/* 2. Choose Scope/Filter */}
+              {/* 2. Scope Selection */}
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 block">2. Filter Data</label>
-                <div className="space-y-3">
-                  
+                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2.5 block">
+                  2. Cakupan Data
+                </label>
+                <div className="space-y-2.5">
                   {/* Current Filter */}
-                  <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                    scope === 'current' ? 'border-gray-800 bg-gray-50' : 'border-gray-100 hover:border-gray-200'
-                  }`}>
-                    <input 
-                      type="radio" 
-                      name="scope" 
-                      checked={scope === 'current'} 
+                  <label
+                    className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all ${
+                      scope === 'current'
+                        ? 'border-[#079108] bg-[#079108]/10 text-white'
+                        : 'border-white/10 bg-[#161f33] text-zinc-300 hover:border-white/20'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="scope"
+                      checked={scope === 'current'}
                       onChange={() => setScope('current')}
-                      className="w-4 h-4 text-gray-800 focus:ring-gray-800"
+                      className="w-4 h-4 accent-[#079108] cursor-pointer"
                     />
-                    <div className="ml-3 flex items-center gap-2">
-                      <FaLayerGroup className="text-gray-400" />
-                      <span className="font-semibold text-sm">Sesuai Filter di Layar</span>
+                    <div className="ml-3 flex items-center gap-2.5 text-xs font-semibold">
+                      <FaLayerGroup className={scope === 'current' ? 'text-[#22c55e]' : 'text-zinc-400'} />
+                      <span>Sesuai Filter di Layar (Data Saat Ini)</span>
                     </div>
                   </label>
 
                   {/* By Event */}
-                  <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                    scope === 'event' ? 'border-gray-800 bg-gray-50' : 'border-gray-100 hover:border-gray-200'
-                  }`}>
-                    <input 
-                      type="radio" 
-                      name="scope" 
-                      checked={scope === 'event'} 
-                      onChange={() => setScope('event')}
-                      className="w-4 h-4 text-gray-800 focus:ring-gray-800"
-                    />
-                    <div className="ml-3 flex items-center gap-2">
-                      <FaTicketAlt className="text-gray-400" />
-                      <span className="font-semibold text-sm">Per Event Spesifik</span>
-                    </div>
-                  </label>
+                  <div
+                    className={`rounded-xl border transition-all overflow-hidden ${
+                      scope === 'event'
+                        ? 'border-[#079108] bg-[#079108]/10'
+                        : 'border-white/10 bg-[#161f33] hover:border-white/20'
+                    }`}
+                  >
+                    <label className="flex items-center p-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="scope"
+                        checked={scope === 'event'}
+                        onChange={() => setScope('event')}
+                        className="w-4 h-4 accent-[#079108] cursor-pointer"
+                      />
+                      <div className="ml-3 flex items-center gap-2.5 text-xs font-semibold text-zinc-200">
+                        <FaTicketAlt className={scope === 'event' ? 'text-[#22c55e]' : 'text-zinc-400'} />
+                        <span>Per Event Spesifik</span>
+                      </div>
+                    </label>
 
-                  {/* Event Dropdown */}
-                  <AnimatePresence>
                     {scope === 'event' && (
-                      <motion.div 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden pl-7"
-                      >
-                         <div className="pt-2">
-                           <select 
-                             value={selectedEventId}
-                             onChange={(e) => setSelectedEventId(e.target.value)}
-                             className="w-full bg-white border-2 border-gray-200 rounded-lg p-2 text-sm focus:border-gray-800 focus:outline-none"
-                           >
-                             {events.map(ev => (
-                               <option key={ev.id} value={ev.id}>
-                                 {ev.nama} ({ev.tanggal} {ev.bulan} {ev.tahun})
-                               </option>
-                             ))}
-                           </select>
-                         </div>
-                      </motion.div>
+                      <div className="px-3 pb-3 pt-0">
+                        <select
+                          value={selectedEventId}
+                          onChange={(e) => setSelectedEventId(e.target.value)}
+                          className="w-full bg-[#182032] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-[#079108] focus:outline-none"
+                        >
+                          {events.map((ev) => (
+                            <option key={ev.id} value={ev.id}>
+                              {ev.nama} ({ev.tanggal} {ev.bulan} {ev.tahun})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     )}
-                  </AnimatePresence>
+                  </div>
 
                   {/* By Month */}
-                  <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                    scope === 'month' ? 'border-gray-800 bg-gray-50' : 'border-gray-100 hover:border-gray-200'
-                  }`}>
-                    <input 
-                      type="radio" 
-                      name="scope" 
-                      checked={scope === 'month'} 
-                      onChange={() => setScope('month')}
-                      className="w-4 h-4 text-gray-800 focus:ring-gray-800"
-                    />
-                    <div className="ml-3 flex items-center gap-2">
-                      <FaCalendarAlt className="text-gray-400" />
-                      <span className="font-semibold text-sm">Per Bulan</span>
-                    </div>
-                  </label>
+                  <div
+                    className={`rounded-xl border transition-all overflow-hidden ${
+                      scope === 'month'
+                        ? 'border-[#079108] bg-[#079108]/10'
+                        : 'border-white/10 bg-[#161f33] hover:border-white/20'
+                    }`}
+                  >
+                    <label className="flex items-center p-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="scope"
+                        checked={scope === 'month'}
+                        onChange={() => setScope('month')}
+                        className="w-4 h-4 accent-[#079108] cursor-pointer"
+                      />
+                      <div className="ml-3 flex items-center gap-2.5 text-xs font-semibold text-zinc-200">
+                        <FaCalendarAlt className={scope === 'month' ? 'text-[#22c55e]' : 'text-zinc-400'} />
+                        <span>Per Bulan Transaksi</span>
+                      </div>
+                    </label>
 
-                  {/* Month Picker */}
-                  <AnimatePresence>
                     {scope === 'month' && (
-                      <motion.div 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden pl-7"
-                      >
-                         <div className="pt-2">
-                           <input 
-                             type="month"
-                             value={selectedMonth}
-                             onChange={(e) => setSelectedMonth(e.target.value)}
-                             className="w-full bg-white border-2 border-gray-200 rounded-lg p-2 text-sm focus:border-gray-800 focus:outline-none"
-                           />
-                         </div>
-                      </motion.div>
+                      <div className="px-3 pb-3 pt-0">
+                        <input
+                          type="month"
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(e.target.value)}
+                          className="w-full bg-[#182032] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-[#079108] focus:outline-none"
+                        />
+                      </div>
                     )}
-                  </AnimatePresence>
-
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3 border-t border-gray-100">
-              <button 
+            <div className="px-6 py-4 bg-[#161f33] flex items-center justify-end gap-3 border-t border-white/10">
+              <button
+                type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
-              <button 
+              <button
+                type="button"
                 onClick={handleExport}
-                className={`px-6 py-2 rounded-lg text-sm font-bold text-white shadow-lg transition-all transform hover:scale-105 ${
-                  format === 'excel' 
-                    ? 'bg-[#079108] shadow-[#079108]/20' 
-                    : 'bg-red-500 shadow-red-500/20'
+                className={`px-5 py-2 rounded-xl text-xs font-bold text-white shadow-lg transition-all flex items-center gap-2 active:scale-95 ${
+                  format === 'excel'
+                    ? 'bg-[#079108] hover:bg-[#067a07] shadow-[#079108]/30'
+                    : 'bg-red-500 hover:bg-red-600 shadow-red-500/30'
                 }`}
               >
-                Download {format === 'excel' ? 'Excel' : 'PDF'}
+                <FaDownload size={12} /> Unduh {format === 'excel' ? 'Excel' : 'PDF'}
               </button>
             </div>
-
           </motion.div>
         </div>
       )}
@@ -228,3 +240,4 @@ const ExportModal = memo(({ isOpen, onClose, onExport, events = [] }) => {
 })
 
 export default ExportModal
+

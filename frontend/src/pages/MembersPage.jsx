@@ -6,142 +6,50 @@ import Header from '../components/Header'
 import api from '../lib/api'
 import Skeleton from '../components/Skeleton'
 
-// Hardcoded member data from JSON
-const memberData = {
-  'sinta': {
-    color: '#10B981',
-    gradient: 'from-green-400 to-emerald-500',
-    namaPanggung: 'Sinta',
-    tagline: 'Pemalu, Penasaran',
-    jiko: '"Si pemalu tetapi suka hal-hal baru, haloo aku Sintaa"',
-    tanggalLahir: '12 Oktober',
-    hobi: 'Memasak, menyanyi, menari, nonton anime, tidur',
-    instagram: '@sii_ntaa',
-    objectPosition: 'center 20%',
-    gallery: ['sinta1.webp', 'sinta2.webp', 'sinta3.webp']
-  },
-  'cissi': {
-    color: '#FBBF24',
-    gradient: 'from-amber-400 to-yellow-500',
-    namaPanggung: 'Cissi',
-    tagline: 'Imajinatif, Penari',
-    jiko: '"Aiyaiya, i\'m your little butterfly~ Kupu-kupu yang suka menari dan bisa membuatmu bahagia, halo halo semuanya aku Cissi"',
-    tanggalLahir: '22 Agustus',
-    hobi: 'Dance dan melamun',
-    instagram: '@bakedciz',
-    objectPosition: 'center 20%',
-    gallery: ['cissi1.webp', 'cissi2.webp', 'cissi3.webp']
-  },
-  'channie': {
-    color: '#6D28D9',
-    gradient: 'from-purple-600 to-indigo-600',
-    namaPanggung: 'Channie',
-    tagline: 'Kreatif, Menghibur',
-    jiko: '"Semungil bintang yang akan menerangi hatimu seperti bulan, halo semuanya aku Channie!"',
-    tanggalLahir: '8 September',
-    hobi: 'Dance, bikin koreo, nulis, makan gorengan',
-    instagram: '@zzuchannie',
-    objectPosition: 'center 20%',
-    gallery: ['channie1.webp', 'channie2.webp', 'channie3.webp']
-  },
-  'acaa': {
-    color: '#3B82F6',
-    gradient: 'from-blue-500 to-blue-600',
-    namaPanggung: 'Acaa',
-    tagline: 'Ceria, Usil, Lincah',
-    jiko: '"Citcitcutcuit dengarlah kicauanku yang akan meramaikan hatimuuu"',
-    tanggalLahir: '25 Agustus',
-    hobi: 'Nyanyi, turu, main emel, berak, repeat',
-    instagram: '@caafoxy',
-    objectPosition: 'center 20%',
-    gallery: ['aca1.webp', 'aca2.webp', 'aca3.webp']
-  },
-  'cally': {
-    color: '#34D399',
-    gradient: 'from-emerald-400 to-green-500',
-    namaPanggung: 'Cally',
-    tagline: 'Lembut, Weirdo',
-    jiko: '"Mengapung lembut dihatimu seperti ubur ubur yang menari di laut~ Hallo aku Cally!!!"',
-    tanggalLahir: '5 September',
-    hobi: 'Menonton film, mempertanyakan eksistensi diri sendiri, menyanyi',
-    instagram: '@calismilikitiw',
-    objectPosition: 'center 25%',
-    gallery: ['cally1.webp', 'cally2.webp', 'cally3.webp']
-  },
-  'piya': {
-    color: '#F472B6',
-    gradient: 'from-pink-400 to-rose-500',
-    namaPanggung: 'Piya',
-    tagline: 'Periang, Lucu',
-    jiko: '"Pyon! pyon! seperti kelinci yang melompat tinggi aku akan melompat ke posisi tertinggi di hatimu ~ Hallo aku Piya !!"',
-    tanggalLahir: '1 Januari',
-    hobi: 'Gambar dan main rosbloz',
-    instagram: '@matcvie_',
-    objectPosition: 'center 20%',
-    gallery: ['piya1.webp', 'piya2.webp', 'piya3.webp']
-  },
-  'rara': {
-    color: '#9e1527',
-    gradient: 'from-red-600 to-rose-800',
-    namaPanggung: 'Rara',
-    objectPosition: 'center 20%',
-    gallery: []
-  }
-}
 let cachedMembers = null
+let cachedGroup = null
 
 const MembersPage = () => {
   const [members, setMembers] = useState(cachedMembers || [])
+  const [groupInfo, setGroupInfo] = useState(cachedGroup || null)
   const [selectedMember, setSelectedMember] = useState(null)
   const [loading, setLoading] = useState(!cachedMembers)
 
-  const sanitizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const sanitizeName = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
   const getMemberData = (member) => {
-    const clean = sanitizeName(member.nama_panggung)
-
-    // Handle 'aca' vs 'acaa' mismatch
-    let baseData = memberData['acaa']
-    if (clean !== 'aca') {
-      baseData = memberData[clean] || { 
-        color: '#079108', 
-        gradient: 'from-green-500 to-emerald-600', 
-        emoji: '💚',
-        tagline: 'Member',
-        jiko: '',
-        tanggalLahir: '-',
-        hobi: '-',
-        instagram: '-'
-      }
-    }
-
+    if (!member) return {}
     return {
-      ...baseData,
-      tagline: member.tagline || baseData.tagline,
-      jiko: member.jikoshoukai || baseData.jiko,
-      tanggalLahir: member.tanggal_lahir || baseData.tanggalLahir,
-      hobi: member.hobi || baseData.hobi,
-      instagram: member.instagram || baseData.instagram
+      color: member.color || '#079108',
+      namaPanggung: member.nama_panggung,
+      tagline: member.tagline || 'Member',
+      jiko: member.jikoshoukai || '',
+      tanggalLahir: member.tanggal_lahir || '-',
+      hobi: member.hobi || '-',
+      instagram: member.instagram || '-'
     }
   }
 
   useEffect(() => {
-    if (cachedMembers) return; // Skip if already cached
+    if (cachedMembers && cachedGroup) return // Skip if already cached
 
     const fetchMembers = async () => {
       try {
         const response = await api.get('/members')
         if (response.data.success) {
-          const heroOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
-          const sorted = response.data.data
-            .filter(m => m.member_id !== 'group' && m.member_id !== 'yanyee' && m.member_id !== 'piya' && m.hadir !== false)
-            .sort((a, b) => {
-              const indexA = heroOrder.indexOf(a.member_id)
-              const indexB = heroOrder.indexOf(b.member_id)
-              return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99)
-            })
-          cachedMembers = sorted
-          setMembers(sorted)
+          const allData = response.data.data || []
+          const group = allData.find(m => m.member_id === 'group')
+          if (group) {
+            cachedGroup = group
+            setGroupInfo(group)
+          }
+
+          const activeMembers = allData
+            .filter(m => m.member_id !== 'group' && m.hadir !== false)
+            .sort((a, b) => (a.order_index ?? 99) - (b.order_index ?? 99))
+
+          cachedMembers = activeMembers
+          setMembers(activeMembers)
         }
       } catch (error) {
         console.error('Failed to fetch members:', error)
@@ -152,10 +60,14 @@ const MembersPage = () => {
     fetchMembers()
   }, [])
 
-  // Profile images from /images/members/
+  // Dynamic Profile image helper
   const getProfileImage = (member) => {
-    if (!member.image_url) return getAssetPath('/images/members/secret.png')
-    const clean = sanitizeName(member.nama_panggung)
+    if (member?.image_url) {
+      if (member.image_url.startsWith('http')) return member.image_url
+      if (member.image_url.startsWith('/')) return getAssetPath(member.image_url)
+      return getAssetPath(`/images/members/${member.image_url}`)
+    }
+    const clean = sanitizeName(member?.nama_panggung)
     if (clean === 'acaa' || clean === 'aca') return getAssetPath('/images/members/aca.webp')
     return getAssetPath(`/images/members/${clean}.webp`)
   }
@@ -189,9 +101,17 @@ const MembersPage = () => {
                 className="relative rounded-[2rem] overflow-hidden h-64 md:h-80"
               >
                 <img 
-                  src={getAssetPath('/images/members/group.webp')} 
+                  src={
+                    groupInfo?.image_url
+                      ? (groupInfo.image_url.startsWith('http') ? groupInfo.image_url : (groupInfo.image_url.startsWith('/') ? getAssetPath(groupInfo.image_url) : getAssetPath(`/images/members/${groupInfo.image_url}`)))
+                      : getAssetPath('/images/members/group.webp')
+                  } 
                   alt="Refresh Breeze Members" 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = getAssetPath('/images/members/group.webp')
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
                 <div className="absolute inset-0 flex items-center p-8 md:p-12">
@@ -216,10 +136,20 @@ const MembersPage = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.4 }}
-                      className="text-gray-300 max-w-md text-sm md:text-base"
+                      className="text-white max-w-lg text-sm md:text-base font-bold drop-shadow-md mb-1"
                     >
-                      6 individu berbakat yang siap menghibur dan menginspirasi dengan energi positif mereka!
+                      {groupInfo?.tagline || 'Kompak & Ceria'}
                     </motion.p>
+                    {groupInfo?.jikoshoukai && (
+                      <motion.p
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.45 }}
+                        className="text-emerald-300/95 max-w-lg text-xs md:text-sm font-medium italic drop-shadow-md"
+                      >
+                        "{groupInfo.jikoshoukai}"
+                      </motion.p>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -439,29 +369,44 @@ const MembersPage = () => {
                       </div>
 
                       <div className="grid grid-cols-3 gap-3 md:gap-5">
-                        {[1, 2, 3].map((num, idx) => {
-                          const fileBase = clean === 'acaa' ? 'aca' : clean
-                          const imgSrc = getAssetPath(`/images/members/gallery/${clean}/${fileBase} (${num}).webp`)
-                          return (
-                            <motion.div 
-                              key={num}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.3 + idx * 0.1 }}
-                              whileHover={{ scale: 1.03 }}
-                              className="aspect-square rounded-2xl overflow-hidden shadow-lg group cursor-pointer"
-                              style={{
-                                boxShadow: `0 10px 30px ${data.color}20`
-                              }}
-                            >
-                              <img 
-                                src={imgSrc} 
-                                alt={`Gallery ${num}`}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                              />
-                            </motion.div>
-                          )
-                        })}
+                        {(() => {
+                          const galleryList = (selectedMember.member_gallery && selectedMember.member_gallery.length > 0)
+                            ? selectedMember.member_gallery.map(g => g.image_url)
+                            : [1, 2, 3].map(num => {
+                                const fileBase = clean === 'acaa' ? 'aca' : clean
+                                return `/images/members/gallery/${clean}/${fileBase} (${num}).webp`
+                              })
+
+                          return galleryList.slice(0, 3).map((imgUrl, idx) => {
+                            const resolvedSrc = imgUrl.startsWith('http')
+                              ? imgUrl
+                              : (imgUrl.startsWith('/') ? getAssetPath(imgUrl) : getAssetPath(`/images/members/${imgUrl}`))
+
+                            return (
+                              <motion.div 
+                                key={idx}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.3 + idx * 0.1 }}
+                                whileHover={{ scale: 1.03 }}
+                                className="aspect-square rounded-2xl overflow-hidden shadow-lg group cursor-pointer"
+                                style={{
+                                  boxShadow: `0 10px 30px ${data.color}20`
+                                }}
+                              >
+                                <img 
+                                  src={resolvedSrc} 
+                                  alt={`${data.namaPanggung} Gallery ${idx + 1}`}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                  onError={(e) => {
+                                    e.target.onerror = null
+                                    e.target.src = getAssetPath('/images/members/secret.png')
+                                  }}
+                                />
+                              </motion.div>
+                            )
+                          })
+                        })()}
                       </div>
                     </motion.div>
                   </>

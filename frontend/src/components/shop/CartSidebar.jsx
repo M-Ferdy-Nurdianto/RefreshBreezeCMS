@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaShoppingCart, FaPlus, FaMinus, FaTrash, FaChevronRight, FaUniversity } from 'react-icons/fa'
+import { FaShoppingCart, FaPlus, FaMinus, FaTrash, FaChevronRight, FaUniversity, FaShoppingBag } from 'react-icons/fa'
 
 const CartSidebar = ({ 
   cart, 
@@ -78,7 +78,9 @@ const CartSidebar = ({
                       {item.gambar_url ? (
                         <img src={item.gambar_url} alt={item.nama} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">🛍️</div>
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                          <FaShoppingBag className="text-gray-300" style={{ fontSize: '16px' }} />
+                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

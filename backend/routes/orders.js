@@ -10,7 +10,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const { status, dateFrom, dateTo, search, is_ots, event_id } = req.query
 
-    console.log('📊 Orders filter params:', { status, is_ots, event_id, search, dateFrom, dateTo })
+    console.log('[Orders] Filter params:', { status, is_ots, event_id, search, dateFrom, dateTo })
 
     let query = supabase
       .from('orders')
@@ -38,7 +38,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     // Filter by event_id
     if (event_id && event_id !== 'all') {
-      console.log('🎯 Filtering by event_id:', event_id)
+      console.log('[Orders] Filtering by event_id:', event_id)
       query = query.eq('event_id', event_id)
     }
 
@@ -59,7 +59,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     if (error) throw error
 
-    console.log('✅ Orders fetched:', data?.length || 0, 'orders')
+    console.log('[Orders] Fetched:', data?.length || 0, 'orders')
 
     res.json({ success: true, data })
   } catch (error) {
@@ -582,7 +582,7 @@ router.post('/bulk-delete', authMiddleware, async (req, res) => {
   try {
     const { deleteType, eventId, weeks, months } = req.body
 
-    console.log('🗑️ Bulk delete request:', { deleteType, eventId, weeks, months })
+    console.log('[Orders] Bulk delete request:', { deleteType, eventId, weeks, months })
 
     let query = supabase.from('orders').select('id')
 
@@ -628,7 +628,7 @@ router.post('/bulk-delete', authMiddleware, async (req, res) => {
 
     if (ordersError) throw ordersError
 
-    console.log(`✅ Deleted ${ordersToDelete.length} orders`)
+    console.log(`[Orders] Deleted ${ordersToDelete.length} orders`)
 
     res.json({
       success: true,

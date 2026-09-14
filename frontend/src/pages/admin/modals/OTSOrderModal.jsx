@@ -74,11 +74,11 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
   const totalPrice = formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b flex justify-between items-center bg-custom-green text-white">
-          <h3 className="text-xl font-bold">Order OTS (On The Spot)</h3>
-          <button onClick={onClose} className="text-2xl hover:text-gray-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="bg-[#111726] border border-white/10 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar text-white">
+        <div className="p-5 border-b border-white/10 flex justify-between items-center bg-[#161f33] sticky top-0 z-10">
+          <h3 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">Order OTS <span className="text-[#079108]">(On The Spot)</span></h3>
+          <button onClick={onClose} className="text-zinc-400 hover:text-white text-lg transition-colors p-1">
             <FaTimes />
           </button>
         </div>
@@ -86,81 +86,87 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <select
-                value={formData.event_id}
-                onChange={(e) => setFormData({...formData, event_id: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-custom-green bg-white"
-                required
-              >
-                <option value="">-- Pilih Event *--</option>
-                {events.filter(event => {
-                  if (event.is_special) return false;
-                  if (event.is_past) return false;
-                  const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
-                  const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal);
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  return eventDate >= today;
-                }).map(event => (
-                  <option key={event.id} value={event.id}>
-                    {event.nama} - {event.tanggal} {event.bulan} {event.tahun}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="text"
-                placeholder="Nama Lengkap *"
-                value={formData.nama_lengkap}
-                onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-custom-green"
-                required
-              />
+              <div>
+                <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">Pilih Event *</label>
+                <select
+                  value={formData.event_id}
+                  onChange={(e) => setFormData({...formData, event_id: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-[#079108] focus:outline-none"
+                  required
+                >
+                  <option value="">-- Pilih Event *--</option>
+                  {events.filter(event => {
+                    if (event.is_special) return false;
+                    if (event.is_past) return false;
+                    const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
+                    const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return eventDate >= today;
+                  }).map(event => (
+                    <option key={event.id} value={event.id}>
+                      {event.nama} - {event.tanggal} {event.bulan} {event.tahun}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">Metode Pembayaran *</label>
+                <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">Nama Pembeli *</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Kiki"
+                  value={formData.nama_lengkap}
+                  onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl placeholder-zinc-500 focus:border-[#079108] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Metode Pembayaran *</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setFormData({...formData, payment_method: 'Cash'})}
-                    className={`px-4 py-3 rounded-lg font-semibold border-2 transition-all ${
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs border transition-all ${
                       formData.payment_method === 'Cash'
-                        ? 'bg-custom-green text-white border-custom-green'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-custom-green'
+                        ? 'bg-[#079108] text-white border-[#079108] shadow-[0_0_12px_rgba(7,145,8,0.4)]'
+                        : 'bg-[#182032] text-zinc-300 border-white/10 hover:border-white/30'
                     }`}
                   >
-                    💵 Cash
+                    Cash
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormData({...formData, payment_method: 'QR'})}
-                    className={`px-4 py-3 rounded-lg font-semibold border-2 transition-all ${
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs border transition-all ${
                       formData.payment_method === 'QR'
-                        ? 'bg-custom-green text-white border-custom-green'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-custom-green'
+                        ? 'bg-[#079108] text-white border-[#079108] shadow-[0_0_12px_rgba(7,145,8,0.4)]'
+                        : 'bg-[#182032] text-zinc-300 border-white/10 hover:border-white/30'
                     }`}
                   >
-                    📱 QR Code
+                    QR Code
                   </button>
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <h4 className="font-bold mb-2">Items:</h4>
+              <div className="border-t border-white/10 pt-4">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-300 mb-2">Items Dipilih:</h4>
                 {formData.items.length === 0 ? (
-                  <p className="text-gray-400 text-sm">Pilih member di sebelah kanan</p>
+                  <p className="text-zinc-500 text-xs italic">Pilih member di panel kanan →</p>
                 ) : (
                   <div className="space-y-2">
-                    <div className="max-h-[120px] overflow-y-auto space-y-2 pr-2">
+                    <div className="max-h-[140px] overflow-y-auto custom-scrollbar space-y-2 pr-1">
                       {formData.items.map((item, index) => (
-                        <div key={index} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                          <span className="text-sm">{item.name} x {item.quantity}</span>
+                        <div key={index} className="flex justify-between items-center bg-[#182032] border border-white/5 p-2.5 rounded-xl">
+                          <span className="text-xs text-zinc-200">{item.name} <span className="font-bold text-[#079108]">x{item.quantity}</span></span>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                            <span className="text-xs font-bold text-[#079108]">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
                             <button
                               type="button"
                               onClick={() => removeItem(index)}
-                              className="text-red-600 hover:text-red-800"
+                              className="text-red-400 hover:text-red-300 p-1"
                             >
                               <FaTimes />
                             </button>
@@ -168,25 +174,24 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
                         </div>
                       ))}
                     </div>
-                    <div className="pt-2 border-t flex justify-between font-bold">
-                      <span>Total:</span>
-                      <span className="text-custom-green">Rp {totalPrice.toLocaleString('id-ID')}</span>
+                    <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-sm">
+                      <span className="text-zinc-300">Total Harga:</span>
+                      <span className="text-[#079108] font-black text-base">Rp {totalPrice.toLocaleString('id-ID')}</span>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="border-l pl-6">
-              <h4 className="font-bold mb-4">Pilih Member:</h4>
-              <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+            <div className="border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-300 mb-3">Pilih Member / Items:</h4>
+              <div className="grid grid-cols-2 gap-2.5 max-h-96 overflow-y-auto custom-scrollbar pr-1">
                 {members.map((member) => {
                   const selectedEvent = events.find(e => e.id === formData.event_id);
                   let isAllowed = true;
                   if (selectedEvent && selectedEvent.event_lineup && selectedEvent.event_lineup.length > 0) {
                     if (member.member_id !== 'group') {
                       const allowedIds = selectedEvent.event_lineup.map(l => String(l.member_id));
-                      // In case member.id or member.member_id is used in lineup
                       isAllowed = allowedIds.includes(String(member.id)) || allowedIds.includes(String(member.member_id));
                     }
                   }
@@ -203,19 +208,19 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
                         addItem(member);
                       }}
                       disabled={!isAllowed}
-                      className={`p-3 border rounded-lg transition-colors text-left ${
+                      className={`p-3 border rounded-xl transition-all text-left ${
                         isAllowed 
-                          ? 'hover:border-custom-green hover:bg-custom-mint/20 bg-white cursor-pointer' 
-                          : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                          ? 'bg-[#182032] border-white/10 hover:border-[#079108] hover:bg-[#079108]/10 cursor-pointer' 
+                          : 'bg-white/5 border-white/5 text-zinc-500 cursor-not-allowed opacity-50'
                       }`}
                     >
-                      <div className={`text-sm font-semibold ${!isAllowed && 'text-gray-400'}`}>
+                      <div className={`text-xs font-bold ${isAllowed ? 'text-white' : 'text-zinc-500'}`}>
                         {formatMemberName(member.nama_panggung)}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-[11px] text-[#079108] font-semibold mt-0.5">
                         Rp {parseInt(member.member_id === 'group' ? hargaOtsGrup : hargaOtsPerMember, 10).toLocaleString('id-ID')}
                       </div>
-                      {!isAllowed && <div className="text-[10px] text-red-400 mt-1">Tidak Hadir</div>}
+                      {!isAllowed && <div className="text-[9px] text-red-400 mt-1 font-bold">Tidak Hadir</div>}
                     </button>
                   );
                 })}
@@ -223,20 +228,20 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col-reverse md:flex-row gap-3">
+          <div className="mt-6 flex flex-col-reverse md:flex-row gap-3 pt-4 border-t border-white/10 justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300"
+              className="px-6 py-2.5 bg-white/10 text-zinc-300 rounded-xl font-bold text-xs hover:bg-white/20 transition-all"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={submitting || formData.items.length === 0}
-              className="flex-1 bg-custom-green text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400"
+              className="px-6 py-2.5 bg-[#079108] text-white rounded-xl font-bold text-xs hover:bg-[#067a07] disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(7,145,8,0.3)]"
             >
-              {submitting ? 'Menyimpan...' : 'Simpan Order'}
+              {submitting ? 'Menyimpan...' : 'Simpan Order OTS'}
             </button>
           </div>
         </form>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FaPlus } from 'react-icons/fa'
+import { FaPlus, FaLock } from 'react-icons/fa'
 import { getMemberColor, formatMemberName } from '../../lib/memberUtils'
 import { useFlyToCart } from '../../context/FlyToCartContext'
 
@@ -23,62 +23,63 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
        animate={{ opacity: 1, y: 0 }}
        transition={{ delay: idx * 0.1 }}
        whileHover={inLineup ? { y: -8, scale: 1.02 } : {}}
-       className={`group relative aspect-[3/4] rounded-3xl overflow-hidden ${inLineup ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+       className={`group relative aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden ${inLineup ? 'cursor-pointer' : 'cursor-not-allowed'}`}
        onClick={handleClick}
        style={{
-         boxShadow: inLineup ? `0 4px 30px ${accentColor}20` : 'none'
+         boxShadow: inLineup ? `0 4px 30px ${accentColor}25` : 'none',
+         border: `1px solid ${inLineup ? accentColor + '30' : 'rgba(200,200,200,0.15)'}`
        }}
     >
-      <div className={`absolute inset-0 bg-white dark:bg-[#111726] border border-gray-200/80 dark:border-white/10 rounded-3xl transition-all duration-500 shadow-sm ${inLineup ? 'group-hover:shadow-xl dark:group-hover:bg-[#151c2e]' : 'grayscale opacity-80'}`}></div>
-      
+      {/* Photo — fills the entire card edge-to-edge */}
+      <div className={`absolute inset-0 ${!inLineup ? 'grayscale' : ''}`}>
+        <img 
+           src={getMemberImage(member)}
+           alt={member.nama_panggung} 
+           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+        />
+        {/* Gradient: blend photo into info section */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom, transparent 35%, ${inLineup ? accentColor : '#0f172a'}ee 95%)`
+          }}
+        />
+      </div>
+
+      {/* Hover glow ring */}
       <div 
-        className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          boxShadow: `0 0 40px ${accentColor}40, inset 0 0 60px ${accentColor}10`
-        }}
-      ></div>
+        className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{ boxShadow: `inset 0 0 60px ${accentColor}25` }}
+      />
 
-      <div className={`absolute inset-3 top-3 bottom-24 rounded-2xl overflow-hidden bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 ${!inLineup ? 'grayscale' : ''}`}>
-         <img 
-            src={getMemberImage(member)}
-            alt={member.nama_panggung} 
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 p-2"
-         />
-         <div 
-           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-           style={{
-             background: `linear-gradient(to top, ${accentColor}40, transparent 50%)`
-           }}
-         ></div>
+      {/* Info section — floating over the gradient at the bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-4 space-y-1 sm:space-y-1.5">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span 
+            className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: inLineup ? accentColor : '#94a3b8' }}
+          />
+          <h4 className="text-xs sm:text-base font-black uppercase tracking-tight text-white truncate leading-none drop-shadow-lg">
+            {formatMemberName(member.nama_panggung)}
+          </h4>
+        </div>
+        <p className="text-[8px] sm:text-[9px] font-bold text-white/70 uppercase tracking-widest pl-3 sm:pl-4">2-Shot Ticket</p>
+        <div className="flex items-center justify-between pl-3 sm:pl-4 pt-0.5">
+          <span className="text-xs sm:text-sm font-black text-white drop-shadow">
+            IDR {hargaMember.toLocaleString()}
+          </span>
+          <motion.div 
+             whileHover={inLineup ? { scale: 1.2 } : {}}
+             whileTap={inLineup ? { scale: 0.9 } : {}}
+             className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white shadow-lg ${inLineup ? '' : 'bg-gray-500'}`}
+             style={inLineup ? { backgroundColor: accentColor, boxShadow: `0 4px 14px ${accentColor}80` } : {}}
+           >
+              {inLineup ? <FaPlus className="text-[10px] sm:text-xs" /> : <FaLock style={{ fontSize: '8px' }} />}
+           </motion.div>
+        </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 space-y-1">
-         <div className="flex items-center gap-2">
-           <span 
-             className="w-2 h-2 rounded-full"
-             style={{ backgroundColor: inLineup ? accentColor : '#cbd5e1' }}
-           ></span>
-           <h4 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white truncate">{formatMemberName(member.nama_panggung)}</h4>
-         </div>
-         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">2-Shot Ticket</p>
-         <div className="flex items-center justify-between pt-1">
-            <span 
-              className="text-base font-black"
-              style={{ color: inLineup ? accentColor : '#94a3b8' }}
-            >
-              IDR {hargaMember.toLocaleString()}
-            </span>
-            <motion.div 
-               whileHover={inLineup ? { scale: 1.2 } : {}}
-               whileTap={inLineup ? { scale: 0.9 } : {}}
-               className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors duration-300 ${inLineup ? '' : 'bg-gray-300'}`}
-               style={inLineup ? { backgroundColor: accentColor } : {}}
-             >
-                {inLineup ? <FaPlus className="text-xs" /> : <span className="text-[10px]">🔒</span>}
-             </motion.div>
-         </div>
-      </div>
-      
+      {/* Not in lineup overlay */}
       {!inLineup && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full transform -rotate-12 border border-white/20">

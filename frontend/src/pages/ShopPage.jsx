@@ -21,6 +21,7 @@ const ShopPage = () => {
   const { triggerFly } = useFlyToCart()
   const [config, setConfig] = useState(null)
   const [members, setMembers] = useState([])
+  const [groupMember, setGroupMember] = useState(null)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -54,14 +55,22 @@ const ShopPage = () => {
   const [selectedSize, setSelectedSize] = useState('')
   const [activeSlide, setActiveSlide] = useState(0)
 
+  // Ref for event dropdown click outside
+  const eventDropdownRef = useRef(null)
+
+  const isDarkMode = true
+
   // Cart Hook
   const hargaMember = Number(config?.harga_cheki_per_member) || 25000
   const hargaGrup = Number(config?.harga_cheki_grup) || 30000
   const cartHook = useShopCart(hargaMember, hargaGrup)
 
-  // Click outside listener for custom dropdowns
+  // Click outside listener for event dropdown and custom dropdowns
   useEffect(() => {
     const handleClickOutside = (e) => {
+      if (eventDropdownRef.current && !eventDropdownRef.current.contains(e.target)) {
+        setEventDropdownOpen(false)
+      }
       if (!e.target.closest('.custom-dropdown-container')) {
         setActiveDropdownId(null)
       }
@@ -70,11 +79,18 @@ const ShopPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Helper functions
-  const sanitizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+  // Helper functions: Cheki tickets use dedicated shop_image_url or /images/shop/ photos
+  const sanitizeName = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
   const getMemberImage = (member) => {
-    if (!member.image_url) return getAssetPath('/images/members/secret.png')
-    const id = member.member_id || sanitizeName(member.nama_panggung)
+    if (member?.shop_image_url) {
+      if (member.shop_image_url.startsWith('http://') || member.shop_image_url.startsWith('https://')) return member.shop_image_url
+      if (member.shop_image_url.startsWith('/')) return getAssetPath(member.shop_image_url)
+      return getAssetPath(`/images/shop/${member.shop_image_url}`)
+    }
+    if (member?.image_url && (member.image_url.startsWith('http://') || member.image_url.startsWith('https://'))) {
+      return member.image_url
+    }
+    const id = member?.member_id || sanitizeName(member?.nama_panggung || '')
     const clean = id.replace('aa', 'a')
     if (clean === 'aca' || clean === 'acaa') return getAssetPath('/images/shop/aca.webp')
     return getAssetPath(`/images/shop/${clean}.webp`)
@@ -96,15 +112,14 @@ const ShopPage = () => {
         
         if (configRes.data.success) setConfig(configRes.data.data)
         if (membersRes.data.success) {
-           const heroOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
-           const sorted = membersRes.data.data
-             .filter(m => m.member_id !== 'group' && m.member_id !== 'yanyee' && m.member_id !== 'piya' && m.hadir !== false)
-             .sort((a, b) => {
-                const indexA = heroOrder.indexOf(a.member_id)
-                const indexB = heroOrder.indexOf(b.member_id)
-                return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99)
-             })
-           setMembers(sorted)
+           const allMembers = membersRes.data.data || []
+           const group = allMembers.find(m => m.member_id === 'group')
+           if (group) setGroupMember(group)
+
+           const activeMembers = allMembers
+             .filter(m => m.member_id !== 'group' && m.hadir !== false)
+             .sort((a, b) => (a.order_index ?? 99) - (b.order_index ?? 99))
+           setMembers(activeMembers)
         }
         if (eventsRes.data.success) {
           const activeEvents = eventsRes.data.data.filter(event => {
@@ -116,6 +131,12 @@ const ShopPage = () => {
             return eventDate >= today;
           });
           setEvents(activeEvents);
+          if (activeEvents.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              event_id: prev.event_id || activeEvents[0].id
+            }))
+          }
         }
       } catch (error) {
         console.error('Failed to fetch data:', error)
@@ -322,10 +343,12 @@ const ShopPage = () => {
                       }
                     }
                     if (startPos) {
-                      const imgUrl = type === 'group' ? getAssetPath('/images/members/group.webp') : getMemberImage(m)
+                      const imgUrl = type === 'group'
+                        ? (groupMember?.image_url ? (groupMember.image_url.startsWith('http') ? groupMember.image_url : getAssetPath(groupMember.image_url)) : getAssetPath('/images/members/group.webp'))
+                        : getMemberImage(m)
                       triggerFly(startPos, imgUrl)
                     }
-                    cartHook.addToCart(type, m, getMemberImage);
+                    cartHook.addToCart(type, type === 'group' ? groupMember : m, getMemberImage);
                   }} 
                   getMemberImage={getMemberImage} getAssetPath={getAssetPath} 
                 />

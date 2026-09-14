@@ -37,15 +37,15 @@ const AboutSection = ({ navigate, getAssetPath }) => {
           </div>
           <div className="grid grid-cols-2 gap-4 pt-4">
             {[ 
-              { label: 'Energy', icon: FaBolt, color: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/20' }, 
-              { label: 'Fresh', icon: FaLeaf, color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/20' }, 
-              { label: 'Youth', icon: FaMagic, color: 'text-sky-500', bg: 'bg-sky-500/10 border-sky-500/20' }, 
-              { label: 'Together', icon: FaUsers, color: 'text-[#079108]', bg: 'bg-[#079108]/10 border-[#079108]/20' } 
+              { label: 'Energy', icon: FaBolt }, 
+              { label: 'Fresh', icon: FaLeaf }, 
+              { label: 'Youth', icon: FaMagic }, 
+              { label: 'Together', icon: FaUsers } 
             ].map((point, idx) => {
               const Icon = point.icon
               return (
                 <motion.div key={idx} whileHover={{ scale: 1.05 }} className="flex items-center gap-3.5 p-4 bg-white/80 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm transition-all">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${point.bg} ${point.color}`}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#079108]/10 dark:bg-[#079108]/20 text-[#079108]">
                     <Icon size={16} />
                   </div>
                   <span className="font-black text-[10px] uppercase tracking-widest text-gray-800 dark:text-gray-200">{point.label}</span>

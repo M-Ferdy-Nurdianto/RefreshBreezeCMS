@@ -38,7 +38,7 @@ const StoryPage = () => {
       </section>
 
       {/* Philosophy Section */}
-      <section className="py-24 container mx-auto max-w-7xl px-4 relative z-10">
+      <section className="py-10 md:py-16 container mx-auto max-w-7xl px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
            <div className="space-y-8">
               <div className="space-y-4">
@@ -67,10 +67,10 @@ const StoryPage = () => {
                    { icon: <FaHeart />, title: 'LOVE', desc: 'Ketulusan dalam berkarya' }
                  ].map((item, idx) => (
                    <div key={idx} className="space-y-2">
-                      <div className="w-12 h-12 bg-[#079108]/10 rounded-2xl flex items-center justify-center text-[#079108] text-xl">
+                      <div className="w-12 h-12 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl flex items-center justify-center text-gray-400 dark:text-white/40 text-xl">
                         {item.icon}
                       </div>
-                      <h4 className="font-black text-xs uppercase tracking-widest text-dark">{item.title}</h4>
+                      <h4 className="font-black text-xs uppercase tracking-widest text-dark dark:text-white">{item.title}</h4>
                       <p className="text-[10px] text-gray-400 font-bold uppercase">{item.desc}</p>
                    </div>
                  ))}

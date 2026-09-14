@@ -14,10 +14,11 @@ router.get('/', cachePublic({ sMaxAge: 3600, maxAge: 120, staleWhileRevalidate: 
         *,
         member_gallery (
           id,
-          image_url
+          image_url,
+          created_at
         )
       `)
-      .order('created_at', { ascending: true })
+      .order('order_index', { ascending: true })
 
     if (error) throw error
 
@@ -39,7 +40,8 @@ router.get('/:member_id', cachePublic({ sMaxAge: 3600, maxAge: 120, staleWhileRe
         *,
         member_gallery (
           id,
-          image_url
+          image_url,
+          created_at
         )
       `)
       .eq('member_id', member_id)
@@ -57,7 +59,22 @@ router.get('/:member_id', cachePublic({ sMaxAge: 3600, maxAge: 120, staleWhileRe
 // POST: Create new member (admin only)
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { member_id, nama_panggung, tagline, hadir, image_url, jikoshoukai, tanggal_lahir, hobi, instagram } = req.body
+    const {
+      member_id,
+      nama_panggung,
+      tagline,
+      hadir,
+      image_url,
+      shop_image_url,
+      jikoshoukai,
+      tanggal_lahir,
+      hobi,
+      instagram,
+      color,
+      gradient,
+      order_index,
+      gallery
+    } = req.body
 
     const { data, error } = await supabase
       .from('members')
@@ -65,19 +82,48 @@ router.post('/', authMiddleware, async (req, res) => {
         member_id,
         nama_panggung,
         tagline,
-        hadir,
+        hadir: hadir ?? true,
         image_url,
+        shop_image_url,
         jikoshoukai,
         tanggal_lahir,
         hobi,
-        instagram
+        instagram,
+        color: color || '#079108',
+        gradient: gradient || null,
+        order_index: order_index !== undefined ? parseInt(order_index) : 0
       })
       .select()
       .single()
 
     if (error) throw error
 
-    res.json({ success: true, data })
+    // Insert gallery items if provided
+    if (gallery && Array.isArray(gallery) && gallery.length > 0) {
+      const validGallery = gallery.filter(url => Boolean(url)).map(url => ({
+        member_id: data.id,
+        image_url: url
+      }))
+      if (validGallery.length > 0) {
+        await supabase.from('member_gallery').insert(validGallery)
+      }
+    }
+
+    // Return complete member with gallery
+    const { data: completeData } = await supabase
+      .from('members')
+      .select(`
+        *,
+        member_gallery (
+          id,
+          image_url,
+          created_at
+        )
+      `)
+      .eq('id', data.id)
+      .single()
+
+    res.json({ success: true, data: completeData || data })
   } catch (error) {
     console.error('Error creating member:', error)
     res.status(500).json({ error: error.message })
@@ -88,7 +134,16 @@ router.post('/', authMiddleware, async (req, res) => {
 router.patch('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params
-    const updates = req.body
+    const { gallery, ...updates } = req.body
+
+    // Avoid updating non-column fields if present
+    delete updates.member_gallery
+    delete updates.created_at
+    delete updates.updated_at
+
+    if (updates.order_index !== undefined) {
+      updates.order_index = parseInt(updates.order_index)
+    }
 
     const { data, error } = await supabase
       .from('members')
@@ -99,7 +154,37 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 
     if (error) throw error
 
-    res.json({ success: true, data })
+    // Sync gallery items if gallery array was provided
+    if (gallery !== undefined && Array.isArray(gallery)) {
+      // Remove existing gallery
+      await supabase.from('member_gallery').delete().eq('member_id', id)
+
+      // Insert new gallery items
+      const validGallery = gallery.filter(url => Boolean(url && url.trim())).map(url => ({
+        member_id: id,
+        image_url: url.trim()
+      }))
+
+      if (validGallery.length > 0) {
+        await supabase.from('member_gallery').insert(validGallery)
+      }
+    }
+
+    // Return updated member with gallery
+    const { data: updatedMember } = await supabase
+      .from('members')
+      .select(`
+        *,
+        member_gallery (
+          id,
+          image_url,
+          created_at
+        )
+      `)
+      .eq('id', id)
+      .single()
+
+    res.json({ success: true, data: updatedMember || data })
   } catch (error) {
     console.error('Error updating member:', error)
     res.status(500).json({ error: error.message })

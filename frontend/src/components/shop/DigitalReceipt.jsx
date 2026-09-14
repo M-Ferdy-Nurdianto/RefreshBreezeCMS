@@ -70,10 +70,11 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }
           height: 'auto',
           borderRadius: '0',
           margin: '0',
-          padding: '40px 60px'
+          padding: '40px 60px',
+          backgroundColor: '#f7f6f2'
         },
         pixelRatio: 2,
-        backgroundColor: '#fff',
+        backgroundColor: '#f7f6f2',
       });
 
       if (buttons) buttons.style.display = 'flex';
@@ -118,7 +119,7 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }
   };
 
   return (
-    <div className={`relative flex flex-col items-center ${isPreview ? 'py-4' : 'py-12 min-h-screen bg-slate-50'} px-4 overflow-hidden`}>
+    <div className={`relative flex flex-col items-center ${isPreview ? 'py-4' : 'py-12 min-h-screen bg-slate-50 dark:bg-transparent'} px-4 overflow-hidden`}>
       {/* Grid Pattern Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
       
@@ -137,7 +138,7 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }
       >
         <div 
           ref={receiptRef}
-          className="bg-white shadow-2xl shadow-emerald-900/10 overflow-hidden flex flex-col ring-1 ring-gray-900/5" 
+          className="digital-receipt-paper overflow-hidden flex flex-col rounded-sm" 
           style={{ 
             ...receiptFontStyle, 
             width: '655px',

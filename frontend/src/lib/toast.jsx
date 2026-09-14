@@ -66,7 +66,7 @@ export const showToast = {
     else toast(content, toastOptions(id))
   },
   // Custom for cart with emoji support
-  cart: (message, emoji = '✨', label = 'Added to Cart') => {
+  cart: (message, emoji = '', label = 'Added to Cart') => {
     const id = `cart-${message}`
     const content = (
       <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-4 bg-gray-900/95 backdrop-blur-xl rounded-[1.25rem] border border-white/10 shadow-2xl w-[90vw] sm:w-auto sm:min-w-[320px] sm:max-w-[400px] mx-auto">

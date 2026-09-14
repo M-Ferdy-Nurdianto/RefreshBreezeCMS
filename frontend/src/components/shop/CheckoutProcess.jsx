@@ -119,7 +119,7 @@ const CheckoutProcess = ({
   step, setStep, cart, merchCart, totalHarga, totalMerchHarga, updateQuantity, removeFromCart,
   updateMerchQuantity, removeFromMerchCart, formData, setFormData, merchForm, setMerchForm,
   file, setFile, filePreview, setFilePreview, merchFile, setMerchFile, merchFilePreview, setMerchFilePreview,
-  submitting, uploading, merchSubmitting, merchUploading, handleSubmit, handleMerchSubmit,
+  events = [], submitting, uploading, merchSubmitting, merchUploading, handleSubmit, handleMerchSubmit,
   receiptData, merchReceiptData, payment, copied, setCopied, fileInputRef, merchFileInputRef
 }) => {
 
@@ -245,10 +245,28 @@ const CheckoutProcess = ({
                 </div>
                 <InternalPaymentInfo payment={payment} copyToClipboard={copyToClipboard} copied={copied} />
                 <form onSubmit={step === 2 ? handleSubmit : handleMerchSubmit} className="space-y-6">
+                    {step === 2 && events.length > 0 && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Jadwal Event *</label>
+                        <select
+                          value={formData.event_id || ''}
+                          onChange={(e) => setFormData({...formData, event_id: e.target.value})}
+                          className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-6 py-3.5 font-bold outline-none text-xs text-gray-900 dark:text-white shadow-sm"
+                          required
+                        >
+                          <option value="" disabled>-- Pilih Jadwal Event --</option>
+                          {events.map((ev) => (
+                            <option key={ev.id} value={ev.id} className="bg-white dark:bg-[#162035] text-gray-900 dark:text-white">
+                              {ev.nama} ({ev.tanggal} {ev.bulan} {ev.tahun})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                        <div className="space-y-2">
                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Nama Panggilan</label>
-                          <input required type="text" placeholder="Contoh: iki" value={step === 2 ? formData.nama_panggilan : merchForm.nama_lengkap} onChange={(e) => step === 2 ? setFormData({...formData, nama_panggilan: e.target.value}) : setMerchForm({...merchForm, nama_lengkap: e.target.value})} className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-7 py-4 font-bold outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm" />
+                          <input required type="text" placeholder="Contoh: Kiki" value={step === 2 ? formData.nama_panggilan : merchForm.nama_lengkap} onChange={(e) => step === 2 ? setFormData({...formData, nama_panggilan: e.target.value}) : setMerchForm({...merchForm, nama_lengkap: e.target.value})} className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-7 py-4 font-bold outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm" />
                        </div>
                        <div className="space-y-2">
                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">{step === 2 ? 'WhatsApp / IG' : 'WhatsApp Number'}</label>

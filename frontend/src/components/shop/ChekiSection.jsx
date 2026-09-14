@@ -85,7 +85,7 @@ const ChekiSection = ({
                 transition={{ delay: 0.2 }}
                 className="bg-gradient-to-r from-[#079108] to-emerald-500 text-white px-3 sm:px-5 py-1 sm:py-2 rounded-full text-[9px] sm:text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 shadow-lg shadow-[#079108]/30"
               >
-                 ✨ Best Value
+                 Best Value
               </motion.div>
               <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase tracking-tight mb-1 sm:mb-3 drop-shadow-2xl">
                  Group Cheki

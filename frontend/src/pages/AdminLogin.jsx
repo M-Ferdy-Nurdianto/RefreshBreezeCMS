@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import api from '../lib/api'
+import { FaUserShield, FaSpinner, FaSignInAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const AdminLogin = () => {
   const navigate = useNavigate()
@@ -11,6 +12,20 @@ const AdminLogin = () => {
   })
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    document.documentElement.classList.add('dark')
+    document.body.classList.add('dark-theme')
+    return () => {
+      const savedTheme = localStorage.getItem('rb-theme')
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark')
+        document.documentElement.classList.add('light')
+        document.body.classList.remove('dark-theme')
+        document.body.classList.add('light-theme')
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -46,33 +61,39 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-custom-mint to-custom-green flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div className="admin-layout min-h-screen bg-[#090d16] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Subtle Radial Glows */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#079108]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-72 h-72 bg-[#00e5e5]/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="relative bg-[#111726]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.6)] p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-24 h-24 mx-auto mb-4 bg-custom-mint rounded-full flex items-center justify-center">
-            <i className="fas fa-user-shield text-4xl text-custom-green"></i>
+          <div className="w-20 h-20 mx-auto mb-4 bg-[#079108]/10 border border-[#079108]/30 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(7,145,8,0.2)]">
+            <FaUserShield className="text-3xl text-[#079108]" />
           </div>
-          <h1 className="text-3xl font-extrabold text-custom-green">Login Staff</h1>
-          <p className="text-gray-500 mt-2">Refresh Breeze CMS</p>
+          <h1 className="text-2xl font-black tracking-tight text-white uppercase">
+            Login <span className="text-[#079108]">Staff</span>
+          </h1>
+          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mt-1">Refresh Breeze Portal</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
               Username
             </label>
             <input
               type="text"
               value={formData.username}
               onChange={(e) => setFormData({...formData, username: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:border-custom-green transition-all"
+              className="w-full px-4 py-3 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 focus:outline-none focus:border-[#079108] focus:ring-1 focus:ring-[#079108] transition-all text-sm"
               placeholder="Enter username"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
               Password
             </label>
             <div className="relative">
@@ -80,17 +101,17 @@ const AdminLogin = () => {
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-green focus:border-custom-green transition-all"
+                className="w-full px-4 py-3 pr-12 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 focus:outline-none focus:border-[#079108] focus:ring-1 focus:ring-[#079108] transition-all text-sm"
                 placeholder="Enter password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-custom-green transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
                 tabIndex="-1"
               >
-                <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                {showPassword ? <FaEyeSlash className="text-lg" /> : <FaEye className="text-lg" />}
               </button>
             </div>
           </div>
@@ -98,27 +119,26 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-custom-green text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors shadow-lg flex justify-center items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-[#079108] text-white font-bold py-3.5 px-4 rounded-xl hover:bg-[#067a07] transition-all shadow-[0_0_20px_rgba(7,145,8,0.3)] hover:shadow-[0_0_25px_rgba(7,145,8,0.5)] flex justify-center items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
             {loading ? (
               <>
-                <i className="fas fa-spinner animate-spin"></i>
-                <span>Loading...</span>
+                <FaSpinner className="animate-spin text-lg" />
+                <span>Memproses...</span>
               </>
             ) : (
               <>
-                <i className="fas fa-sign-in-alt"></i>
-                <span>Login</span>
+                <FaSignInAlt className="text-lg" />
+                <span>Masuk Ke Dashboard</span>
               </>
             )}
           </button>
         </form>
 
-
         <div className="mt-6 text-center">
           <button
             onClick={() => navigate('/')}
-            className="text-custom-green hover:text-green-700 font-semibold text-sm"
+            className="text-zinc-400 hover:text-white font-medium text-xs transition-colors inline-flex items-center gap-1"
           >
             ← Kembali ke Home
           </button>

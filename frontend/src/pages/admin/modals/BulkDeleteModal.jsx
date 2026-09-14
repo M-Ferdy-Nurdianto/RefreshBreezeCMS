@@ -52,32 +52,32 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b p-6">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-[#111726] border border-white/10 text-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl">
+        <div className="sticky top-0 bg-[#161f33] border-b border-white/10 p-5 z-10">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-800">Hapus Data Pembelian</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <FaTimes size={24} />
+            <h2 className="text-base font-bold text-white uppercase tracking-wider">Hapus Data Pembelian</h2>
+            <button onClick={onClose} className="text-zinc-400 hover:text-white p-1 transition-colors">
+              <FaTimes size={20} />
             </button>
           </div>
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-700 text-sm">
-              ⚠️ <strong>Perhatian:</strong> Data yang dihapus tidak bisa dikembalikan!
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+            <p className="text-red-300 text-xs leading-relaxed font-medium">
+              <strong className="text-red-400 font-bold">Perhatian:</strong> Data yang dihapus tidak bisa dikembalikan setelah dikonfirmasi!
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Pilih Jenis Hapus
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
+              Pilih Opsi Penghapusan
             </label>
             <select
               value={deleteType}
               onChange={(e) => setDeleteType(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white"
+              className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-red-500 focus:outline-none"
             >
               <option value="all">Hapus Semua Data</option>
               <option value="event">Hapus Per Event</option>
@@ -88,13 +88,13 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
 
           {deleteType === 'event' && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
                 Pilih Event
               </label>
               <select
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white"
+                className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-red-500 focus:outline-none"
               >
                 <option value="">-- Pilih Event --</option>
                 {events.map((event) => (
@@ -108,7 +108,7 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
 
           {deleteType === 'weeks' && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
                 Jumlah Minggu Terakhir
               </label>
               <input
@@ -117,9 +117,9 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
                 max="52"
                 value={weeks}
                 onChange={(e) => setWeeks(parseInt(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-red-500 focus:outline-none"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-[11px] text-zinc-500 mt-1">
                 Akan menghapus data {weeks} minggu terakhir
               </p>
             </div>
@@ -127,7 +127,7 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
 
           {deleteType === 'months' && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
                 Jumlah Bulan Terakhir
               </label>
               <input
@@ -136,24 +136,24 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
                 max="12"
                 value={months}
                 onChange={(e) => setMonths(parseInt(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-red-500 focus:outline-none"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-[11px] text-zinc-500 mt-1">
                 Akan menghapus data {months} bulan terakhir
               </p>
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 border-t border-white/10 justify-end">
             <button
               onClick={onClose}
-              className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300"
+              className="px-5 py-2.5 bg-white/10 text-zinc-300 rounded-xl font-bold text-xs hover:bg-white/20 transition-all"
             >
               Batal
             </button>
             <button
               onClick={handleSubmit}
-              className="flex-1 bg-[#dc2626] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#b91c1c] flex items-center justify-center gap-2"
+              className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(220,38,38,0.3)]"
             >
               <FaTrash /> Hapus Data
             </button>

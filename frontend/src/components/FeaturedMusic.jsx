@@ -45,7 +45,7 @@ const FeaturedMusic = () => {
                </h2>
                
                <p className="text-gray-300 text-sm md:text-xl font-medium max-w-sm sm:max-w-lg mx-auto lg:mx-0 leading-relaxed opacity-90 px-2 sm:px-0">
-                 Perjalanan baru telah dimulai. Dengarkan Debut Single pertama <span className="text-[#1DB954] font-bold">Refresh Breeze</span>, "Gypsophila". Jadilah bagian dari langkah awal kami! ✨
+                 Perjalanan baru telah dimulai. Dengarkan Debut Single pertama <span className="text-[#1DB954] font-bold">Refresh Breeze</span>, "Gypsophila". Jadilah bagian dari langkah awal kami!
                </p>
             </div>
 

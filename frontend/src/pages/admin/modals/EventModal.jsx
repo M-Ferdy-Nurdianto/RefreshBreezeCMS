@@ -11,7 +11,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
   const [formData, setFormData] = useState(() => {
     if (editingEvent) {
       const existingLineup = editingEvent.event_lineup
-        ?.filter(el => el.members?.member_id !== 'piya')
+        ?.filter(el => el.members?.hadir !== false)
         .map(el => el.member_id) || []
       return {
         ...editingEvent,
@@ -92,162 +92,170 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col">
-        <div className="p-4 border-b flex justify-between items-center bg-custom-green text-white">
-          <h3 className="text-lg font-bold">{editingEvent ? 'Edit Event' : 'Tambah Event'}</h3>
-          <button onClick={onClose} className="text-xl hover:text-gray-200"><FaTimes /></button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="bg-[#111726] border border-white/10 rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col text-white">
+        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#161f33] text-white">
+          <h3 className="text-base font-bold uppercase tracking-wider">{editingEvent ? 'Edit Event' : 'Tambah Event Baru'}</h3>
+          <button onClick={onClose} className="text-zinc-400 hover:text-white text-lg transition-colors p-1"><FaTimes /></button>
         </div>
 
-        <div className="flex border-b bg-gray-50">
+        <div className="flex border-b border-white/10 bg-[#161f33]/60">
           <button
             type="button"
             onClick={() => setEventType('regular')}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${eventType === 'regular' ? 'bg-white border-b-2 border-custom-green text-custom-green' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${eventType === 'regular' ? 'border-[#079108] text-[#079108] bg-[#079108]/10' : 'border-transparent text-zinc-400 hover:text-white'}`}
           >
-            📅 Event Regular
+            Event Regular
           </button>
           <button
             type="button"
             onClick={() => setEventType('special')}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${eventType === 'special' ? 'bg-white border-b-2 border-pink-500 text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${eventType === 'special' ? 'border-pink-500 text-pink-400 bg-pink-500/10' : 'border-transparent text-zinc-400 hover:text-white'}`}
           >
-            🎀 Event Spesial
+            Event Spesial
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto flex-1">
-          <input
-            type="text"
-            placeholder="Nama Event *"
-            value={formData.nama}
-            onChange={(e) => setFormData({...formData, nama: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-            required
-          />
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+          <div>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Nama Event *</label>
+            <input
+              type="text"
+              placeholder="Nama Event *"
+              value={formData.nama}
+              onChange={(e) => setFormData({...formData, nama: e.target.value})}
+              className="w-full px-3.5 py-2.5 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
+              required
+            />
+          </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <input
-              type="number"
-              placeholder="Tgl"
-              value={formData.tanggal}
-              onChange={(e) => setFormData({...formData, tanggal: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-              min="1" max="31" required
-            />
-            <select
-              value={formData.bulan}
-              onChange={(e) => setFormData({...formData, bulan: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
-              required
-            >
-              <option value="">Bulan</option>
-              {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => (
-                <option key={m} value={['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][i]}>{m}</option>
-              ))}
-            </select>
-            <input
-              type="number"
-              placeholder="Tahun"
-              value={formData.tahun}
-              onChange={(e) => setFormData({...formData, tahun: parseInt(e.target.value)})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-              required
-            />
+          <div>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Tanggal Event *</label>
+            <div className="grid grid-cols-3 gap-2">
+              <input
+                type="number"
+                placeholder="Tgl"
+                value={formData.tanggal}
+                onChange={(e) => setFormData({...formData, tanggal: e.target.value})}
+                className="w-full px-3 py-2 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
+                min="1" max="31" required
+              />
+              <select
+                value={formData.bulan}
+                onChange={(e) => setFormData({...formData, bulan: e.target.value})}
+                className="w-full px-3 py-2 bg-[#182032] border border-white/10 text-white rounded-xl text-xs focus:outline-none focus:border-[#079108]"
+                required
+              >
+                <option value="">Bulan</option>
+                {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => (
+                  <option key={m} value={['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][i]}>{m}</option>
+                ))}
+              </select>
+              <input
+                type="number"
+                placeholder="Tahun"
+                value={formData.tahun}
+                onChange={(e) => setFormData({...formData, tahun: parseInt(e.target.value)})}
+                className="w-full px-3 py-2 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
+                required
+              />
+            </div>
           </div>
 
           {eventType === 'regular' && (
             <>
               <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Lokasi *</label>
+                  <input
+                    type="text"
+                    placeholder="Lokasi *"
+                    value={formData.lokasi}
+                    onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
+                    className="w-full px-3.5 py-2 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Jam Event</label>
+                  <input
+                    type="text"
+                    placeholder="14:00 WIB"
+                    value={formData.event_time}
+                    onChange={(e) => setFormData({...formData, event_time: e.target.value})}
+                    className="w-full px-3.5 py-2 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Jam Cheki</label>
                 <input
                   type="text"
-                  placeholder="Lokasi *"
-                  value={formData.lokasi}
-                  onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Jam Event (14:00 WIB)"
-                  value={formData.event_time}
-                  onChange={(e) => setFormData({...formData, event_time: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  placeholder="15:00 - 17:00 WIB"
+                  value={formData.cheki_time}
+                  onChange={(e) => setFormData({...formData, cheki_time: e.target.value})}
+                  className="w-full px-3.5 py-2 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
                 />
               </div>
-              <input
-                type="text"
-                placeholder="Jam Cheki (15:00 - 17:00 WIB)"
-                value={formData.cheki_time}
-                onChange={(e) => setFormData({...formData, cheki_time: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-              />
             </>
           )}
 
           {eventType === 'special' && (
-            <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 space-y-2">
+            <div className="bg-pink-500/10 border border-pink-500/20 rounded-xl p-3.5 space-y-2.5">
               <input
                 type="text"
-                placeholder="Nama Tema (Valentine Edition)"
+                placeholder="Nama Tema (e.g. Valentine Edition)"
                 value={formData.theme_name}
                 onChange={(e) => setFormData({...formData, theme_name: e.target.value})}
-                className="w-full px-3 py-2 border border-pink-200 rounded-lg text-sm"
+                className="w-full px-3.5 py-2 bg-[#182032] border border-pink-500/30 text-white rounded-xl text-xs focus:outline-none focus:border-pink-500"
                 required
               />
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-600 mr-1">Warna:</span>
+              <div className="flex items-center gap-1.5 pt-1">
+                <span className="text-xs text-zinc-400 font-bold mr-1">Warna Tema:</span>
                 {presetColors.map((color) => (
                   <button
                     key={color}
                     type="button"
                     onClick={() => setFormData({...formData, theme_color: color})}
-                    className={`w-6 h-6 rounded-full ${formData.theme_color === color ? 'ring-2 ring-offset-1 ring-gray-800' : ''}`}
+                    className={`w-5 h-5 rounded-full ${formData.theme_color === color ? 'ring-2 ring-offset-2 ring-offset-[#111726] ring-white scale-110' : ''}`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
               </div>
-              <p className="text-xs text-pink-600">⚠️ Event spesial hanya tersedia untuk Pre-Order</p>
+              <p className="text-[11px] text-pink-400 font-medium">Event spesial hanya tersedia untuk Pre-Order</p>
             </div>
           )}
 
           <div>
-            <label className="text-xs font-bold text-gray-600 block mb-1">Lineup ({formData.lineup?.length || 0})</label>
-            <div className="grid grid-cols-3 gap-1 border rounded-lg p-2 bg-gray-50">
-              {(() => {
-                const lineupOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
-                return members
-                  .filter(m => m.member_id !== 'group' && m.member_id !== 'piya' && m.hadir !== false)
-                  .sort((a, b) => {
-                    const iA = lineupOrder.indexOf(a.member_id)
-                    const iB = lineupOrder.indexOf(b.member_id)
-                    return (iA !== -1 ? iA : 99) - (iB !== -1 ? iB : 99)
-                  })
-                  .map((member) => (
-                    <label key={member.id} className="flex items-center gap-1 text-xs cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.lineup?.includes(member.id) || false}
-                        onChange={() => toggleMemberInLineup(member.id)}
-                        className="w-3 h-3"
-                      />
-                      {formatMemberName(member.nama_panggung)}
-                    </label>
-                  ))
-              })()}
+            <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block mb-1.5">Lineup Member ({formData.lineup?.length || 0})</label>
+            <div className="grid grid-cols-3 gap-2 border border-white/10 rounded-xl p-3 bg-[#161f33]">
+              {members
+                .filter(m => m.member_id !== 'group' && m.hadir !== false)
+                .sort((a, b) => (a.order_index ?? 99) - (b.order_index ?? 99))
+                .map((member) => (
+                  <label key={member.id} className="flex items-center gap-2 text-xs cursor-pointer text-zinc-200 hover:text-white">
+                    <input
+                      type="checkbox"
+                      checked={formData.lineup?.includes(member.id) || false}
+                      onChange={() => toggleMemberInLineup(member.id)}
+                      className="w-3.5 h-3.5 accent-[#079108] cursor-pointer"
+                    />
+                    {formatMemberName(member.nama_panggung)}
+                  </label>
+                ))}
             </div>
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300">
+          <div className="flex gap-2 pt-3 border-t border-white/10">
+            <button type="button" onClick={onClose} className="flex-1 bg-white/10 px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-300 hover:bg-white/20 transition-all">
               Batal
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className={`flex-1 text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:bg-gray-400 ${eventType === 'special' ? 'bg-pink-500 hover:bg-pink-600' : 'bg-custom-green hover:bg-green-700'}`}
+              className={`flex-1 text-white px-4 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(7,145,8,0.3)] ${eventType === 'special' ? 'bg-pink-500 hover:bg-pink-600' : 'bg-[#079108] hover:bg-[#067a07]'}`}
             >
-              {submitting ? 'Menyimpan...' : 'Simpan'}
+              {submitting ? 'Menyimpan...' : 'Simpan Event'}
             </button>
           </div>
         </form>

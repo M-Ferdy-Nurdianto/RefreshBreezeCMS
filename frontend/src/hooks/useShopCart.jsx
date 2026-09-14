@@ -48,7 +48,9 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   // --- Cheki Cart Logic ---
   const addToCart = (type, member = null, getMemberImage) => {
     const isGroup = type === 'group'
-    const imageUrl = isGroup ? '/images/members/group.webp' : getMemberImage(member)
+    const imageUrl = isGroup
+      ? (member?.image_url || '/images/members/group.webp')
+      : getMemberImage(member)
 
     const item = {
       id: isGroup ? 'group' : member.id,

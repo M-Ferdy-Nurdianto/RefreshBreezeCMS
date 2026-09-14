@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FaShoppingCart } from 'react-icons/fa'
 
 const FlyToCartContext = createContext()
 
@@ -73,7 +74,7 @@ export const FlyToCartProvider = ({ children }) => {
               {fly.imageUrl ? (
                 <img src={fly.imageUrl} alt="Fly item" className="w-full h-full object-cover rounded-full" />
               ) : (
-                <span className="text-lg">💚</span>
+                <FaShoppingCart className="text-[#079108]" style={{ fontSize: '14px' }} />
               )}
             </motion.div>
           ))}

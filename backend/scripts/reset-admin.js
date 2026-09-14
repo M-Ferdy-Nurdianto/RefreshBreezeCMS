@@ -2,7 +2,7 @@ import { supabase } from '../config/supabase.js'
 import bcrypt from 'bcrypt'
 
 const resetAdmin = async () => {
-    console.log('🔄 Starting admin user reset...')
+    console.log('[Admin Reset] Starting admin user reset...')
 
     const username = 'staffERBE'
     const password = 'hijauERBE'
@@ -12,7 +12,7 @@ const resetAdmin = async () => {
         // 1. Generate hash
         const saltRounds = 10
         const passwordHash = await bcrypt.hash(password, saltRounds)
-        console.log('🔑 Password hash generated.')
+        console.log('[Admin Reset] Password hash generated.')
 
         // 2. Upsert user
         const { data, error } = await supabase
@@ -29,7 +29,7 @@ const resetAdmin = async () => {
             throw error
         }
 
-        console.log('✅ Admin user reset successfully!')
+        console.log('[Admin Reset] Admin user reset successfully!')
         console.log('Create/Update details:', {
             id: data.id,
             username: data.username,
@@ -37,7 +37,7 @@ const resetAdmin = async () => {
         })
 
     } catch (err) {
-        console.error('❌ Error resetting admin user:', err.message)
+        console.error('[Admin Reset] Error resetting admin user:', err.message)
         process.exit(1)
     }
 }

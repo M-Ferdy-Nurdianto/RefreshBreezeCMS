@@ -27,9 +27,9 @@ export const memberData = {
         gradient: 'from-blue-500 to-blue-600',
     },
     'cally': {
-        color: '#34D399',
+        color: '#2DD4BF',
         name: 'Cally',
-        gradient: 'from-emerald-400 to-green-500',
+        gradient: 'from-teal-400 to-cyan-500',
     },
     'piya': {
         color: '#F472B6',

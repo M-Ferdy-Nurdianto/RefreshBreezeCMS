@@ -10,6 +10,8 @@ import RecapTab from './admin/tabs/RecapTab'
 import EventsTab from './admin/tabs/EventsTab'
 import MerchTab from './admin/tabs/MerchTab'
 import SettingsTab from './admin/tabs/SettingsTab'
+import MembersTab from './admin/tabs/MembersTab'
+import HeroTab from './admin/tabs/HeroTab'
 
 import OrderDetailModal from './admin/modals/OrderDetailModal'
 import OTSOrderModal from './admin/modals/OTSOrderModal'
@@ -24,13 +26,18 @@ import {
   FaCalendar,
   FaChartBar,
   FaBox,
-  FaEdit
+  FaEdit,
+  FaUsers,
+  FaEllipsisH,
+  FaTimes,
+  FaEye
 } from 'react-icons/fa'
 
 const AdminPage = () => {
   const navigate = useNavigate()
 
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('admin_active_tab') || 'orders')
+  const [showMoreDrawer, setShowMoreDrawer] = useState(false)
   const [orderSubTab, setOrderSubTab] = useState(() => localStorage.getItem('admin_order_subtab') || 'all')
   const [orders, setOrders] = useState([])
   const [members, setMembers] = useState([])
@@ -81,6 +88,9 @@ const AdminPage = () => {
     checkAuth()
     fetchAll()
 
+    document.documentElement.classList.add('dark')
+    document.body.classList.add('dark-theme')
+
     let subscription = null
     if (supabase) {
       subscription = supabase
@@ -97,6 +107,13 @@ const AdminPage = () => {
     return () => {
       if (supabase && subscription) {
         supabase.removeChannel(subscription)
+      }
+      const savedTheme = localStorage.getItem('rb-theme')
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark')
+        document.documentElement.classList.add('light')
+        document.body.classList.remove('dark-theme')
+        document.body.classList.add('light-theme')
       }
     }
   }, [])
@@ -187,7 +204,7 @@ const AdminPage = () => {
   const fetchMembers = async () => {
     try {
       const res = await api.get('/members')
-      setMembers(res.data.data?.filter(m => m.member_id !== 'yanyee' && m.member_id !== 'piya' && m.hadir !== false) || [])
+      setMembers(res.data.data || [])
     } catch (error) {
       console.error(error)
     }
@@ -352,11 +369,7 @@ const AdminPage = () => {
     try {
       await api.patch(`/events/${eventId}`, { is_past: isNowPast })
       fetchEvents()
-      showToast.cart(
-        'Status updated',
-        '✅',
-        isNowPast ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!'
-      )
+      showToast.success(isNowPast ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!')
     } catch (error) {
       Swal.fire({ icon: 'error', title: 'Gagal', text: error.message })
     }
@@ -637,39 +650,69 @@ const AdminPage = () => {
     }
   }
 
+  // Bottom nav items (4 primary + More)
+  const bottomNavItems = [
+    { id: 'orders', label: 'Orders', icon: FaShoppingCart },
+    { id: 'events', label: 'Events', icon: FaCalendar },
+    { id: 'merch', label: 'Merch', icon: FaBox },
+    { id: 'recap', label: 'Recap', icon: FaChartBar },
+  ]
+
+  const moreItems = [
+    { id: 'members', label: 'Members', icon: FaUsers },
+    { id: 'hero', label: 'Hero CMS', icon: FaEye },
+    { id: 'settings', label: 'Settings', icon: FaEdit },
+  ]
+
   return (
-    <div className="min-h-screen md:h-screen md:overflow-hidden bg-gray-50 flex flex-col md:flex-row">
-      <aside className="w-full md:w-64 md:sticky md:top-0 md:h-screen md:overflow-hidden bg-white border-r border-gray-200 p-6 flex flex-col">
-        <div className="mb-10 px-2">
-          <h1 className="text-xl font-black text-gray-900 tracking-tight uppercase">Refresh<span className="text-[#079108]">Breeze</span></h1>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Dashboard</p>
+    <div className="admin-layout min-h-screen md:h-screen md:overflow-hidden bg-[#090d16] text-white flex flex-col md:flex-row selection:bg-[#079108] selection:text-white">
+      {/* SIDEBAR — desktop only */}
+      <aside className="hidden md:flex w-64 md:sticky md:top-0 md:h-screen md:overflow-hidden bg-[#0c111d]/90 backdrop-blur-xl border-r border-white/10 p-6 flex-col justify-between shadow-2xl z-20">
+        <div>
+          <div className="mb-10 px-2 flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-black text-white tracking-tight uppercase">Refresh<span className="text-[#079108]">Breeze</span></h1>
+              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Admin Dashboard</p>
+            </div>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#079108] animate-pulse shadow-[0_0_8px_#079108]"></div>
+          </div>
+
+          <nav className="space-y-2">
+            {[
+              { id: 'orders', label: 'Orders', icon: FaShoppingCart },
+              { id: 'events', label: 'Events', icon: FaCalendar },
+              { id: 'members', label: 'Members', icon: FaUsers },
+              { id: 'merch', label: 'Merchandise', icon: FaBox },
+              { id: 'hero', label: 'Hero CMS', icon: FaEye },
+              { id: 'recap', label: 'Recap', icon: FaChartBar },
+              { id: 'settings', label: 'Settings', icon: FaEdit },
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
+                  activeTab === item.id 
+                    ? 'bg-[#079108] text-white shadow-[0_0_20px_rgba(7,145,8,0.4)] translate-x-1' 
+                    : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <item.icon className={`text-lg ${activeTab === item.id ? 'text-white' : 'text-zinc-500'}`} />
+                {item.label}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        <nav className="flex-1 space-y-2">
-          {[
-            { id: 'orders', label: 'Orders', icon: FaShoppingCart },
-            { id: 'events', label: 'Events', icon: FaCalendar },
-            { id: 'merch', label: 'Merchandise', icon: FaBox },
-            { id: 'recap', label: 'Recap', icon: FaChartBar },
-            { id: 'settings', label: 'Settings', icon: FaEdit },
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all ${activeTab === item.id ? 'bg-[#079108] text-white shadow-lg shadow-[#079108]/20' : 'text-gray-400 hover:bg-gray-100'}`}
-            >
-              <item.icon className="text-lg" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <button onClick={handleLogout} className="mt-10 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-black text-red-500 hover:bg-red-50 transition-all">
+        <button 
+          onClick={handleLogout} 
+          className="mt-8 w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl text-sm font-bold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200"
+        >
           <FaSignOutAlt /> Logout
         </button>
       </aside>
 
-      <main className="flex-1 p-4 md:p-10 md:h-screen md:overflow-y-auto">
+      {/* MAIN CONTENT */}
+      <main className="flex-1 p-4 md:p-10 md:h-screen md:overflow-y-auto pb-24 md:pb-10">
         {activeTab === 'orders' && (
           <OrdersTab
             orders={orders}
@@ -707,16 +750,20 @@ const AdminPage = () => {
             onFetchMerchOrders={fetchMerchOrders}
             onExportMerchExcel={handleExportMerchExcel}
             onExportMerchPdf={handleExportMerchPdf}
+            members={members}
+            hargaOtsPerMember={hargaOtsPerMember}
+            hargaOtsGrup={hargaOtsGrup}
+            onRefreshOrders={fetchOrders}
           />
         )}
 
         {activeTab === 'events' && (
           <EventsTab
             events={events}
-            onCreateEvent={() => { setEditingEvent(null); setShowEventModal(true) }}
-            onEditEvent={handleEditEvent}
+            members={members}
             onDeleteEvent={handleDeleteEvent}
             onTogglePast={handleTogglePast}
+            onRefresh={fetchEvents}
           />
         )}
 
@@ -760,6 +807,13 @@ const AdminPage = () => {
           />
         )}
 
+        {activeTab === 'members' && (
+          <MembersTab
+            members={members}
+            onRefresh={fetchMembers}
+          />
+        )}
+
         {activeTab === 'settings' && (
           <SettingsTab
             hargaPerMember={hargaPerMember}
@@ -773,6 +827,10 @@ const AdminPage = () => {
             configLoading={configLoading}
             updateConfig={updateConfig}
           />
+        )}
+
+        {activeTab === 'hero' && (
+          <HeroTab />
         )}
       </main>
 
@@ -821,6 +879,78 @@ const AdminPage = () => {
             fetchEvents()
           }}
         />
+      )}
+
+      {/* ── BOTTOM NAVBAR (mobile only) ── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0c111d]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]">
+        <div className="flex items-stretch">
+          {bottomNavItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => { setActiveTab(item.id); setShowMoreDrawer(false) }}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold transition-all ${
+                activeTab === item.id
+                  ? 'text-[#079108]'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <item.icon className={`text-lg transition-all ${activeTab === item.id ? 'text-[#079108] drop-shadow-[0_0_6px_#079108]' : ''}`} />
+              {item.label}
+              {activeTab === item.id && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-[#079108] rounded-full" />
+              )}
+            </button>
+          ))}
+          {/* More button */}
+          <button
+            onClick={() => setShowMoreDrawer(prev => !prev)}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold transition-all ${
+              showMoreDrawer || ['members','settings'].includes(activeTab)
+                ? 'text-[#079108]'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            <FaEllipsisH className={`text-lg ${showMoreDrawer || ['members','settings'].includes(activeTab) ? 'text-[#079108]' : ''}`} />
+            More
+          </button>
+        </div>
+      </nav>
+
+      {/* ── MORE DRAWER (mobile) ── */}
+      {showMoreDrawer && (
+        <>
+          {/* Overlay */}
+          <div
+            className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowMoreDrawer(false)}
+          />
+          {/* Drawer */}
+          <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-[#0c111d]/98 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_32px_rgba(0,0,0,0.7)] rounded-t-2xl px-4 py-4 animate-fade-in">
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+            <div className="space-y-2">
+              {moreItems.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); setShowMoreDrawer(false) }}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === item.id
+                      ? 'bg-[#079108]/20 text-[#079108] border border-[#079108]/40'
+                      : 'text-zinc-300 hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon className="text-base" />
+                  {item.label}
+                </button>
+              ))}
+              <button
+                onClick={() => { setShowMoreDrawer(false); handleLogout() }}
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
+              >
+                <FaSignOutAlt /> Logout
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )

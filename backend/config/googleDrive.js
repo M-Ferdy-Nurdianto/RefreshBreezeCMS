@@ -7,9 +7,8 @@ import { supabase } from './supabase.js'
  * @param {string} mimeType - MIME type
  * @returns {Promise<{fileId: string, url: string}>}
  */
-export const uploadToSupabaseStorage = async (fileBuffer, fileName, mimeType) => {
+export const uploadToSupabaseStorage = async (fileBuffer, fileName, mimeType, bucketName = 'payment-proofs') => {
   try {
-    const bucketName = 'payment-proofs'
     
     // Upload file to Supabase Storage
     const { data, error } = await supabase.storage

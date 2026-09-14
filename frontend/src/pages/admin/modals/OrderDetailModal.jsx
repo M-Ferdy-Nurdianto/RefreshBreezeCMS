@@ -178,73 +178,80 @@ const OrderDetailModal = ({ isOpen = false, order, events = [], onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b flex justify-between items-center bg-custom-green text-white">
-          <div className="flex items-center gap-4">
-            <h3 className="text-xl font-bold">Detail Order - {order.order_number}</h3>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="bg-[#111726] border border-white/10 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar text-white">
+        <div className="p-5 border-b border-white/10 flex justify-between items-center bg-[#161f33] sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <h3 className="text-base md:text-lg font-bold text-white">Detail Order <span className="text-[#079108] font-mono">{order.order_number}</span></h3>
             <button
               onClick={generateReceipt}
-              className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 transition-colors"
+              className="bg-[#079108]/20 hover:bg-[#079108]/30 text-[#079108] border border-[#079108]/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-colors"
               title="Download Nota"
             >
               <FaDownload /> Nota
             </button>
           </div>
-          <button onClick={onClose} className="text-2xl hover:text-gray-200">
+          <button onClick={onClose} className="text-zinc-400 hover:text-white text-lg transition-colors p-1">
             <FaTimes />
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-4 bg-[#161f33]/60 p-4 rounded-xl border border-white/5">
             <div>
-              <p className="text-sm text-gray-500">Nama Lengkap</p>
-              <p className="font-semibold">{order.nama_lengkap}</p>
+              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Nama Lengkap</p>
+              <p className="font-bold text-white text-sm mt-0.5">{order.nama_lengkap}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">WhatsApp</p>
-              <p className="font-semibold">{order.whatsapp}</p>
+              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">WhatsApp</p>
+              <p className="font-bold text-[#00e5e5] text-sm mt-0.5">{order.whatsapp}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Instagram</p>
-              <p className="font-semibold">{order.instagram || '-'}</p>
+              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Instagram</p>
+              <p className="font-semibold text-zinc-300 text-sm mt-0.5">{order.instagram || '-'}</p>
             </div>
-            <div></div>
+            <div>
+              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Tipe Order</p>
+              <p className="font-semibold text-xs mt-0.5">
+                <span className={`px-2 py-0.5 rounded-md font-bold ${order.is_ots ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' : 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20'}`}>
+                  {order.is_ots ? 'OTS' : 'Pre-Order'}
+                </span>
+              </p>
+            </div>
           </div>
 
-          <div className="border-t pt-4">
-            <h4 className="font-bold mb-2">Order Items:</h4>
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-300 mb-3">Order Items</h4>
             <div className="space-y-2">
               {order.order_items?.map((item, index) => (
-                <div key={index} className="flex justify-between items-center bg-gray-50 p-3 rounded">
-                  <span>{item.item_name} x {item.quantity}</span>
-                  <span className="font-bold text-custom-green">
+                <div key={index} className="flex justify-between items-center bg-[#182032] border border-white/5 p-3 rounded-xl">
+                  <span className="text-xs font-semibold text-zinc-200">{item.item_name} <span className="text-[#079108] font-bold ml-1">x{item.quantity}</span></span>
+                  <span className="font-bold text-[#079108] text-sm">
                     Rp {(item.price * item.quantity).toLocaleString('id-ID')}
                   </span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t flex justify-between items-center">
-              <span className="font-bold text-lg">Total:</span>
-              <span className="font-extrabold text-2xl text-custom-green">
+            <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+              <span className="font-bold text-sm text-zinc-300">Total Harga:</span>
+              <span className="font-black text-2xl text-[#079108]">
                 Rp {order.total_harga?.toLocaleString('id-ID')}
               </span>
             </div>
           </div>
 
           {order.catatan && (
-            <div className="border-t pt-4">
-              <h4 className="font-bold mb-2">📝 Catatan:</h4>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.catatan}</p>
+            <div className="border-t border-white/10 pt-4">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-amber-400 mb-2">Catatan Order</h4>
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                <p className="text-xs text-amber-200 whitespace-pre-wrap">{order.catatan}</p>
               </div>
             </div>
           )}
 
           {order.payment_proof_url && (
-            <div className="border-t pt-4">
-              <h4 className="font-bold mb-2">Bukti Transfer:</h4>
+            <div className="border-t border-white/10 pt-4">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-300 mb-3">Bukti Pembayaran</h4>
               <a
                 href={order.payment_proof_url}
                 target="_blank"
@@ -254,17 +261,19 @@ const OrderDetailModal = ({ isOpen = false, order, events = [], onClose }) => {
                 <img
                   src={order.payment_proof_url}
                   alt="Payment Proof"
-                  className="w-full max-w-md mx-auto rounded-lg border shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+                  className="w-full max-w-md mx-auto rounded-xl border border-white/10 shadow-xl hover:opacity-90 transition-opacity cursor-pointer max-h-80 object-contain bg-black/40"
                 />
               </a>
-              <a
-                href={order.payment_proof_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block text-blue-600 hover:text-blue-800 text-sm"
-              >
-                <FaEye className="inline mr-1" /> Lihat di Google Drive
-              </a>
+              <div className="text-center mt-2">
+                <a
+                  href={order.payment_proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#00e5e5] hover:underline"
+                >
+                  <FaEye /> Lihat Bukti Ukuran Penuh
+                </a>
+              </div>
             </div>
           )}
         </div>
