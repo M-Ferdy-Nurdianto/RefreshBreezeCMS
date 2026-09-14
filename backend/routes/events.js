@@ -2,13 +2,55 @@ import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { cachePublic } from '../middleware/cache.js'
+import { deletePaymentProofFiles } from '../utils/storageCleaner.js'
 
 const router = express.Router()
+
+// Auto cleanup helper: purge payment proof images from orders older than 30 days (fire-and-forget)
+let lastCleanupTime = 0
+const tryAutoPurgeOldPayments = async () => {
+  const now = Date.now()
+  // Run at most once every 6 hours
+  if (now - lastCleanupTime < 6 * 60 * 60 * 1000) return
+  lastCleanupTime = now
+
+  try {
+    const oneMonthAgo = new Date()
+    oneMonthAgo.setDate(oneMonthAgo.getDate() - 30)
+
+    const { data: oldOrders } = await supabase
+      .from('orders')
+      .select('id, payment_proof_url')
+      .lte('created_at', oneMonthAgo.toISOString())
+      .not('payment_proof_url', 'is', null)
+      .limit(100)
+
+    if (oldOrders && oldOrders.length > 0) {
+      const urls = oldOrders
+        .map(o => o.payment_proof_url)
+        .filter(url => url && (url.startsWith('http://') || url.startsWith('https://')))
+
+      if (urls.length > 0) {
+        await deletePaymentProofFiles(urls, 'payment-proofs')
+        await supabase
+          .from('orders')
+          .update({ payment_proof_url: null })
+          .in('id', oldOrders.map(o => o.id))
+        console.log(`[AutoPurge] Cleaned ${urls.length} old payment proofs (> 30 days)`)
+      }
+    }
+  } catch (e) {
+    console.error('[AutoPurge] Background payment cleanup failed:', e.message)
+  }
+}
 
 // GET: Fetch all events
 router.get('/', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 10 }), async (req, res) => {
   try {
-    const { is_past } = req.query
+    const { is_past, hide_old } = req.query
+
+    // Trigger background auto cleanup if needed
+    tryAutoPurgeOldPayments()
 
     let query = supabase
       .from('events')
@@ -52,15 +94,25 @@ router.get('/', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 10 }
     if (data) {
       const now = new Date()
       now.setHours(0, 0, 0, 0)
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
       data = data.map(event => {
         const monthIndex = monthMap[event.bulan] !== undefined ? monthMap[event.bulan] : 0
         const eventDate = new Date(event.tahun, monthIndex, event.tanggal)
+        const isPast = event.is_past || eventDate < now
+        const isOlderThanMonth = eventDate < oneMonthAgo
+
         return {
           ...event,
-          is_past: event.is_past || eventDate < now
+          is_past: isPast,
+          is_older_than_month: isOlderThanMonth
         }
       })
+
+      // If hide_old is requested (e.g. from shop/schedule/dashboard filter), exclude events > 30 days old
+      if (hide_old === 'true') {
+        data = data.filter(event => !event.is_older_than_month)
+      }
 
       data.sort((a, b) => {
         // 1. Year (Desc)

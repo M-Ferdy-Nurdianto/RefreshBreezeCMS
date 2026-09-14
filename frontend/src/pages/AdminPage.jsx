@@ -64,6 +64,9 @@ const AdminPage = () => {
   const [hargaGrup, setHargaGrup] = useState('30000')
   const [hargaOtsPerMember, setHargaOtsPerMember] = useState('25000')
   const [hargaOtsGrup, setHargaOtsGrup] = useState('30000')
+  const [maintenanceMode, setMaintenanceMode] = useState(false)
+  const [maintenanceMessage, setMaintenanceMessage] = useState('')
+  const [maintenanceEstimatedEnd, setMaintenanceEstimatedEnd] = useState('')
   const [configLoading, setConfigLoading] = useState(false)
 
   const [merch, setMerch] = useState([])
@@ -227,6 +230,9 @@ const AdminPage = () => {
       if (configData.harga_cheki_grup) setHargaGrup(configData.harga_cheki_grup)
       if (configData.harga_ots_per_member) setHargaOtsPerMember(configData.harga_ots_per_member)
       if (configData.harga_ots_grup) setHargaOtsGrup(configData.harga_ots_grup)
+      setMaintenanceMode(configData.maintenance_mode === 'true' || configData.maintenance_mode === true)
+      if (configData.maintenance_message !== undefined) setMaintenanceMessage(configData.maintenance_message || '')
+      if (configData.maintenance_estimated_end !== undefined) setMaintenanceEstimatedEnd(configData.maintenance_estimated_end || '')
     } catch (error) {
       console.error(error)
     }
@@ -316,6 +322,34 @@ const AdminPage = () => {
     }
   }
 
+  const handlePurgeOldPayments = async () => {
+    const result = await Swal.fire({
+      title: 'Bersihkan Bukti Pembayaran Lama?',
+      text: 'Semua foto bukti bayar dari order yang usianya sudah lebih dari 30 hari akan dihapus dari Supabase Storage untuk menghemat kuota. Riwayat pesanan tetap tersimpan di database.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#f59e0b',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ya, Bersihkan Sekarang',
+      cancelButtonText: 'Batal'
+    })
+
+    if (!result.isConfirmed) return
+
+    try {
+      const response = await api.post('/orders/purge-old-payments')
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: response.data.message,
+        confirmButtonColor: '#079108'
+      })
+      fetchOrders()
+    } catch (error) {
+      Swal.fire('Error!', error.response?.data?.error || error.message, 'error')
+    }
+  }
+
   const handleEditEvent = (event) => {
     setEditingEvent(event)
     setShowEventModal(true)
@@ -375,11 +409,15 @@ const AdminPage = () => {
     }
   }
 
-  const updateConfig = async (updates) => {
+  const updateConfig = async (updates, silent = false) => {
     try {
       setConfigLoading(true)
       await api.patch('/config', updates)
-      Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Konfigurasi berhasil diupdate', confirmButtonColor: '#079108' })
+      if (!silent) {
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Konfigurasi berhasil diupdate', confirmButtonColor: '#079108' })
+      } else {
+        showToast.success('Pengaturan diperbarui')
+      }
       fetchConfig()
     } catch (error) {
       Swal.fire({ icon: 'error', title: 'Gagal!', text: error.response?.data?.error || 'Gagal update konfigurasi', confirmButtonColor: '#079108' })
@@ -736,7 +774,6 @@ const AdminPage = () => {
             onDeleteOrder={handleDeleteOrder}
             onStatusChange={handleStatusChange}
             onShowOTSModal={() => setShowOTSModal(true)}
-            onShowBulkDeleteModal={() => setShowBulkDeleteModal(true)}
             onExportExcel={handleExportExcel}
             onExportPdf={handleExportPdf}
             merchOrders={merchOrders}
@@ -824,8 +861,16 @@ const AdminPage = () => {
             setHargaOtsPerMember={setHargaOtsPerMember}
             hargaOtsGrup={hargaOtsGrup}
             setHargaOtsGrup={setHargaOtsGrup}
+            maintenanceMode={maintenanceMode}
+            setMaintenanceMode={setMaintenanceMode}
+            maintenanceMessage={maintenanceMessage}
+            setMaintenanceMessage={setMaintenanceMessage}
+            maintenanceEstimatedEnd={maintenanceEstimatedEnd}
+            setMaintenanceEstimatedEnd={setMaintenanceEstimatedEnd}
             configLoading={configLoading}
             updateConfig={updateConfig}
+            onShowBulkDeleteModal={() => setShowBulkDeleteModal(true)}
+            onPurgeOldPayments={handlePurgeOldPayments}
           />
         )}
 

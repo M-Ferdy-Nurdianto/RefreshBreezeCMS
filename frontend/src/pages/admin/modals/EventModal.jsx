@@ -4,6 +4,11 @@ import { FaTimes } from 'react-icons/fa'
 import api from '../../../lib/api'
 import { formatMemberName } from '../../../lib/memberUtils'
 import { showToast } from '../../../lib/toast'
+import CustomSelect from '../components/CustomSelect'
+
+const monthList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+const monthShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+const monthOptions = monthShort.map((m, i) => ({ value: monthList[i], label: m }))
 
 const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
   const isEditingSpecial = editingEvent?.is_special === true || editingEvent?.type === 'special'
@@ -140,17 +145,12 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
                 className="w-full px-3 py-2 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
                 min="1" max="31" required
               />
-              <select
+              <CustomSelect
+                options={monthOptions}
                 value={formData.bulan}
-                onChange={(e) => setFormData({...formData, bulan: e.target.value})}
-                className="w-full px-3 py-2 bg-[#182032] border border-white/10 text-white rounded-xl text-xs focus:outline-none focus:border-[#079108]"
-                required
-              >
-                <option value="">Bulan</option>
-                {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => (
-                  <option key={m} value={['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][i]}>{m}</option>
-                ))}
-              </select>
+                onChange={(e) => setFormData({ ...formData, bulan: e.target.value })}
+                placeholder="Bulan"
+              />
               <input
                 type="number"
                 placeholder="Tahun"

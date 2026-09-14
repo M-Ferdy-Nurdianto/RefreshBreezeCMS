@@ -22,12 +22,12 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
        initial={{ opacity: 0, y: 30 }}
        animate={{ opacity: 1, y: 0 }}
        transition={{ delay: idx * 0.1 }}
-       whileHover={inLineup ? { y: -8, scale: 1.02 } : {}}
-       className={`group relative aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden ${inLineup ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+       whileHover={inLineup ? { y: -6 } : {}}
+       className={`group relative aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden transition-all duration-300 ${inLineup ? 'cursor-pointer hover:shadow-[0_12px_35px_rgba(7,145,8,0.35)]' : 'cursor-not-allowed'}`}
        onClick={handleClick}
        style={{
-         boxShadow: inLineup ? `0 4px 30px ${accentColor}25` : 'none',
-         border: `1px solid ${inLineup ? accentColor + '30' : 'rgba(200,200,200,0.15)'}`
+         boxShadow: inLineup ? `0 4px 20px ${accentColor}25` : 'none',
+         border: `1px solid ${inLineup ? accentColor + '40' : 'rgba(200,200,200,0.15)'}`
        }}
     >
       {/* Photo — fills the entire card edge-to-edge */}
@@ -35,7 +35,7 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
         <img 
            src={getMemberImage(member)}
            alt={member.nama_panggung} 
-           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+           className="w-full h-full object-cover object-top transition-all duration-500 group-hover:brightness-105"
         />
         {/* Gradient: blend photo into info section */}
         <div 
@@ -46,10 +46,15 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
         />
       </div>
 
+      {/* Hologram Shimmer Sweep */}
+      {inLineup && (
+        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-10" />
+      )}
+
       {/* Hover glow ring */}
       <div 
         className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ boxShadow: `inset 0 0 60px ${accentColor}25` }}
+        style={{ boxShadow: `inset 0 0 50px ${accentColor}40, 0 0 25px ${accentColor}50` }}
       />
 
       {/* Info section — floating over the gradient at the bottom */}

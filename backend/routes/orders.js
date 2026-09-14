@@ -2,6 +2,7 @@ import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
 import ExcelJS from 'exceljs'
+import { deletePaymentProofFiles } from '../utils/storageCleaner.js'
 
 const router = express.Router()
 
@@ -100,6 +101,17 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // POST: Create new order (from customer)
 router.post('/', async (req, res) => {
   try {
+    // Check maintenance mode
+    const { data: mtConfig } = await supabase
+      .from('config')
+      .select('value')
+      .eq('key', 'maintenance_mode')
+      .maybeSingle()
+
+    if (mtConfig && (mtConfig.value === 'true' || mtConfig.value === true)) {
+      return res.status(503).json({ error: 'Sistem sedang dalam pemeliharaan. Transaksi saat ini belum dapat diproses.' })
+    }
+
     const { event_id, nama_lengkap, kontak, items, payment_proof_url, catatan } = req.body
 
     // Validate event_id
@@ -577,14 +589,14 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   }
 })
 
-// DELETE: Bulk delete orders with filters
+// DELETE: Bulk delete orders with filters (Clean DB + Purge Storage Files)
 router.post('/bulk-delete', authMiddleware, async (req, res) => {
   try {
     const { deleteType, eventId, weeks, months } = req.body
 
     console.log('[Orders] Bulk delete request:', { deleteType, eventId, weeks, months })
 
-    let query = supabase.from('orders').select('id')
+    let query = supabase.from('orders').select('id, payment_proof_url')
 
     // Apply filters based on delete type
     if (deleteType === 'event' && eventId) {
@@ -607,12 +619,20 @@ router.post('/bulk-delete', authMiddleware, async (req, res) => {
     if (selectError) throw selectError
 
     if (!ordersToDelete || ordersToDelete.length === 0) {
-      return res.json({ success: true, message: 'No orders to delete', count: 0 })
+      return res.json({ success: true, message: 'Tidak ada data order yang perlu dihapus', count: 0 })
     }
 
     const orderIds = ordersToDelete.map(o => o.id)
+    const paymentUrls = ordersToDelete
+      .map(o => o.payment_proof_url)
+      .filter(url => url && (url.startsWith('http://') || url.startsWith('https://')))
 
-    // Delete order_items first (foreign key constraint)
+    // 1. Purge physical files from Supabase Storage
+    if (paymentUrls.length > 0) {
+      await deletePaymentProofFiles(paymentUrls, 'payment-proofs')
+    }
+
+    // 2. Delete order_items first (foreign key constraint)
     const { error: itemsError } = await supabase
       .from('order_items')
       .delete()
@@ -620,7 +640,7 @@ router.post('/bulk-delete', authMiddleware, async (req, res) => {
 
     if (itemsError) throw itemsError
 
-    // Delete orders
+    // 3. Delete orders
     const { error: ordersError } = await supabase
       .from('orders')
       .delete()
@@ -628,15 +648,63 @@ router.post('/bulk-delete', authMiddleware, async (req, res) => {
 
     if (ordersError) throw ordersError
 
-    console.log(`[Orders] Deleted ${ordersToDelete.length} orders`)
+    console.log(`[Orders] Cleaned ${ordersToDelete.length} orders and purged payment storage files`)
 
     res.json({
       success: true,
-      message: `Successfully deleted ${ordersToDelete.length} orders`,
+      message: `Berhasil menghapus ${ordersToDelete.length} data order & membersihkan file penyimpanan bukti bayar`,
       count: ordersToDelete.length
     })
   } catch (error) {
     console.error('Error bulk deleting orders:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// POST: Purge old payment proof images (> 1 month / 30 days) from Supabase Storage
+router.post('/purge-old-payments', authMiddleware, async (req, res) => {
+  try {
+    const oneMonthAgo = new Date()
+    oneMonthAgo.setDate(oneMonthAgo.getDate() - 30)
+
+    // Find orders created more than 30 days ago that still have payment_proof_url
+    const { data: oldOrders, error: fetchErr } = await supabase
+      .from('orders')
+      .select('id, payment_proof_url')
+      .lte('created_at', oneMonthAgo.toISOString())
+      .not('payment_proof_url', 'is', null)
+
+    if (fetchErr) throw fetchErr
+
+    if (!oldOrders || oldOrders.length === 0) {
+      return res.json({ success: true, message: 'Tidak ada file bukti pembayaran lama (> 1 bulan) yang perlu dibersihkan', count: 0 })
+    }
+
+    const paymentUrls = oldOrders
+      .map(o => o.payment_proof_url)
+      .filter(url => url && (url.startsWith('http://') || url.startsWith('https://')))
+
+    // 1. Remove from storage
+    const { deletedCount } = await deletePaymentProofFiles(paymentUrls, 'payment-proofs')
+
+    // 2. Set payment_proof_url = null in DB to free reference
+    const orderIds = oldOrders.map(o => o.id)
+    const { error: updateErr } = await supabase
+      .from('orders')
+      .update({ payment_proof_url: null })
+      .in('id', orderIds)
+
+    if (updateErr) throw updateErr
+
+    console.log(`[StorageCleaner] Purged ${deletedCount} old payment files from orders > 30 days`)
+
+    res.json({
+      success: true,
+      message: `Berhasil membersihkan ${deletedCount} file bukti pembayaran dari pesanan yang lewat 1 bulan`,
+      count: deletedCount
+    })
+  } catch (error) {
+    console.error('Error purging old payments:', error)
     res.status(500).json({ error: error.message })
   }
 })

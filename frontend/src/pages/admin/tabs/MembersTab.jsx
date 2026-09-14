@@ -712,9 +712,10 @@ const MembersTab = ({ members = [], onRefresh }) => {
                   type="text"
                   value={formData.tagline}
                   onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                  placeholder="Contoh: Pemalu, Penasaran"
+                  placeholder="Contoh: Morning Breeze, Forest Breeze"
                   className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-500 text-xs focus:outline-none focus:border-[#079108]"
                 />
+                <span className="text-[10px] text-zinc-500 mt-1 block">Konsep tema elemen member (e.g. Morning Breeze, Forest Breeze).</span>
               </div>
             </div>
 

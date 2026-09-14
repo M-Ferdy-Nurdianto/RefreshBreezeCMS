@@ -43,6 +43,8 @@ if %errorlevel% neq 0 (
         goto wait_docker
     )
     echo Docker engine is ready!
+    echo Memberi jeda sejenak agar daemon Docker benar-benar stabil...
+    timeout /t 3 /nobreak >nul
 ) else (
     echo Docker is already running.
 )
@@ -51,11 +53,17 @@ echo.
 echo [3/5] Starting Supabase Local Environment...
 call npx supabase status >nul 2>&1
 if %errorlevel% neq 0 (
+    echo Menjalankan Supabase start...
     call npx supabase start
     if !errorlevel! neq 0 (
-        echo [ERROR] Failed to start Supabase. Please check Docker and try again.
-        pause
-        exit /b !errorlevel!
+        echo [ERROR] Gagal menyalakan Supabase, mencoba sekali lagi setelah jeda 3 detik...
+        timeout /t 3 /nobreak >nul
+        call npx supabase start
+        if !errorlevel! neq 0 (
+            echo [ERROR] Failed to start Supabase. Please check Docker and try again.
+            pause
+            exit /b !errorlevel!
+        )
     )
 ) else (
     echo Supabase local environment is already running!

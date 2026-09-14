@@ -63,20 +63,23 @@ const ChekiSection = ({
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.2 }}
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.5 }}
-          className="relative w-full h-56 sm:h-64 md:h-72 lg:h-96 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 group cursor-pointer"
+          whileHover={{ y: -6 }}
+          transition={{ duration: 0.3 }}
+          className="relative w-full h-56 sm:h-64 md:h-72 lg:h-96 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 hover:shadow-[0_15px_40px_rgba(7,145,8,0.4)] group cursor-pointer border border-emerald-500/20 hover:border-emerald-500/60 transition-all duration-300"
           onClick={handleGroupClick}
       >
           <div className="absolute inset-0">
               <img 
                  src={getAssetPath('/images/members/group.webp')} 
                  alt="Group Cheki" 
-                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                 className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#079108]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#079108]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
+          
+          {/* Hologram Shimmer Sweep */}
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-10" />
           
           <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-center items-start z-10">
               <motion.div 

@@ -3,9 +3,11 @@ import { FaPlus, FaEdit, FaTrash, FaArrowLeft, FaCalendarAlt, FaClock, FaMapMark
 import api from '../../../lib/api'
 import { formatMemberName } from '../../../lib/memberUtils'
 import { showToast } from '../../../lib/toast'
+import CustomSelect from '../components/CustomSelect'
 
 const monthList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 const monthShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+const monthOptions = monthShort.map((m, i) => ({ value: monthList[i], label: m }))
 const presetColors = ['#FF6B9D', '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6']
 
 const emptyForm = {
@@ -21,6 +23,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
   const [eventType, setEventType] = useState('regular')
   const [formData, setFormData] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [hideOlderThanMonth, setHideOlderThanMonth] = useState(true)
 
   const checkEventDate = (event) => {
     const months = {
@@ -37,6 +40,22 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
     if (event.is_past) return true
     return checkEventDate(event)
   }
+
+  const isEventOlderThanMonth = (event) => {
+    if (event.is_older_than_month !== undefined) return event.is_older_than_month
+    const months = {
+      'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+      'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+    }
+    const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal)
+    const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    return eventDate < oneMonthAgo
+  }
+
+  const displayedEvents = events.filter(e => {
+    if (hideOlderThanMonth && isEventOlderThanMonth(e)) return false
+    return true
+  })
 
   const openCreateForm = () => {
     setEditingEvent(null)
@@ -186,17 +205,12 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                   className="w-full px-3 py-2.5 bg-[#182032] border border-white/10 text-white rounded-xl placeholder-zinc-600 text-sm focus:outline-none focus:border-[#079108]"
                   min="1" max="31" required
                 />
-                <select
+                <CustomSelect
+                  options={monthOptions}
                   value={formData.bulan}
                   onChange={(e) => setFormData({ ...formData, bulan: e.target.value })}
-                  className="w-full px-3 py-2.5 bg-[#182032] border border-white/10 text-white rounded-xl text-sm focus:outline-none focus:border-[#079108]"
-                  required
-                >
-                  <option value="">Bulan</option>
-                  {monthShort.map((m, i) => (
-                    <option key={m} value={monthList[i]}>{m}</option>
-                  ))}
-                </select>
+                  placeholder="Bulan"
+                />
                 <input
                   type="number"
                   placeholder="Tahun"
@@ -335,22 +349,37 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">Event <span className="text-[#079108]">Management</span></h2>
           <p className="text-xs text-zinc-400 font-medium">Kelola event, jadwal perform, dan lineup member.</p>
         </div>
-        <button
-          onClick={openCreateForm}
-          className="bg-[#079108] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#067a07] transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(7,145,8,0.3)] active:scale-95"
-        >
-          <FaPlus /> Tambah Event
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setHideOlderThanMonth(prev => !prev)}
+            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+              hideOlderThanMonth
+                ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                : 'bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white'
+            }`}
+            title="Event yang sudah lebih dari 1 bulan disembunyikan otomatis untuk menjaga performa"
+          >
+            <span>{hideOlderThanMonth ? 'Sembunyikan > 1 Bln: Aktif' : 'Tampilkan Semua Event'}</span>
+          </button>
+          <button
+            onClick={openCreateForm}
+            className="bg-[#079108] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#067a07] transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(7,145,8,0.3)] active:scale-95"
+          >
+            <FaPlus /> Tambah Event
+          </button>
+        </div>
       </div>
 
       {/* Mobile Card List (< md) */}
       <div className="md:hidden space-y-3">
-        {events.length === 0 ? (
+        {displayedEvents.length === 0 ? (
           <div className="bg-[#111726]/90 rounded-2xl border border-white/10 p-8 text-center text-zinc-400 text-xs">
-            Belum ada event
+            {events.length > 0 && hideOlderThanMonth
+              ? 'Semua event tersimpan sudah lebih dari 1 bulan dan disembunyikan. Klik tombol di atas untuk menampilkan.'
+              : 'Belum ada event'}
           </div>
         ) : (
-          events.map((event) => {
+          displayedEvents.map((event) => {
             const pastByDate = checkEventDate(event)
             const past = isEventPast(event)
             const visibleLineupCount = event.event_lineup?.filter(el => el.members?.member_id !== 'piya').length || 0
@@ -462,12 +491,16 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-sm text-zinc-200">
-              {events.length === 0 ? (
+              {displayedEvents.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-12 text-zinc-400">Belum ada event</td>
+                  <td colSpan="6" className="text-center py-12 text-zinc-400">
+                    {events.length > 0 && hideOlderThanMonth
+                      ? 'Semua event tersimpan sudah lebih dari 1 bulan dan disembunyikan. Klik tombol "Tampilkan Semua Event" di atas untuk melihat.'
+                      : 'Belum ada event'}
+                  </td>
                 </tr>
               ) : (
-                events.map((event) => {
+                displayedEvents.map((event) => {
                   const pastByDate = checkEventDate(event)
                   const past = isEventPast(event)
                   const visibleLineupCount = event.event_lineup?.filter(el => el.members?.member_id !== 'piya').length || 0

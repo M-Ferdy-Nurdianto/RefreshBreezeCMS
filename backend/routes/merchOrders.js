@@ -79,6 +79,17 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // POST create merch order (public)
 router.post('/', async (req, res) => {
   try {
+    // Check maintenance mode
+    const { data: mtConfig } = await supabase
+      .from('config')
+      .select('value')
+      .eq('key', 'maintenance_mode')
+      .maybeSingle()
+
+    if (mtConfig && (mtConfig.value === 'true' || mtConfig.value === true)) {
+      return res.status(503).json({ error: 'Sistem sedang dalam pemeliharaan. Transaksi merchandise saat ini belum dapat diproses.' })
+    }
+
     const { nama_lengkap, whatsapp, instagram, catatan, items, payment_proof_url } = req.body
 
     if (!whatsapp) {

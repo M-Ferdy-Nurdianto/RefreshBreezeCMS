@@ -2,9 +2,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaChevronRight, FaPlus, FaMinus, FaCamera, FaSpinner, 
   FaUniversity, FaRegCopy, FaCheckCircle, FaTrash, 
-  FaInstagram, FaDownload, FaWhatsapp 
+  FaInstagram, FaDownload, FaWhatsapp, FaChevronDown 
 } from 'react-icons/fa'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import DigitalReceipt from './DigitalReceipt'
 import imageCompression from 'browser-image-compression'
 
@@ -122,9 +122,20 @@ const CheckoutProcess = ({
   events = [], submitting, uploading, merchSubmitting, merchUploading, handleSubmit, handleMerchSubmit,
   receiptData, merchReceiptData, payment, copied, setCopied, fileInputRef, merchFileInputRef
 }) => {
+  const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
+  const eventDropdownRef = useRef(null)
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (eventDropdownRef.current && !eventDropdownRef.current.contains(e.target)) {
+        setEventDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
-
+  const selectedEventObj = events.find(ev => ev.id === formData.event_id)
   const copyToClipboard = (text) => {
     if (!text) return
     navigator.clipboard.writeText(text)
@@ -158,28 +169,28 @@ const CheckoutProcess = ({
     const data = step === 3 ? receiptData : merchReceiptData;
     
     return (
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-4xl mx-auto text-center space-y-6 pt-8 pb-4 px-4">
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-4xl mx-auto text-center space-y-4 pt-2 pb-0 px-4">
         <div className="relative inline-block">
-          <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-white text-3xl shadow-2xl shadow-emerald-500/40 relative z-10 animate-bounce"><FaCheckCircle /></div>
+          <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center text-white text-2xl shadow-2xl shadow-emerald-500/40 relative z-10 animate-bounce"><FaCheckCircle /></div>
           <div className="absolute inset-0 bg-emerald-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
         </div>
         
         <div className="space-y-1">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white">Terima Kasih!</h2>
+          <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white">Terima Kasih!</h2>
           <p className="text-xs text-gray-500 font-bold leading-relaxed">Pesanan kamu sudah diterima oleh <span className="text-emerald-600">Refresh Breeze</span>.</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <DigitalReceipt data={data} payment={payment} isPreview />
           
-          <div className="max-w-md mx-auto space-y-4">
+          <div className="max-w-md mx-auto space-y-3">
             {/* WhatsApp Channel Info Button */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <a 
                 href="https://whatsapp.com/channel/0029VbDVjJzDJ6GwgUQ9cP32"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all group border border-emerald-400/30"
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white py-3.5 px-6 rounded-2xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all group border border-emerald-400/30"
               >
                 <FaWhatsapp className="text-xl text-emerald-200 group-hover:scale-110 transition-transform" />
                 <span>Gabung Channel WhatsApp</span>
@@ -190,12 +201,12 @@ const CheckoutProcess = ({
             </div>
 
             {/* IG Story Button */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <a 
                 href="https://instagram.com/refreshbreeze"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:from-purple-500 hover:to-orange-400 text-white py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:from-purple-500 hover:to-orange-400 text-white py-3.5 px-6 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <FaInstagram className="text-lg" /> Post Nota ke IG Story
               </a>
@@ -206,7 +217,7 @@ const CheckoutProcess = ({
           </div>
         </div>
 
-        <button type="button" onClick={() => setStep(1)} className="text-emerald-600 font-black uppercase tracking-widest text-[10px] hover:tracking-[0.2em] transition-all flex items-center gap-2 mx-auto group pt-2 pb-8">
+        <button type="button" onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-emerald-600 font-black uppercase tracking-widest text-[10px] hover:tracking-[0.2em] transition-all flex items-center gap-2 mx-auto group pt-1 pb-2">
           Lanjut ke Shop <FaChevronRight className="text-[8px] group-hover:translate-x-1 transition-transform" />
         </button>
       </motion.div>
@@ -246,21 +257,71 @@ const CheckoutProcess = ({
                 <InternalPaymentInfo payment={payment} copyToClipboard={copyToClipboard} copied={copied} />
                 <form onSubmit={step === 2 ? handleSubmit : handleMerchSubmit} className="space-y-6">
                     {step === 2 && events.length > 0 && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 relative z-30" ref={eventDropdownRef}>
                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Jadwal Event *</label>
-                        <select
-                          value={formData.event_id || ''}
-                          onChange={(e) => setFormData({...formData, event_id: e.target.value})}
-                          className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-6 py-3.5 font-bold outline-none text-xs text-gray-900 dark:text-white shadow-sm"
-                          required
+                        
+                        <div 
+                          onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
+                          className={`w-full bg-gray-50/70 dark:bg-white/5 border transition-all cursor-pointer rounded-2xl px-6 py-3.5 flex items-center justify-between shadow-sm ${
+                            eventDropdownOpen 
+                              ? 'border-emerald-500 bg-white dark:bg-[#162035] ring-4 ring-emerald-500/10' 
+                              : 'border-gray-200 dark:border-white/10 hover:border-emerald-300 dark:hover:border-white/20'
+                          }`}
                         >
-                          <option value="" disabled>-- Pilih Jadwal Event --</option>
-                          {events.map((ev) => (
-                            <option key={ev.id} value={ev.id} className="bg-white dark:bg-[#162035] text-gray-900 dark:text-white">
-                              {ev.nama} ({ev.tanggal} {ev.bulan} {ev.tahun})
-                            </option>
-                          ))}
-                        </select>
+                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                            <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full shrink-0 ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                            <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                              {selectedEventObj 
+                                ? selectedEventObj.nama 
+                                : '-- PILIH JADWAL EVENT --'
+                              }
+                            </span>
+                          </div>
+                          <FaChevronDown className={`text-gray-400 text-xs sm:text-sm shrink-0 transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+                        </div>
+
+                        <AnimatePresence>
+                          {eventDropdownOpen && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }} 
+                              animate={{ opacity: 1, y: 0 }} 
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#162035] rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50 dark:border-white/10"
+                            >
+                              <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
+                                {events.map((ev) => {
+                                  const isSelected = formData.event_id === ev.id
+                                  return (
+                                    <div 
+                                      key={ev.id}
+                                      onClick={() => {
+                                        setFormData({ ...formData, event_id: ev.id })
+                                        setEventDropdownOpen(false)
+                                      }}
+                                      className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${
+                                        isSelected ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'hover:bg-gray-50 dark:hover:bg-white/5'
+                                      }`}
+                                    >
+                                      <div className="flex flex-col">
+                                        <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${
+                                          isSelected ? 'text-[#079108] dark:text-emerald-400' : 'text-gray-900 dark:text-white'
+                                        }`}>
+                                          {ev.nama}
+                                        </span>
+                                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                                          {ev.tanggal} {ev.bulan} {ev.tahun}
+                                        </span>
+                                      </div>
+                                      {isSelected && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] shrink-0 ml-2" />
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

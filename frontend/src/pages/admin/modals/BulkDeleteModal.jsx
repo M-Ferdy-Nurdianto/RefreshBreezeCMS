@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Swal from 'sweetalert2'
 import { FaTimes, FaTrash } from 'react-icons/fa'
+import CustomSelect from '../components/CustomSelect'
 
 const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
   const [deleteType, setDeleteType] = useState('all')
@@ -14,7 +15,7 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
 
     switch (deleteType) {
       case 'all':
-        confirmText = 'Hapus SEMUA data pembelian? Ini akan menghapus seluruh orders dan tidak bisa dikembalikan!'
+        confirmText = 'Hapus SEMUA data pembelian (Reset 0)? Tindakan ini akan mengosongkan tabel order DAN menghapus seluruh file foto bukti pembayaran dari Supabase Storage secara permanen!'
         break
       case 'event':
         if (!selectedEventId) {
@@ -22,7 +23,7 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
           return
         }
         const event = events.find(e => e.id === selectedEventId)
-        confirmText = `Hapus semua data pembelian dari event "${event?.nama}"?`
+        confirmText = `Hapus semua data pembelian dari event "${event?.nama}"? Seluruh order terkait dan file foto bukti bayar di Supabase Storage akan dihapus bersih!`
         params = { eventId: selectedEventId }
         break
       case 'weeks':
@@ -74,16 +75,16 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
             <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
               Pilih Opsi Penghapusan
             </label>
-            <select
+            <CustomSelect
+              options={[
+                { value: 'all', label: 'Hapus Semua Data' },
+                { value: 'event', label: 'Hapus Per Event' },
+                { value: 'weeks', label: 'Hapus Per Minggu' },
+                { value: 'months', label: 'Hapus Per Bulan' }
+              ]}
               value={deleteType}
               onChange={(e) => setDeleteType(e.target.value)}
-              className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-red-500 focus:outline-none"
-            >
-              <option value="all">Hapus Semua Data</option>
-              <option value="event">Hapus Per Event</option>
-              <option value="weeks">Hapus Per Minggu</option>
-              <option value="months">Hapus Per Bulan</option>
-            </select>
+            />
           </div>
 
           {deleteType === 'event' && (
@@ -91,18 +92,15 @@ const BulkDeleteModal = ({ events, onClose, onConfirm }) => {
               <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
                 Pilih Event
               </label>
-              <select
+              <CustomSelect
+                options={events.map((event) => ({
+                  value: event.id,
+                  label: `${event.nama} - ${event.bulan} ${event.tahun}`
+                }))}
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-red-500 focus:outline-none"
-              >
-                <option value="">-- Pilih Event --</option>
-                {events.map((event) => (
-                  <option key={event.id} value={event.id}>
-                    {event.nama} - {event.bulan} {event.tahun}
-                  </option>
-                ))}
-              </select>
+                placeholder="-- Pilih Event --"
+              />
             </div>
           )}
 

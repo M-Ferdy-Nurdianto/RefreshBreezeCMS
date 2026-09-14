@@ -28,7 +28,6 @@ const OrdersTab = ({
   onDeleteOrder,
   onStatusChange,
   onShowOTSModal,
-  onShowBulkDeleteModal,
   onExportExcel,
   onExportPdf,
   merchOrders,
@@ -214,12 +213,6 @@ const OrdersTab = ({
           >
             <FaFileExcel /> Export Data
           </button>
-          <button
-            onClick={onShowBulkDeleteModal}
-            className="bg-red-500/10 border border-red-500/20 text-red-400 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-red-500/20 hover:text-red-300 transition-colors flex items-center gap-2"
-          >
-            <FaTrash /> Hapus Data
-          </button>
         </div>
       </div>
 
@@ -318,17 +311,18 @@ const OrdersTab = ({
               onKeyDown={e => e.key === 'Enter' && onFetchMerchOrders()}
               className="px-4 py-2 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-[#079108] flex-1 min-w-[180px]"
             />
-            <select
+            <CustomSelect
+              options={[
+                { value: 'all', label: 'Semua Status' },
+                { value: 'pending', label: 'Pending' },
+                { value: 'checked', label: 'Checked' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' }
+              ]}
               value={merchOrderStatusFilter}
               onChange={e => setMerchOrderStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-[#079108]"
-            >
-              <option value="all">Semua Status</option>
-              <option value="pending">Pending</option>
-              <option value="checked">Checked</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+              className="min-w-[140px]"
+            />
             <button onClick={onFetchMerchOrders} className="bg-[#079108] text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-[#067a07]">Cari</button>
           </div>
           <div className="bg-[#111726]/90 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">

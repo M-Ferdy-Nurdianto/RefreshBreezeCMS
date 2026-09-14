@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaFilePdf, FaFileExcel, FaCalendarAlt, FaTicketAlt, FaLayerGroup, FaTimes, FaCheck, FaDownload } from 'react-icons/fa'
+import CustomSelect from '../pages/admin/components/CustomSelect'
 
 const ExportModal = memo(({ isOpen, onClose, onExport, events = [] }) => {
   const [format, setFormat] = useState('excel') // 'excel' | 'pdf'
@@ -159,17 +160,15 @@ const ExportModal = memo(({ isOpen, onClose, onExport, events = [] }) => {
 
                     {scope === 'event' && (
                       <div className="px-3 pb-3 pt-0">
-                        <select
+                        <CustomSelect
+                          options={events.map((ev) => ({
+                            value: ev.id,
+                            label: `${ev.nama} (${ev.tanggal} ${ev.bulan} ${ev.tahun})`
+                          }))}
                           value={selectedEventId}
                           onChange={(e) => setSelectedEventId(e.target.value)}
-                          className="w-full bg-[#182032] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-[#079108] focus:outline-none"
-                        >
-                          {events.map((ev) => (
-                            <option key={ev.id} value={ev.id}>
-                              {ev.nama} ({ev.tanggal} {ev.bulan} {ev.tahun})
-                            </option>
-                          ))}
-                        </select>
+                          placeholder="Pilih Event"
+                        />
                       </div>
                     )}
                   </div>

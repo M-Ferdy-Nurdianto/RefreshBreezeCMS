@@ -45,8 +45,17 @@ fix_database.sql
 *.bak
 *.tmp
 
-# Database dumps
+# Database dumps & dump folders
 *.sql.backup
 *.dump
+dump/
 
 vercel-env-import.txt
+
+# Non-essential markdown documentation (keep only README.md)
+ARCHITECTURE.md
+CHANGELOG.md
+CLAUDE.md
+CONTRIBUTING.md
+SECURITY.md
+TODO.md

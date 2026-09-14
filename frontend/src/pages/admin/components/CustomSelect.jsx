@@ -121,7 +121,9 @@ const CustomSelect = ({
             : `cursor-pointer ${getStatusStyle(value)} ${className}`
         }`}
       >
-        <span className="truncate">{selectedOption?.label || value}</span>
+        <span className={`truncate ${!value ? 'text-zinc-400' : ''}`}>
+          {selectedOption?.label || (value ? value : placeholder)}
+        </span>
         <FaChevronDown className={`text-[10px] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 

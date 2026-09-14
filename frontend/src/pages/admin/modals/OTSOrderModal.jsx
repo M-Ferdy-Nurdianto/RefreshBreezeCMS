@@ -3,6 +3,7 @@ import Swal from 'sweetalert2'
 import { FaTimes } from 'react-icons/fa'
 import api from '../../../lib/api'
 import { formatMemberName } from '../../../lib/memberUtils'
+import CustomSelect from '../components/CustomSelect'
 
 const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember = 25000, hargaOtsGrup = 30000 }) => {
   const [formData, setFormData] = useState({
@@ -88,14 +89,8 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">Pilih Event *</label>
-                <select
-                  value={formData.event_id}
-                  onChange={(e) => setFormData({...formData, event_id: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-[#182032] border border-white/10 text-white text-xs rounded-xl focus:border-[#079108] focus:outline-none"
-                  required
-                >
-                  <option value="">-- Pilih Event *--</option>
-                  {events.filter(event => {
+                <CustomSelect
+                  options={events.filter(event => {
                     if (event.is_special) return false;
                     if (event.is_past) return false;
                     const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
@@ -103,12 +98,14 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     return eventDate >= today;
-                  }).map(event => (
-                    <option key={event.id} value={event.id}>
-                      {event.nama} - {event.tanggal} {event.bulan} {event.tahun}
-                    </option>
-                  ))}
-                </select>
+                  }).map(event => ({
+                    value: event.id,
+                    label: `${event.nama} - ${event.tanggal} ${event.bulan} ${event.tahun}`
+                  }))}
+                  value={formData.event_id}
+                  onChange={(e) => setFormData({...formData, event_id: e.target.value})}
+                  placeholder="-- Pilih Event *--"
+                />
               </div>
 
               <div>

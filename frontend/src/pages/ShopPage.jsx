@@ -147,6 +147,11 @@ const ShopPage = () => {
     fetchData()
   }, [])
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
+
   const payment = { bank: "BCA", rekening: "0902683273", atasNama: "Natasya Angelina Putri" }
 
   const handleMerchFileChange = (e) => {
@@ -159,6 +164,7 @@ const ShopPage = () => {
     if (!merchForm.nama_lengkap.trim()) return alert('Silakan isi nama lengkap kamu')
     if (!merchFile) return alert('Silakan unggah bukti transfer')
     setMerchSubmitting(true); setMerchUploading(true)
+    const startTime = Date.now()
     try {
       const uploadData = new FormData(); uploadData.append('file', merchFile)
       const uploadRes = await api.post('/upload/payment-proof', uploadData)
@@ -171,6 +177,10 @@ const ShopPage = () => {
       }
       const orderRes = await api.post('/merch-orders', orderData)
       if (orderRes.data.success) {
+        const elapsedTime = Date.now() - startTime
+        if (elapsedTime < 2000) {
+          await new Promise(resolve => setTimeout(resolve, 2000 - elapsedTime))
+        }
         setMerchReceiptData({
           orderNumber: orderRes.data.order.order_number, 
           items: cartHook.merchCart.map(i => ({ name: i.nama, quantity: i.quantity, price: i.harga, size: i.size || null, image: i.gambar_url })),
@@ -182,6 +192,7 @@ const ShopPage = () => {
           createdAt: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':').replace(/\//g, '/')
         })
         setMerchOrderSuccess(orderRes.data.order); cartHook.setMerchCart([]); setStep(5)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (error) {
       console.error('Merch order failed:', error); alert('Terjadi kesalahan saat memesan.')
@@ -209,6 +220,7 @@ const ShopPage = () => {
       }
     }
     setSubmitting(true); setUploading(true)
+    const startTime = Date.now()
     try {
       const uploadData = new FormData(); uploadData.append('file', file)
       const uploadRes = await api.post('/upload/payment-proof', uploadData)
@@ -217,6 +229,10 @@ const ShopPage = () => {
       const orderData = { nama_lengkap: formData.nama_panggilan, kontak: formData.kontak, event_id: formData.event_id, items: cartHook.cart, payment_proof_url: uploadRes.data.data.url, catatan: formData.catatan || null }
       const orderRes = await api.post('/orders', orderData)
       if (orderRes.data.success) {
+        const elapsedTime = Date.now() - startTime
+        if (elapsedTime < 2000) {
+          await new Promise(resolve => setTimeout(resolve, 2000 - elapsedTime))
+        }
         setReceiptData({
           orderNumber: orderRes.data.order.order_number, 
           eventName: selectedEvent?.nama || '-', 
@@ -232,6 +248,7 @@ const ShopPage = () => {
           createdAt: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':').replace(/\//g, '/')
         })
         setOrderSuccess(orderRes.data.order); cartHook.setCart([]); setStep(3)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (error) {
       console.error('Order failed:', error); alert('Terjadi kesalahan saat memesan.')
@@ -247,6 +264,10 @@ const ShopPage = () => {
         <FaSpinner className="text-4xl text-[#079108] animate-spin" />
     </div>
   )
+
+  const mainPadding = step === 1 
+    ? 'pb-20 lg:pb-20'  // grid produk + checkout bar sticky butuh clearance besar
+    : 'pb-8 lg:pb-12'   // checkout form & halaman sukses, konten pendek
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 dark:bg-[#090d16] dark:from-[#090d16] dark:via-[#090d16] dark:to-[#090d16] text-gray-900 dark:text-white transition-colors duration-300">
@@ -269,7 +290,7 @@ const ShopPage = () => {
         }} 
       />
       
-      <main className="relative pt-32 pb-44 lg:pb-30 container mx-auto max-w-7xl px-4">
+      <main className={`relative pt-32 ${mainPadding} container mx-auto max-w-7xl px-4`}>
         {step === 1 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
             <div className="lg:col-span-2 space-y-12">

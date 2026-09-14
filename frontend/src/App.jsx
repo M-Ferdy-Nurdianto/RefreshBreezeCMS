@@ -19,6 +19,22 @@ const StoryPage = lazy(() => import('./pages/StoryPage'))
 
 import { ThemeProvider } from './context/ThemeContext'
 import { FlyToCartProvider } from './context/FlyToCartContext'
+import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext'
+import MaintenanceScreen from './components/MaintenanceScreen'
+
+function MaintenanceGuard({ children }) {
+  const { isMaintenance, maintenanceMessage, maintenanceEstimatedEnd, loading } = useMaintenance()
+
+  if (loading) {
+    return <LoadingSpinner />
+  }
+
+  if (isMaintenance) {
+    return <MaintenanceScreen message={maintenanceMessage} estimatedEnd={maintenanceEstimatedEnd} />
+  }
+
+  return children
+}
 
 function App() {
   useEffect(() => {
@@ -33,41 +49,46 @@ function App() {
 
   return (
     <ThemeProvider>
-      <FlyToCartProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        {/* RBToast — custom shop/global notifications (dual-theme, centered) */}
-        <RBToastContainer />
-        {/* Legacy ToastContainer — kept for admin pages */}
-        <ToastContainer
-          position="bottom-center"
-          autoClose={1500}
-          hideProgressBar={true}
-          newestOnTop={true}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-          transition={Zoom}
-          toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
-        />
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/members" element={<MembersPage />} />
-            <Route path="/music" element={<MusicPage />} />
-            <Route path="/media" element={<MediaPage />} />
-            <Route path="/schedule" element={<SchedulePage />} />
-            <Route path="/shop" element={<ShopPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/story" element={<StoryPage />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
-        </Suspense>
-      </Router>
-      </FlyToCartProvider>
+      <MaintenanceProvider>
+        <FlyToCartProvider>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          {/* RBToast — custom shop/global notifications (dual-theme, centered) */}
+          <RBToastContainer />
+          {/* Legacy ToastContainer — kept for admin pages */}
+          <ToastContainer
+            position="bottom-center"
+            autoClose={1500}
+            hideProgressBar={true}
+            newestOnTop={true}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+            transition={Zoom}
+            toastStyle={{ backgroundColor: 'transparent', boxShadow: 'none', padding: 0 }}
+          />
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              {/* Public Routes protected by MaintenanceGuard */}
+              <Route path="/" element={<MaintenanceGuard><HomePage /></MaintenanceGuard>} />
+              <Route path="/members" element={<MaintenanceGuard><MembersPage /></MaintenanceGuard>} />
+              <Route path="/music" element={<MaintenanceGuard><MusicPage /></MaintenanceGuard>} />
+              <Route path="/media" element={<MaintenanceGuard><MediaPage /></MaintenanceGuard>} />
+              <Route path="/schedule" element={<MaintenanceGuard><SchedulePage /></MaintenanceGuard>} />
+              <Route path="/shop" element={<MaintenanceGuard><ShopPage /></MaintenanceGuard>} />
+              <Route path="/faq" element={<MaintenanceGuard><FAQPage /></MaintenanceGuard>} />
+              <Route path="/story" element={<MaintenanceGuard><StoryPage /></MaintenanceGuard>} />
+
+              {/* Admin Portal Routes (Always Accessible) */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminPage />} />
+            </Routes>
+          </Suspense>
+        </Router>
+        </FlyToCartProvider>
+      </MaintenanceProvider>
     </ThemeProvider>
   )
 }
