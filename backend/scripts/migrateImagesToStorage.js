@@ -7,7 +7,11 @@ import { supabase } from '../config/supabase.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const publicImagesDir = path.resolve(__dirname, '../../frontend/public/images')
+const defaultImagesDir = path.resolve(__dirname, '../../frontend/public/images')
+const dumpImagesDir = path.resolve(__dirname, '../../dump')
+const publicImagesDir = fs.existsSync(defaultImagesDir) && fs.readdirSync(defaultImagesDir).length > 0 
+  ? defaultImagesDir 
+  : dumpImagesDir
 
 const mimeTypes = {
   '.webp': 'image/webp',
