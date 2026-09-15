@@ -273,39 +273,39 @@ body.dark-theme textarea::placeholder {
   color: #64748b !important;
 }
 
-html.light input:not([type="checkbox"]):not([type="radio"]),
-html.light textarea,
-body.light-theme input:not([type="checkbox"]):not([type="radio"]),
-body.light-theme textarea {
+html.light :not(.admin-layout):not(.admin-layout *) input:not([type="checkbox"]):not([type="radio"]),
+html.light :not(.admin-layout):not(.admin-layout *) textarea,
+body.light-theme :not(.admin-layout):not(.admin-layout *) input:not([type="checkbox"]):not([type="radio"]),
+body.light-theme :not(.admin-layout):not(.admin-layout *) textarea {
   background-color: #f8fafc !important;
   color: #0f172a !important;
   border-color: #e2e8f0 !important;
 }
 
-html.light input:focus,
-html.light textarea:focus,
-body.light-theme input:focus,
-body.light-theme textarea:focus {
+html.light :not(.admin-layout):not(.admin-layout *) input:focus,
+html.light :not(.admin-layout):not(.admin-layout *) textarea:focus,
+body.light-theme :not(.admin-layout):not(.admin-layout *) input:focus,
+body.light-theme :not(.admin-layout):not(.admin-layout *) textarea:focus {
   background-color: #ffffff !important;
   border-color: #079108 !important;
 }
 
-html.light input::placeholder,
-html.light textarea::placeholder,
-body.light-theme input::placeholder,
-body.light-theme textarea::placeholder {
+html.light :not(.admin-layout):not(.admin-layout *) input::placeholder,
+html.light :not(.admin-layout):not(.admin-layout *) textarea::placeholder,
+body.light-theme :not(.admin-layout):not(.admin-layout *) input::placeholder,
+body.light-theme :not(.admin-layout):not(.admin-layout *) textarea::placeholder {
   color: #94a3b8 !important;
 }
 
 /* Specific card rules for clean light mode fallback */
-html.light .bg-white,
-body.light-theme .bg-white {
+html.light :not(.admin-layout):not(.admin-layout *).bg-white,
+body.light-theme :not(.admin-layout):not(.admin-layout *).bg-white {
   background-color: #ffffff;
   color: #0f172a;
 }
 
-html.light .bg-gray-50,
-body.light-theme .bg-gray-50 {
+html.light :not(.admin-layout):not(.admin-layout *).bg-gray-50,
+body.light-theme :not(.admin-layout):not(.admin-layout *).bg-gray-50 {
   background-color: #f8fafc;
   color: #334155;
 }
@@ -630,6 +630,13 @@ body:has(.admin-layout) .swal2-radio input[type="radio"] {
   outline: none;
 }
 
+.admin-layout .filter-input,
+.admin-layout .filter-select {
+  background-color: #182032 !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 .filter-input:focus, .filter-select:focus {
   @apply border-[#079108] ring-4 ring-[#079108]/10 shadow-md;
 }
@@ -652,6 +659,12 @@ body:has(.admin-layout) .swal2-radio input[type="radio"] {
   background-position: right 0.6rem center;
   background-size: 0.9em;
   padding-right: 1.8rem;
+}
+
+.admin-layout .table-status-select {
+  background-color: #182032 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .table-status-select:hover {

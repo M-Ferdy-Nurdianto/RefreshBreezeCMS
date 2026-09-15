@@ -15,16 +15,18 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const root = document.documentElement
-    if (theme === 'light') {
-      root.classList.remove('dark')
-      root.classList.add('light')
-      document.body.classList.remove('dark-theme')
-      document.body.classList.add('light-theme')
-    } else {
+    const isAdmin = window.location.pathname.startsWith('/admin')
+
+    if (isAdmin || theme === 'dark') {
       root.classList.remove('light')
       root.classList.add('dark')
       document.body.classList.remove('light-theme')
       document.body.classList.add('dark-theme')
+    } else {
+      root.classList.remove('dark')
+      root.classList.add('light')
+      document.body.classList.remove('dark-theme')
+      document.body.classList.add('light-theme')
     }
     localStorage.setItem('rb-theme', theme)
   }, [theme])
