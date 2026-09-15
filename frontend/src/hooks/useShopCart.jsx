@@ -52,10 +52,15 @@ export const useShopCart = (hargaMember, hargaGrup) => {
       ? (member?.image_url || '/images/members/group.webp')
       : getMemberImage(member)
 
+    const itemName = isGroup 
+      ? 'Cheki Group' 
+      : (member.is_secret ? 'Cheki Mystery (Secret Member)' : `Cheki ${member.nama_panggung}`)
+
     const item = {
       id: isGroup ? 'group' : member.id,
       member_id: isGroup ? 'group' : member.id,
-      name: isGroup ? 'Cheki Group' : `Cheki ${member.nama_panggung}`,
+      name: itemName,
+      is_secret: Boolean(member?.is_secret),
       price: isGroup ? hargaGrup : hargaMember,
       quantity: 1,
       image: imageUrl
