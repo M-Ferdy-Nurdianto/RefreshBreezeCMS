@@ -17,7 +17,10 @@ import {
   FaCheck,
   FaInfoCircle,
   FaSave,
-  FaTimes
+  FaTimes,
+  FaUserSecret,
+  FaEyeSlash,
+  FaQuestion
 } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import api from '../../../lib/api'
@@ -95,7 +98,9 @@ const MembersTab = ({ members = [], onRefresh }) => {
     order_index: 0,
     hadir: true,
     image_url: '',
-    shop_image_url: ''
+    shop_image_url: '',
+    is_secret: false,
+    silhouette_image_url: ''
   })
 
   const [gallery, setGallery] = useState(['', '', ''])
@@ -103,6 +108,8 @@ const MembersTab = ({ members = [], onRefresh }) => {
   const [avatarFile, setAvatarFile] = useState(null)
   const [shopAvatarPreview, setShopAvatarPreview] = useState('')
   const [shopAvatarFile, setShopAvatarFile] = useState(null)
+  const [silhouettePreview, setSilhouettePreview] = useState('')
+  const [silhouetteFile, setSilhouetteFile] = useState(null)
 
   const [galleryFiles, setGalleryFiles] = useState([null, null, null])
   const [galleryPreviews, setGalleryPreviews] = useState(['', '', ''])
@@ -110,6 +117,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
 
   const avatarInputRef = useRef(null)
   const shopAvatarInputRef = useRef(null)
+  const silhouetteInputRef = useRef(null)
   const galleryInputRefs = [useRef(null), useRef(null), useRef(null)]
 
   // Open Full Page Editor
@@ -128,7 +136,9 @@ const MembersTab = ({ members = [], onRefresh }) => {
         order_index: member.order_index !== undefined ? member.order_index : 0,
         hadir: member.hadir !== undefined ? member.hadir : true,
         image_url: member.image_url || '',
-        shop_image_url: member.shop_image_url || ''
+        shop_image_url: member.shop_image_url || '',
+        is_secret: Boolean(member.is_secret),
+        silhouette_image_url: member.silhouette_image_url || ''
       })
 
       const initialGallery = [0, 1, 2].map(idx => {
@@ -143,6 +153,9 @@ const MembersTab = ({ members = [], onRefresh }) => {
 
       setShopAvatarPreview(resolveMemberShopImage(member.shop_image_url, member.member_id, member.nama_panggung))
       setShopAvatarFile(null)
+
+      setSilhouettePreview(member.silhouette_image_url || '')
+      setSilhouetteFile(null)
     } else {
       setEditingMember(null)
       setFormData({
@@ -157,7 +170,9 @@ const MembersTab = ({ members = [], onRefresh }) => {
         order_index: members.length,
         hadir: true,
         image_url: '',
-        shop_image_url: ''
+        shop_image_url: '',
+        is_secret: false,
+        silhouette_image_url: ''
       })
       setGallery(['', '', ''])
       setGalleryPreviews(['', '', ''])
@@ -166,6 +181,8 @@ const MembersTab = ({ members = [], onRefresh }) => {
       setAvatarFile(null)
       setShopAvatarPreview('')
       setShopAvatarFile(null)
+      setSilhouettePreview('')
+      setSilhouetteFile(null)
     }
 
     setViewMode('editor')
@@ -177,6 +194,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
     setEditingMember(null)
     setAvatarFile(null)
     setShopAvatarFile(null)
+    setSilhouetteFile(null)
   }
 
   // Upload handler for member profile picture
@@ -194,6 +212,15 @@ const MembersTab = ({ members = [], onRefresh }) => {
     if (file) {
       setShopAvatarFile(file)
       setShopAvatarPreview(URL.createObjectURL(file))
+    }
+  }
+
+  // Upload handler for secret member silhouette teaser
+  const handleSilhouetteChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSilhouetteFile(file)
+      setSilhouettePreview(URL.createObjectURL(file))
     }
   }
 
@@ -243,6 +270,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
     try {
       let finalAvatarUrl = formData.image_url
       let finalShopImageUrl = formData.shop_image_url
+      let finalSilhouetteUrl = formData.silhouette_image_url
 
       // 1. Upload avatar if selected
       if (avatarFile) {
@@ -256,7 +284,13 @@ const MembersTab = ({ members = [], onRefresh }) => {
         finalShopImageUrl = await uploadFile(shopAvatarFile, 'shop')
       }
 
-      // 3. Upload gallery files if selected
+      // 3. Upload silhouette if selected
+      if (silhouetteFile) {
+        showToast.info('Mengunggah foto siluet teaser...')
+        finalSilhouetteUrl = await uploadFile(silhouetteFile, 'silhouette')
+      }
+
+      // 4. Upload gallery files if selected
       const finalGalleryUrls = [...gallery]
       for (let i = 0; i < 3; i++) {
         if (galleryFiles[i]) {
@@ -272,15 +306,70 @@ const MembersTab = ({ members = [], onRefresh }) => {
         ...formData,
         image_url: finalAvatarUrl,
         shop_image_url: finalShopImageUrl,
+        silhouette_image_url: finalSilhouetteUrl,
+        is_secret: Boolean(formData.is_secret),
         gallery: finalGalleryUrls.filter(u => Boolean(u && u.trim()))
       }
 
+      let savedMember = null
       if (isEditing) {
-        await api.patch(`/members/${editingMember.id}`, payload)
+        const res = await api.patch(`/members/${editingMember.id}`, payload)
+        savedMember = res.data?.data || payload
         showToast.success(`Member ${payload.nama_panggung} berhasil diperbarui!`)
       } else {
-        await api.post('/members', payload)
+        const res = await api.post('/members', payload)
+        savedMember = res.data?.data || payload
         showToast.success(`Member ${payload.nama_panggung} berhasil ditambahkan!`)
+      }
+
+      // AUTO-SYNC TO HERO: Pastikan panggung Hero langsung mengenali member ini
+      try {
+        if (!isGroup) {
+          const configRes = await api.get('/config')
+          let heroConfig = configRes.data?.data?.hero_settings
+          if (typeof heroConfig === 'string') {
+            try { heroConfig = JSON.parse(heroConfig) } catch (_) {}
+          }
+          if (heroConfig && Array.isArray(heroConfig.members)) {
+            const memberSlug = String(payload.member_id || '').toLowerCase().trim()
+            const existingIdx = heroConfig.members.findIndex(m => String(m.id).toLowerCase() === memberSlug)
+
+            let heroPhoto = payload.is_secret && finalSilhouetteUrl
+              ? finalSilhouetteUrl
+              : (finalAvatarUrl || getAssetPath('/images/members/placeholder.svg'))
+
+            if (existingIdx >= 0) {
+              heroConfig.members[existingIdx] = {
+                ...heroConfig.members[existingIdx],
+                name: payload.is_secret ? '???' : payload.nama_panggung.toUpperCase(),
+                color: payload.color || heroConfig.members[existingIdx].color,
+                photo: (payload.is_secret && finalSilhouetteUrl) ? finalSilhouetteUrl : (heroConfig.members[existingIdx].photo || heroPhoto)
+              }
+            } else if (payload.hadir !== false) {
+              heroConfig.members.push({
+                id: memberSlug,
+                name: payload.is_secret ? '???' : payload.nama_panggung.toUpperCase(),
+                color: payload.color || 'bg-[#5A8F5A]',
+                photo: heroPhoto,
+                posX: 50,
+                posY: 30,
+                scale: 1.8,
+                translateX: 0,
+                translateY: 0,
+                mobilePosX: 50,
+                mobilePosY: 25,
+                mobileScale: 1.4,
+                mobileTranslateX: 0,
+                mobileTranslateY: 0,
+                flipX: false,
+                mobileFlipX: false
+              })
+            }
+            await api.patch('/config', { hero_settings: JSON.stringify(heroConfig) })
+          }
+        }
+      } catch (heroSyncErr) {
+        console.warn('Hero auto-sync failed (non-critical):', heroSyncErr)
       }
 
       onRefresh()
@@ -776,6 +865,108 @@ const MembersTab = ({ members = [], onRefresh }) => {
               </div>
             </div>
 
+            {/* Secret / Teaser Member Card */}
+            {!isGroup && (
+              <div className="bg-[#111726] border border-purple-500/30 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <FaUserSecret className="text-purple-400 text-base" />
+                    <div>
+                      <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Mode Secret / Siluet Teaser Member
+                      </h3>
+                      <p className="text-[10px] text-zinc-400">
+                        Untuk member baru atau trainee yang identitas aslinya masih dirahasiakan
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, is_secret: !formData.is_secret })}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        formData.is_secret ? 'bg-purple-600' : 'bg-zinc-700'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          formData.is_secret ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                    <span className={`text-xs font-bold ${formData.is_secret ? 'text-purple-300' : 'text-zinc-500'}`}>
+                      {formData.is_secret ? 'SECRET AKTIF' : 'NORMAL'}
+                    </span>
+                  </div>
+                </div>
+
+                {formData.is_secret && (
+                  <div className="space-y-3 pt-1">
+                    <div className="p-3 bg-purple-950/30 border border-purple-500/20 rounded-xl text-[11px] text-purple-200 flex items-start gap-2">
+                      <FaEyeSlash className="text-purple-400 shrink-0 mt-0.5 text-xs" />
+                      <span>
+                        Ketika aktif: Foto di <strong>Hero Beranda, Toko Shop Cheki, dan Daftar Member</strong> akan otomatis digantikan oleh <strong>Foto Siluet</strong> ini. Nama panggung di panggung Hero akan otomatis disamarkan sebagai <strong>"???"</strong> hingga Anda menonaktifkan status secret ini.
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-[#161f33] border border-purple-500/20 rounded-xl">
+                      <div
+                        className="relative w-28 h-36 md:w-32 md:h-40 rounded-2xl overflow-hidden border-2 border-dashed border-purple-400 cursor-pointer group shadow-xl shrink-0 bg-black/60"
+                        onClick={() => silhouetteInputRef.current?.click()}
+                      >
+                        {silhouettePreview ? (
+                          <img
+                            src={silhouettePreview}
+                            alt="Preview Siluet"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = getAssetPath('/images/members/placeholder.svg')
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-zinc-500 p-2 text-center">
+                            <FaQuestion className="text-3xl mb-1 text-purple-400/80" />
+                            <span className="text-[10px] text-purple-300 font-bold">Pilih Foto Siluet</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold gap-1.5 text-center p-2">
+                          <FaUpload /> Ganti Siluet
+                        </div>
+                        <span className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-purple-900/90 text-purple-200 rounded text-[9px] font-bold">
+                          SILUET
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-center sm:text-left">
+                        <p className="text-xs text-zinc-300 font-medium">
+                          {silhouetteFile ? silhouetteFile.name : (formData.silhouette_image_url ? 'Foto siluet tersimpan' : 'Belum ada foto siluet khusus')}
+                        </p>
+                        <p className="text-[11px] text-zinc-400">
+                          Unggah foto siluet gelap berlatar transparan atau gelap untuk teaser teaser idol. Jika dikosongkan, sistem memakai siluet standar.
+                        </p>
+                        <input
+                          type="file"
+                          ref={silhouetteInputRef}
+                          onChange={handleSilhouetteChange}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => silhouetteInputRef.current?.click()}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-xs font-bold text-purple-200 transition"
+                        >
+                          <FaUpload /> Unggah Foto Siluet
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* CMS Sorting & Status Settings */}
             <div className="bg-[#111726] border border-white/10 rounded-2xl p-5 shadow-lg space-y-4">
               <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider pb-2 border-b border-white/5">
@@ -1047,9 +1238,16 @@ const MembersTab = ({ members = [], onRefresh }) => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <h4 className="font-bold text-base text-white truncate group-hover:text-emerald-300 transition-colors">
-                          {member.nama_panggung}
-                        </h4>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <h4 className="font-bold text-base text-white truncate group-hover:text-emerald-300 transition-colors">
+                            {member.nama_panggung}
+                          </h4>
+                          {member.is_secret && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-black uppercase tracking-wider shrink-0">
+                              <FaUserSecret className="text-[10px]" /> SECRET
+                            </span>
+                          )}
+                        </div>
                         <span
                           className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wider shrink-0 shadow-sm"
                           style={{ backgroundColor: memberColor }}

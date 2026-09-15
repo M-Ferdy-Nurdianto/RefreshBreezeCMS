@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaHeart, FaArrowLeft, FaBirthdayCake, FaInstagram, FaPalette, FaQuoteLeft } from 'react-icons/fa'
+import { FaHeart, FaArrowLeft, FaBirthdayCake, FaInstagram, FaPalette, FaQuoteLeft, FaLock } from 'react-icons/fa'
 import { getAssetPath } from '../lib/pathUtils'
 import Header from '../components/Header'
 import api from '../lib/api'
@@ -19,6 +19,17 @@ const MembersPage = () => {
 
   const getMemberData = (member) => {
     if (!member) return {}
+    if (member.is_secret) {
+      return {
+        color: member.color || '#9333ea',
+        namaPanggung: '??? (SECRET)',
+        tagline: 'Secret Teaser Member',
+        jiko: 'Identitas member ini masih menjadi misteri. Nantikan pengumuman resminya segera!',
+        tanggalLahir: 'Rahasia',
+        hobi: 'Rahasia',
+        instagram: '@refreshbreeze'
+      }
+    }
     return {
       color: member.color || '#079108',
       namaPanggung: member.nama_panggung,
@@ -31,8 +42,6 @@ const MembersPage = () => {
   }
 
   useEffect(() => {
-    if (cachedMembers && cachedGroup) return // Skip if already cached
-
     const fetchMembers = async () => {
       try {
         const response = await api.get('/members')
@@ -62,6 +71,16 @@ const MembersPage = () => {
 
   // Dynamic Profile image helper
   const getProfileImage = (member) => {
+    // Jika member secret / silhouette
+    if (member?.is_secret) {
+      if (member.silhouette_image_url) {
+        if (member.silhouette_image_url.startsWith('http')) return member.silhouette_image_url
+        if (member.silhouette_image_url.startsWith('/')) return getAssetPath(member.silhouette_image_url)
+        return getAssetPath(`/images/members/${member.silhouette_image_url}`)
+      }
+      return getAssetPath('/images/members/placeholder.svg')
+    }
+
     if (member?.image_url) {
       if (member.image_url.startsWith('http')) return member.image_url
       if (member.image_url.startsWith('/')) return getAssetPath(member.image_url)
@@ -370,6 +389,19 @@ const MembersPage = () => {
 
                       <div className="grid grid-cols-3 gap-3 md:gap-5">
                         {(() => {
+                          if (selectedMember.is_secret) {
+                            return [1, 2, 3].map((num) => (
+                              <div
+                                key={num}
+                                className="aspect-square rounded-2xl overflow-hidden shadow-lg bg-black/40 border border-purple-500/30 flex flex-col items-center justify-center text-purple-300 p-4 text-center"
+                              >
+                                <FaLock className="text-xl md:text-2xl mb-2 text-purple-400 opacity-80" />
+                                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">Terkunci</span>
+                                <span className="text-[8px] text-zinc-500 mt-0.5">Teaser Member</span>
+                              </div>
+                            ))
+                          }
+
                           const galleryList = (selectedMember.member_gallery && selectedMember.member_gallery.length > 0)
                             ? selectedMember.member_gallery.map(g => g.image_url)
                             : [1, 2, 3].map(num => {
@@ -400,7 +432,7 @@ const MembersPage = () => {
                                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                   onError={(e) => {
                                     e.target.onerror = null
-                                    e.target.src = getAssetPath('/images/members/secret.png')
+                                    e.target.src = getAssetPath('/images/members/placeholder.svg')
                                   }}
                                 />
                               </motion.div>

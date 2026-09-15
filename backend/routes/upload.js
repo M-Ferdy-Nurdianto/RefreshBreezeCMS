@@ -142,7 +142,7 @@ router.post('/member-image', upload.single('file'), handleMulterError, async (re
       return res.status(400).json({ success: false, error: 'No file uploaded.' })
     }
 
-    const validTypes = ['gallery', 'avatars', 'shop', 'banner', 'hero']
+    const validTypes = ['gallery', 'avatars', 'shop', 'banner', 'hero', 'silhouette']
     const type = validTypes.includes(req.query.type) ? req.query.type : 'avatars'
 
     // Smart auto-crop and conversion to exact target aspect ratios
@@ -154,8 +154,8 @@ router.post('/member-image', upload.single('file'), handleMulterError, async (re
         fit: 'cover',
         position: 'top'
       })
-    } else if (type === 'hero') {
-      // High-res hero portrait optimization (1000x1500 max)
+    } else if (type === 'hero' || type === 'silhouette') {
+      // High-res hero / silhouette portrait optimization (1000x1500 max)
       sharpPipeline = sharpPipeline.resize(1000, 1500, {
         fit: 'inside',
         withoutEnlargement: true

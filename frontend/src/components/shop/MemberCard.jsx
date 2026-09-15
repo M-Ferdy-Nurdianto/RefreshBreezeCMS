@@ -65,10 +65,12 @@ const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLin
             style={{ backgroundColor: inLineup ? accentColor : '#94a3b8' }}
           />
           <h4 className="text-xs sm:text-base font-black uppercase tracking-tight text-white truncate leading-none drop-shadow-lg">
-            {formatMemberName(member.nama_panggung)}
+            {member.is_secret ? '??? (SECRET)' : formatMemberName(member.nama_panggung)}
           </h4>
         </div>
-        <p className="text-[8px] sm:text-[9px] font-bold text-white/70 uppercase tracking-widest pl-3 sm:pl-4">2-Shot Ticket</p>
+        <p className="text-[8px] sm:text-[9px] font-bold text-white/70 uppercase tracking-widest pl-3 sm:pl-4">
+          {member.is_secret ? 'Mystery 2-Shot Ticket' : '2-Shot Ticket'}
+        </p>
         <div className="flex items-center justify-between pl-3 sm:pl-4 pt-0.5">
           <span className="text-xs sm:text-sm font-black text-white drop-shadow">
             IDR {hargaMember.toLocaleString()}

@@ -73,7 +73,9 @@ router.post('/', authMiddleware, async (req, res) => {
       color,
       gradient,
       order_index,
-      gallery
+      gallery,
+      is_secret,
+      silhouette_image_url
     } = req.body
 
     const { data, error } = await supabase
@@ -91,7 +93,9 @@ router.post('/', authMiddleware, async (req, res) => {
         instagram,
         color: color || '#079108',
         gradient: gradient || null,
-        order_index: order_index !== undefined ? parseInt(order_index) : 0
+        order_index: order_index !== undefined ? parseInt(order_index) : 0,
+        is_secret: Boolean(is_secret),
+        silhouette_image_url: silhouette_image_url || null
       })
       .select()
       .single()

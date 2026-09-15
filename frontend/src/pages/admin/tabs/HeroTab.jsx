@@ -213,7 +213,10 @@ const HeroTab = () => {
         const galleryFirstPhoto = dbM.member_gallery?.[0]?.image_url
         let initialPhoto = knownHeroPhotos[dbId] || getAssetPath('/images/members/placeholder.svg')
         
-        if (!knownHeroPhotos[dbId] && galleryFirstPhoto && typeof galleryFirstPhoto === 'string' && galleryFirstPhoto.trim()) {
+        // Jika member secret / silhouette
+        if (dbM.is_secret && dbM.silhouette_image_url) {
+          initialPhoto = dbM.silhouette_image_url
+        } else if (!knownHeroPhotos[dbId] && galleryFirstPhoto && typeof galleryFirstPhoto === 'string' && galleryFirstPhoto.trim()) {
           initialPhoto = (galleryFirstPhoto.startsWith('http') || galleryFirstPhoto.startsWith('/')) 
             ? galleryFirstPhoto 
             : getAssetPath(`/images/members/${galleryFirstPhoto}`)
@@ -221,9 +224,10 @@ const HeroTab = () => {
 
         return {
           id: dbId,
-          name: (dbM.nama_panggung || 'MEMBER').toUpperCase(),
+          name: dbM.is_secret ? '???' : (dbM.nama_panggung || 'MEMBER').toUpperCase(),
           color: dbM.color || 'bg-[#5A8F5A]',
           photo: initialPhoto,
+          is_secret: Boolean(dbM.is_secret),
           posX: 50,
           posY: 30,
           scale: 1.8,

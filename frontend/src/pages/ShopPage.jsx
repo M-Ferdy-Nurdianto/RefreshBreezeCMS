@@ -82,6 +82,16 @@ const ShopPage = () => {
   // Helper functions: Cheki tickets use dedicated shop_image_url or /images/shop/ photos
   const sanitizeName = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
   const getMemberImage = (member) => {
+    // Jika member secret / silhouette
+    if (member?.is_secret) {
+      if (member.silhouette_image_url) {
+        if (member.silhouette_image_url.startsWith('http://') || member.silhouette_image_url.startsWith('https://')) return member.silhouette_image_url
+        if (member.silhouette_image_url.startsWith('/')) return getAssetPath(member.silhouette_image_url)
+        return getAssetPath(`/images/members/${member.silhouette_image_url}`)
+      }
+      return getAssetPath('/images/members/placeholder.svg')
+    }
+
     if (member?.shop_image_url) {
       if (member.shop_image_url.startsWith('http://') || member.shop_image_url.startsWith('https://')) return member.shop_image_url
       if (member.shop_image_url.startsWith('/')) return getAssetPath(member.shop_image_url)
