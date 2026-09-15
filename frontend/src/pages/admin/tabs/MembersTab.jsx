@@ -342,14 +342,15 @@ const MembersTab = ({ members = [], onRefresh }) => {
               heroConfig.members[existingIdx] = {
                 ...heroConfig.members[existingIdx],
                 name: payload.is_secret ? '???' : payload.nama_panggung.toUpperCase(),
-                color: payload.color || heroConfig.members[existingIdx].color,
+                // Pertahankan warna hero khusus yang sudah diatur di Tab Hero (jangan ditimpa warna kartu member)
+                color: heroConfig.members[existingIdx].color || 'bg-[#5A8F5A]',
                 photo: (payload.is_secret && finalSilhouetteUrl) ? finalSilhouetteUrl : (heroConfig.members[existingIdx].photo || heroPhoto)
               }
             } else if (payload.hadir !== false) {
               heroConfig.members.push({
                 id: memberSlug,
                 name: payload.is_secret ? '???' : payload.nama_panggung.toUpperCase(),
-                color: payload.color || 'bg-[#5A8F5A]',
+                color: 'bg-[#5A8F5A]', // Default Hero tint
                 photo: heroPhoto,
                 posX: 50,
                 posY: 30,
