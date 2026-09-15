@@ -15,7 +15,12 @@ import {
   FaUpload,
   FaEye,
   FaSync,
-  FaExchangeAlt
+  FaExchangeAlt,
+  FaArrowLeft,
+  FaArrowRight,
+  FaTrash,
+  FaGripVertical,
+  FaTimes
 } from 'react-icons/fa'
 
 const DEFAULT_TITLE = "REFRESH BREEZE"
@@ -153,6 +158,106 @@ const HeroTab = () => {
     }
   }
 
+  const [syncing, setSyncing] = useState(false)
+
+  const handleSyncFromMembers = async () => {
+    try {
+      setSyncing(true)
+      const res = await api.get(`/members?_t=${Date.now()}`)
+      const dbMembers = res.data?.data || []
+
+      // Filter: hanya member aktif (hadir !== false) dan bukan entitas khusus 'group'
+      const activeDbMembers = dbMembers
+        .filter(m => m.hadir !== false && m.member_id !== 'group')
+        .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+
+      if (activeDbMembers.length === 0) {
+        showToast.warning('Tidak ada member aktif di database untuk disinkronkan.')
+        return
+      }
+
+      // Map & merge dengan settingan hero yang sudah ada
+      const newHeroMembers = activeDbMembers.map(dbM => {
+        const dbId = String(dbM.member_id || dbM.id || '').toLowerCase().trim()
+        const dbName = String(dbM.nama_panggung || '').toLowerCase().trim()
+
+        // Cari di hero settings: periksa apakah ID cocok persis, atau variasi slug (e.g. aca <-> acaa)
+        const existingHeroM = members.find(m => {
+          const heroId = String(m.id || '').toLowerCase().trim()
+          const heroName = String(m.name || '').toLowerCase().trim()
+          if (heroId === dbId || heroId === String(dbM.id).toLowerCase()) return true
+          if (heroName === dbName) return true
+          // Khusus toleransi aca vs acaa
+          if ((heroId === 'aca' || heroId === 'acaa') && (dbId === 'aca' || dbId === 'acaa')) return true
+          return false
+        })
+
+        if (existingHeroM) {
+          // Tetap gunakan settingan hero & FOTO HERO yang sudah ada (tidak menimpa dengan foto profil)
+          return {
+            ...existingHeroM,
+            id: dbId, // Selaraskan ID dengan database
+            name: (dbM.nama_panggung || existingHeroM.name || '').toUpperCase()
+          }
+        }
+
+        // Jika member baru yang belum ada di hero:
+        // 1. Cek ketersediaan foto hero resmi (e.g. storage /hero/id.webp)
+        // 2. Jika tidak ada, pakai foto galeri nomor 1
+        // 3. Jika tidak ada, pakai placeholder siluet
+        const knownHeroPhotos = {
+          piya: 'http://127.0.0.1:54321/storage/v1/object/public/members/hero/piya.webp',
+          yanyee: 'http://127.0.0.1:54321/storage/v1/object/public/members/hero/yanyee.webp'
+        }
+
+        const galleryFirstPhoto = dbM.member_gallery?.[0]?.image_url
+        let initialPhoto = knownHeroPhotos[dbId] || getAssetPath('/images/members/placeholder.svg')
+        
+        if (!knownHeroPhotos[dbId] && galleryFirstPhoto && typeof galleryFirstPhoto === 'string' && galleryFirstPhoto.trim()) {
+          initialPhoto = (galleryFirstPhoto.startsWith('http') || galleryFirstPhoto.startsWith('/')) 
+            ? galleryFirstPhoto 
+            : getAssetPath(`/images/members/${galleryFirstPhoto}`)
+        }
+
+        return {
+          id: dbId,
+          name: (dbM.nama_panggung || 'MEMBER').toUpperCase(),
+          color: dbM.color || 'bg-[#5A8F5A]',
+          photo: initialPhoto,
+          posX: 50,
+          posY: 30,
+          scale: 1.8,
+          translateX: 0,
+          translateY: 0,
+          mobilePosX: 50,
+          mobilePosY: 25,
+          mobileScale: 1.4,
+          mobileTranslateX: 0,
+          mobileTranslateY: 0,
+          flipX: false,
+          mobileFlipX: false
+        }
+      })
+
+      setMembers(newHeroMembers)
+      if (newHeroMembers.length > 0 && !newHeroMembers.some(m => m.id === selectedMemberId)) {
+        setSelectedMemberId(newHeroMembers[0].id)
+      }
+
+      const diffCount = newHeroMembers.length - members.length
+      if (diffCount > 0) {
+        showToast.success(`Berhasil! ${diffCount} member baru ditambahkan ke Hero sesuai urutan. Jangan lupa klik "Simpan Perubahan".`)
+      } else {
+        showToast.success(`Daftar member Hero berhasil disinkronkan (${newHeroMembers.length} member). Jangan lupa klik "Simpan Perubahan".`)
+      }
+    } catch (error) {
+      console.error('Error syncing members to hero:', error)
+      showToast.error(error.response?.data?.error || error.message, 'Gagal sinkronisasi member')
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   const handleResetDefault = () => {
     Swal.fire({
       title: 'Reset Konfigurasi Hero?',
@@ -179,6 +284,86 @@ const HeroTab = () => {
 
   const updateSelectedMember = (key, value) => {
     setMembers(prev => prev.map(m => m.id === selectedMemberId ? { ...m, [key]: value } : m))
+  }
+
+  // Drag and drop sorting state
+  const [draggedIdx, setDraggedIdx] = useState(null)
+  const [dragOverIdx, setDragOverIdx] = useState(null)
+
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index)
+  }
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverIdx !== index) {
+      setDragOverIdx(index)
+    }
+  }
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault()
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null)
+      setDragOverIdx(null)
+      return
+    }
+
+    const updated = [...members]
+    const [movedItem] = updated.splice(draggedIdx, 1)
+    updated.splice(targetIdx, 0, movedItem)
+
+    setMembers(updated)
+    setDraggedIdx(null)
+    setDragOverIdx(null)
+    showToast.success(`Urutan ${movedItem.name} berhasil digeser!`)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null)
+    setDragOverIdx(null)
+  }
+
+  // Geser posisi urutan member panggung hero ke kiri (lebih dulu)
+  const handleMoveMember = (index, direction) => {
+    const targetIndex = direction === 'left' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= members.length) return
+    const newMembers = [...members]
+    const temp = newMembers[index]
+    newMembers[index] = newMembers[targetIndex]
+    newMembers[targetIndex] = temp
+    setMembers(newMembers)
+    showToast.success(`Urutan ${temp.name} dipindah ke ${direction === 'left' ? 'kiri' : 'kanan'}.`)
+  }
+
+  // Keluarkan member dari panggung Hero
+  const handleRemoveMemberFromHero = (memberId, memberName) => {
+    if (members.length <= 1) {
+      showToast.warning('Panggung Hero minimal harus memiliki 1 member!')
+      return
+    }
+    Swal.fire({
+      title: `Keluarkan ${memberName} dari Hero?`,
+      text: 'Member ini akan disembunyikan dari kolom landing page Hero (tidak menghapus data aslinya di menu Member).',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ya, Keluarkan',
+      cancelButtonText: 'Batal'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        const remaining = members.filter(m => m.id !== memberId)
+        setMembers(remaining)
+        if (selectedMemberId === memberId) {
+          setSelectedMemberId(remaining[0]?.id || null)
+        }
+        showToast.success(`${memberName} dikeluarkan dari barisan Hero. Jangan lupa klik "Simpan Perubahan".`)
+      }
+    })
   }
 
   const handleImageUpload = async (memberId, file) => {
@@ -259,7 +444,16 @@ const HeroTab = () => {
             Kelola judul, warna teks, foto hero, perbesaran (zoom), posisi foto, & warna tint dengan Live Preview.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSyncFromMembers}
+            disabled={syncing || saving}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-teal-300 bg-teal-500/10 border border-teal-500/30 hover:bg-teal-500/20 transition-all disabled:opacity-50"
+            title="Tarik member aktif dari database secara otomatis sesuai urutan order_index"
+          >
+            <FaSync className={syncing ? 'animate-spin' : ''} /> {syncing ? 'Sinkronisasi...' : 'Sync dari Member'}
+          </button>
           <button
             onClick={() => setShowFullscreenModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-[#079108] bg-[#079108]/10 border border-[#079108]/30 hover:bg-[#079108]/20 transition-all"
@@ -268,14 +462,14 @@ const HeroTab = () => {
           </button>
           <button
             onClick={handleResetDefault}
-            disabled={saving}
+            disabled={saving || syncing}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-300 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
           >
             <FaUndo /> Reset Default
           </button>
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || syncing}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#079108] hover:bg-[#067a07] shadow-[0_0_15px_rgba(7,145,8,0.4)] transition-all disabled:opacity-50"
           >
             <FaSave /> {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
@@ -390,25 +584,70 @@ const HeroTab = () => {
               </span>
             </div>
 
-            {/* Member Selector Tabs */}
-            <div className="flex flex-wrap gap-2 pb-2 border-b border-white/10">
-              {members.map(m => (
-                <button
-                  key={m.id}
-                  onClick={() => setSelectedMemberId(m.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 ${
-                    selectedMemberId === m.id
-                      ? 'bg-[#079108] text-white shadow-[0_0_10px_rgba(7,145,8,0.4)]'
-                      : 'bg-[#111726] text-zinc-400 hover:text-white border border-white/5'
-                  }`}
-                >
-                  <span 
-                    className={`w-2.5 h-2.5 rounded-full ${getMemberOverlayClass(m.color)}`} 
-                    style={getMemberOverlayStyle(m.color)}
-                  />
-                  {m.name}
-                </button>
-              ))}
+            {/* Member Selector Tabs & Reorder Controls */}
+            <div className="space-y-3 pb-3 border-b border-white/10">
+              <div className="flex flex-wrap gap-2">
+                {members.map((m, idx) => (
+                  <div
+                    key={m.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDrop={(e) => handleDrop(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`flex items-center rounded-xl p-1 border cursor-grab active:cursor-grabbing select-none transition-all duration-150 ${
+                      draggedIdx === idx ? 'opacity-40 scale-95 border-dashed border-[#079108]' : ''
+                    } ${
+                      dragOverIdx === idx && draggedIdx !== idx
+                        ? 'border-2 border-teal-400 scale-105 bg-teal-500/20'
+                        : ''
+                    } ${
+                      selectedMemberId === m.id
+                        ? 'bg-[#079108] border-[#079108] shadow-[0_0_12px_rgba(7,145,8,0.5)]'
+                        : 'bg-[#111726] border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    {/* Drag Grip Handle */}
+                    <div 
+                      className="text-zinc-400 hover:text-white px-1 cursor-grab"
+                      title="Tahan dan geser (drag & drop) untuk ubah urutan"
+                    >
+                      <FaGripVertical className="text-xs opacity-60" />
+                    </div>
+
+                    {/* Member Select Button */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMemberId(m.id)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase flex items-center gap-2 transition-all ${
+                        selectedMemberId === m.id ? 'text-white' : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      <span 
+                        className={`w-2.5 h-2.5 rounded-full ${getMemberOverlayClass(m.color)}`} 
+                        style={getMemberOverlayStyle(m.color)}
+                      />
+                      {m.name}
+                    </button>
+
+                    {/* Delete Member from Hero Button */}
+                    <div className="flex items-center pr-1 pl-1 border-l border-white/10 ml-0.5">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleRemoveMemberFromHero(m.id, m.name); }}
+                        title="Keluarkan dari Hero Section"
+                        className="p-1 text-[10px] rounded hover:bg-red-500/30 text-red-300 hover:text-red-200 transition"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                <span className="text-[#079108] font-bold">Fitur Drag & Drop:</span> 
+                Anda bisa klik & tahan ikon titik baris di kartu member lalu geser (drag & drop) untuk mengatur urutan panggung Hero secara instan!
+              </p>
             </div>
 
             {/* Editing Panel for Selected Member */}

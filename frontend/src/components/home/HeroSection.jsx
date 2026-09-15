@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { getAssetPath } from '../../lib/pathUtils'
 
 const HeroSection = ({ 
   members = [], 
@@ -74,12 +75,16 @@ const HeroSection = ({
             >
               <div className="absolute inset-0 overflow-hidden">
                 <img 
-                  src={member.photo} 
+                  src={member.photo || getAssetPath('/images/members/placeholder.svg')} 
                   alt={member.name} 
                   fetchpriority={idx < 3 ? "high" : "auto"}
                   loading="eager"
                   className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                   style={getMemberStyle(member)}
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = getAssetPath('/images/members/placeholder.svg')
+                  }}
                 />
                 <div 
                   className={`absolute inset-0 ${getOverlayClass(member.color)} mix-blend-multiply opacity-30 group-hover:opacity-0 transition-opacity duration-700`}
@@ -95,7 +100,7 @@ const HeroSection = ({
             </motion.div>
           ))}
 
-          <div className="absolute inset-x-0 bottom-[22%] flex flex-col items-center justify-center z-20 pointer-events-none px-2">
+          <div className="absolute inset-x-0 bottom-[34%] sm:bottom-[32%] flex flex-col items-center justify-center z-20 pointer-events-none px-2">
             <motion.div 
               initial={isPreview ? false : "hidden"} 
               animate="visible"
@@ -153,7 +158,7 @@ const HeroSection = ({
                 className="relative h-20 overflow-hidden cursor-pointer group border-b border-white/5"
               >
                 <img 
-                  src={member.photo} 
+                  src={member.photo || getAssetPath('/images/members/placeholder.svg')} 
                   alt={member.name}
                   fetchpriority={idx < 2 ? "high" : "auto"}
                   loading="eager"
@@ -163,6 +168,10 @@ const HeroSection = ({
                       : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100'
                   }`}
                   style={getMobileMemberStyle(member)}
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = getAssetPath('/images/members/placeholder.svg')
+                  }}
                 />
                 <div 
                   className={`absolute inset-0 ${getOverlayClass(member.color)} transition-opacity duration-500 z-10 ${
