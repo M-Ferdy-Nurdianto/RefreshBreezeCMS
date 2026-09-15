@@ -38,6 +38,12 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
     '#FF6B9D', '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'
   ]
 
+  const currentYear = new Date().getFullYear()
+  const currentMonthIdx = new Date().getMonth()
+  const availableMonthOptions = (!editingEvent && formData.tahun === currentYear)
+    ? monthOptions.filter((_, idx) => idx >= currentMonthIdx)
+    : monthOptions
+
   const toggleMemberInLineup = (memberId) => {
     setFormData(prev => ({
       ...prev,
@@ -146,7 +152,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
                 min="1" max="31" required
               />
               <CustomSelect
-                options={monthOptions}
+                options={availableMonthOptions}
                 value={formData.bulan}
                 onChange={(e) => setFormData({ ...formData, bulan: e.target.value })}
                 placeholder="Bulan"

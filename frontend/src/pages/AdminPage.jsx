@@ -64,6 +64,10 @@ const AdminPage = () => {
   const [hargaGrup, setHargaGrup] = useState('30000')
   const [hargaOtsPerMember, setHargaOtsPerMember] = useState('25000')
   const [hargaOtsGrup, setHargaOtsGrup] = useState('30000')
+  const [paymentBank, setPaymentBank] = useState('BCA')
+  const [paymentRekening, setPaymentRekening] = useState('0902683273')
+  const [paymentAtasNama, setPaymentAtasNama] = useState('Natasya Angelina Putri')
+  const [paymentMethod, setPaymentMethod] = useState('Manual TF')
   const [maintenanceMode, setMaintenanceMode] = useState(false)
   const [maintenanceMessage, setMaintenanceMessage] = useState('')
   const [maintenanceEstimatedEnd, setMaintenanceEstimatedEnd] = useState('')
@@ -216,7 +220,19 @@ const AdminPage = () => {
   const fetchEvents = async () => {
     try {
       const res = await api.get('/events')
-      setEvents(res.data.data || [])
+      const eventList = res.data.data || []
+      setEvents(eventList)
+
+      // Otomatis pilih event aktif (bukan 'all') jika belum ada event spesifik yang dipilih
+      if (eventList.length > 0) {
+        setEventFilter(prev => {
+          if (!prev || prev === 'all') {
+            const activeEvent = eventList.find(e => !e.is_past) || eventList[0]
+            return activeEvent ? String(activeEvent.id) : prev
+          }
+          return prev
+        })
+      }
     } catch (error) {
       console.error(error)
     }
@@ -230,6 +246,10 @@ const AdminPage = () => {
       if (configData.harga_cheki_grup) setHargaGrup(configData.harga_cheki_grup)
       if (configData.harga_ots_per_member) setHargaOtsPerMember(configData.harga_ots_per_member)
       if (configData.harga_ots_grup) setHargaOtsGrup(configData.harga_ots_grup)
+      if (configData.payment_bank) setPaymentBank(configData.payment_bank)
+      if (configData.payment_rekening) setPaymentRekening(configData.payment_rekening)
+      if (configData.payment_atas_nama) setPaymentAtasNama(configData.payment_atas_nama)
+      if (configData.payment_method) setPaymentMethod(configData.payment_method)
       setMaintenanceMode(configData.maintenance_mode === 'true' || configData.maintenance_mode === true)
       if (configData.maintenance_message !== undefined) setMaintenanceMessage(configData.maintenance_message || '')
       if (configData.maintenance_estimated_end !== undefined) setMaintenanceEstimatedEnd(configData.maintenance_estimated_end || '')
@@ -571,7 +591,7 @@ const AdminPage = () => {
 
   const handleMerchSubmit = async (e) => {
     e.preventDefault()
-    if (!merchForm.nama || !merchForm.harga) return alert('Nama dan harga wajib diisi')
+    if (!merchForm.nama || !merchForm.harga) return showToast.warning('Nama dan harga merchandise wajib diisi')
     setMerchSaving(true)
     try {
       let gambar_url = editingMerch?.gambar_url || ''
@@ -611,14 +631,16 @@ const AdminPage = () => {
 
       if (editingMerch) {
         await api.put(`/merchandise/${editingMerch.id}`, payload)
+        showToast.success('Merchandise berhasil diperbarui!')
       } else {
         await api.post('/merchandise', payload)
+        showToast.success('Merchandise berhasil ditambahkan!')
       }
 
       closeMerchForm()
       fetchMerch()
     } catch (error) {
-      alert(error.response?.data?.error || 'Gagal menyimpan merchandise')
+      showToast.error(error.response?.data?.error || 'Gagal menyimpan merchandise')
     } finally {
       setMerchSaving(false)
     }
@@ -698,7 +720,7 @@ const AdminPage = () => {
 
   const moreItems = [
     { id: 'members', label: 'Members', icon: FaUsers },
-    { id: 'hero', label: 'Hero CMS', icon: FaEye },
+    { id: 'hero', label: 'Pengaturan Hero', icon: FaEye },
     { id: 'settings', label: 'Settings', icon: FaEdit },
   ]
 
@@ -721,7 +743,7 @@ const AdminPage = () => {
               { id: 'events', label: 'Events', icon: FaCalendar },
               { id: 'members', label: 'Members', icon: FaUsers },
               { id: 'merch', label: 'Merchandise', icon: FaBox },
-              { id: 'hero', label: 'Hero CMS', icon: FaEye },
+              { id: 'hero', label: 'Pengaturan Hero', icon: FaEye },
               { id: 'recap', label: 'Recap', icon: FaChartBar },
               { id: 'settings', label: 'Settings', icon: FaEdit },
             ].map(item => (
@@ -861,6 +883,14 @@ const AdminPage = () => {
             setHargaOtsPerMember={setHargaOtsPerMember}
             hargaOtsGrup={hargaOtsGrup}
             setHargaOtsGrup={setHargaOtsGrup}
+            paymentBank={paymentBank}
+            setPaymentBank={setPaymentBank}
+            paymentRekening={paymentRekening}
+            setPaymentRekening={setPaymentRekening}
+            paymentAtasNama={paymentAtasNama}
+            setPaymentAtasNama={setPaymentAtasNama}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
             maintenanceMode={maintenanceMode}
             setMaintenanceMode={setMaintenanceMode}
             maintenanceMessage={maintenanceMessage}

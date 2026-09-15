@@ -65,9 +65,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
   }
 
   const openEditForm = (event) => {
-    const existingLineup = event.event_lineup
-      ?.filter(el => el.members?.member_id !== 'piya')
-      .map(el => el.member_id) || []
+    const existingLineup = event.event_lineup?.map(el => el.member_id) || []
     setEditingEvent(event)
     setEventType(event.is_special ? 'special' : 'regular')
     setFormData({
@@ -132,14 +130,17 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
 
   // ---------- FORM VIEW ----------
   if (view === 'form') {
-    const lineupOrder = ['cissi', 'acaa', 'channie', 'cally', 'sinta']
+    const currentYear = new Date().getFullYear()
+    const currentMonthIdx = new Date().getMonth()
+
+    // Saat membuat event baru (bukan edit) di tahun sekarang, hanya tampilkan bulan berjalan & bulan tersisa
+    const availableMonthOptions = (!editingEvent && formData.tahun === currentYear)
+      ? monthOptions.filter((_, idx) => idx >= currentMonthIdx)
+      : monthOptions
+
     const selectableMembers = members
-      .filter(m => m.member_id !== 'group' && m.member_id !== 'piya' && m.hadir !== false)
-      .sort((a, b) => {
-        const iA = lineupOrder.indexOf(a.member_id)
-        const iB = lineupOrder.indexOf(b.member_id)
-        return (iA !== -1 ? iA : 99) - (iB !== -1 ? iB : 99)
-      })
+      .filter(m => m.member_id !== 'group' && m.hadir !== false)
+      .sort((a, b) => (a.order_index ?? 99) - (b.order_index ?? 99))
 
     return (
       <div className="space-y-6 animate-fade-in max-w-5xl">
@@ -206,7 +207,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                   min="1" max="31" required
                 />
                 <CustomSelect
-                  options={monthOptions}
+                  options={availableMonthOptions}
                   value={formData.bulan}
                   onChange={(e) => setFormData({ ...formData, bulan: e.target.value })}
                   placeholder="Bulan"
@@ -347,7 +348,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">Event <span className="text-[#079108]">Management</span></h2>
-          <p className="text-xs text-zinc-400 font-medium">Kelola event, jadwal perform, dan lineup member.</p>
+          <p className="text-xs text-zinc-400 font-medium mt-1">Jadwal & lineup event.</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -382,7 +383,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
           displayedEvents.map((event) => {
             const pastByDate = checkEventDate(event)
             const past = isEventPast(event)
-            const visibleLineupCount = event.event_lineup?.filter(el => el.members?.member_id !== 'piya').length || 0
+            const visibleLineupCount = event.event_lineup?.length || 0
 
             return (
               <div key={event.id} className="bg-[#111726]/90 backdrop-blur-xl rounded-2xl border border-white/10 p-4 shadow-xl space-y-3">
@@ -503,7 +504,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                 displayedEvents.map((event) => {
                   const pastByDate = checkEventDate(event)
                   const past = isEventPast(event)
-                  const visibleLineupCount = event.event_lineup?.filter(el => el.members?.member_id !== 'piya').length || 0
+                  const visibleLineupCount = event.event_lineup?.length || 0
                   return (
                     <tr key={event.id} className="hover:bg-white/[0.04] transition-colors">
                       <td className="px-4 py-3.5">

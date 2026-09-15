@@ -52,29 +52,17 @@ const ToastCard = ({ t, isDark, onDismiss }) => {
       exit={{ opacity: 0, y: -20, scale: 0.85 }}
       transition={{ type: 'spring', stiffness: 500, damping: 32 }}
       onClick={onDismiss}
-      className={`pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-full shadow-2xl border select-none cursor-pointer backdrop-blur-xl ${
+      className={`pointer-events-auto flex items-center gap-2.5 px-4 sm:px-5 py-3 rounded-full shadow-2xl border select-none cursor-pointer backdrop-blur-xl ${
         isDark
           ? 'bg-[#111726]/95 border-white/10 text-white shadow-black/50'
           : 'bg-white/95 border-gray-200/80 text-gray-900 shadow-xl'
       }`}
       style={{ maxWidth: '90vw' }}
     >
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-        style={{ backgroundColor: iconColor + '20' }}
-      >
-        <IconComp style={{ color: iconColor, fontSize: '13px' }} />
-      </div>
-      <div className="flex flex-col pr-2">
-        <span className={`text-xs font-black tracking-tight leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          {t.title}
-        </span>
-        {t.sub && (
-          <span className={`text-[10px] font-semibold mt-0.5 ${isDark ? 'text-white/50' : 'text-gray-400'}`}>
-            {t.sub}
-          </span>
-        )}
-      </div>
+      <IconComp style={{ color: iconColor, fontSize: '15px' }} className="shrink-0" />
+      <span className={`text-xs font-medium leading-snug ${isDark ? 'text-[#f0efec]' : 'text-gray-900'}`}>
+        {t.title}
+      </span>
     </motion.div>
   )
 }
@@ -122,28 +110,25 @@ export const rbToast = {
   cart: (memberName, qty = 1) => {
     bus.emit({
       type: 'cart',
-      title: memberName,
-      sub: qty > 1 ? `Jumlah bertambah (${qty}x di keranjang)` : 'Masuk ke keranjang!',
+      title: qty > 1 ? `${memberName} (${qty}x di keranjang)` : `${memberName} masuk ke keranjang`,
     })
   },
 
   group: (qty = 1) => {
     bus.emit({
       type: 'cart',
-      title: 'Cheki Group',
-      sub: qty > 1 ? `Jumlah bertambah (${qty}x di keranjang)` : 'Foto bareng seluruh member RB',
+      title: qty > 1 ? `Cheki Group (${qty}x di keranjang)` : 'Cheki Group masuk ke keranjang',
     })
   },
 
   merch: (itemName, qty = 1) => {
     bus.emit({
       type: 'merch',
-      title: itemName,
-      sub: qty > 1 ? `Jumlah bertambah (${qty}x di keranjang)` : 'Merchandise resmi masuk keranjang',
+      title: qty > 1 ? `${itemName} (${qty}x di keranjang)` : `${itemName} masuk ke keranjang`,
     })
   },
 
-  success: (message, sub) => bus.emit({ type: 'success', title: message, sub }),
-  error: (message, sub) => bus.emit({ type: 'error', title: message, sub }),
-  info: (message, sub) => bus.emit({ type: 'info', title: message, sub }),
+  success: (message) => bus.emit({ type: 'success', title: message }),
+  error: (message) => bus.emit({ type: 'error', title: message }),
+  info: (message) => bus.emit({ type: 'info', title: message }),
 }

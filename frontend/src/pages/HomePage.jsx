@@ -46,10 +46,11 @@ const HomePage = () => {
     AOS.init({ duration: 1000, once: true })
     const fetchData = async () => {
         try {
-            const [eventsRes, faqsRes, configRes] = await Promise.allSettled([ 
+            const [eventsRes, faqsRes, configRes, membersRes] = await Promise.allSettled([ 
               api.get('/events'), 
               api.get('/faqs'),
-              api.get('/config')
+              api.get('/config'),
+              api.get('/members')
             ])
 
             if (eventsRes.status === 'fulfilled' && eventsRes.value.data.success) {
@@ -75,6 +76,25 @@ const HomePage = () => {
               setFaqs(faqsRes.value.data.data)
             }
 
+            // Dapatkan daftar member aktif dari database (bukan group dan hadir !== false)
+            let activeMemberSlugs = null
+            if (membersRes.status === 'fulfilled' && membersRes.value.data.success) {
+              const dbMembers = membersRes.value.data.data || []
+              activeMemberSlugs = new Set()
+              dbMembers.forEach(m => {
+                if (m.hadir !== false && m.member_id !== 'group') {
+                  if (m.member_id) activeMemberSlugs.add(String(m.member_id).toLowerCase().trim())
+                  if (m.id) activeMemberSlugs.add(String(m.id).toLowerCase().trim())
+                  if (m.nama_panggung) activeMemberSlugs.add(String(m.nama_panggung).toLowerCase().trim())
+                  // Toleransi aca / acaa
+                  if (m.member_id === 'aca' || m.member_id === 'acaa') {
+                    activeMemberSlugs.add('aca')
+                    activeMemberSlugs.add('acaa')
+                  }
+                }
+              })
+            }
+
             if (configRes.status === 'fulfilled' && configRes.value.data.success) {
               const configData = configRes.value.data.data || {}
               if (configData.hero_settings) {
@@ -89,7 +109,14 @@ const HomePage = () => {
                 if (settings.subtitleColor) setHeroSubtitleColor(settings.subtitleColor)
                 if (settings.taglineColor) setHeroTaglineColor(settings.taglineColor)
                 if (Array.isArray(settings.members) && settings.members.length > 0) {
-                  setMembers(settings.members)
+                  const filteredMembers = activeMemberSlugs
+                    ? settings.members.filter(m => {
+                        const mId = String(m.id || '').toLowerCase().trim()
+                        const mName = String(m.name || '').toLowerCase().trim()
+                        return activeMemberSlugs.has(mId) || activeMemberSlugs.has(mName)
+                      })
+                    : settings.members
+                  setMembers(filteredMembers)
                 }
               }
             }

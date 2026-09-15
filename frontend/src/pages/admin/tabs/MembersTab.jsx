@@ -81,9 +81,9 @@ const MembersTab = ({ members = [], onRefresh }) => {
   const isEditing = Boolean(editingMember)
   const isGroup = editingMember?.member_id === 'group'
 
-  // Search & Filter in list view
+  // Search & Filter in list view (default hanya tampilkan member aktif)
   const [search, setSearch] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all') // all, active, inactive
+  const [filterStatus, setFilterStatus] = useState('active') // active, all, inactive
 
   // Form State for Full Page Editor
   const [formData, setFormData] = useState({
@@ -338,7 +338,14 @@ const MembersTab = ({ members = [], onRefresh }) => {
               ? finalSilhouetteUrl
               : (finalAvatarUrl || getAssetPath('/images/members/placeholder.svg'))
 
-            if (existingIdx >= 0) {
+            if (payload.hadir === false) {
+              // Jika dinonaktifkan di form, hapus dari hero_settings
+              heroConfig.members = heroConfig.members.filter(m => {
+                const hId = String(m.id || '').toLowerCase().trim()
+                const hName = String(m.name || '').toLowerCase().trim()
+                return hId !== memberSlug && hName !== String(payload.nama_panggung || '').toLowerCase().trim()
+              })
+            } else if (existingIdx >= 0) {
               heroConfig.members[existingIdx] = {
                 ...heroConfig.members[existingIdx],
                 name: payload.is_secret ? '???' : payload.nama_panggung.toUpperCase(),
@@ -346,7 +353,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
                 color: heroConfig.members[existingIdx].color || 'bg-[#5A8F5A]',
                 photo: (payload.is_secret && finalSilhouetteUrl) ? finalSilhouetteUrl : (heroConfig.members[existingIdx].photo || heroPhoto)
               }
-            } else if (payload.hadir !== false) {
+            } else {
               heroConfig.members.push({
                 id: memberSlug,
                 name: payload.is_secret ? '???' : payload.nama_panggung.toUpperCase(),
@@ -388,6 +395,64 @@ const MembersTab = ({ members = [], onRefresh }) => {
     try {
       const newStatus = !member.hadir
       await api.patch(`/members/${member.id}`, { hadir: newStatus })
+
+      // SINKRONISASI OTOMATIS KE HERO: Jika dinonaktifkan, langsung keluarkan dari Hero panggung
+      try {
+        const configRes = await api.get('/config')
+        let heroConfig = configRes.data?.data?.hero_settings
+        if (typeof heroConfig === 'string') {
+          try { heroConfig = JSON.parse(heroConfig) } catch (_) {}
+        }
+        if (heroConfig && Array.isArray(heroConfig.members)) {
+          const mSlug = String(member.member_id || member.id || '').toLowerCase().trim()
+          const mName = String(member.nama_panggung || '').toLowerCase().trim()
+
+          if (!newStatus) {
+            // Hapus dari hero_settings
+            heroConfig.members = heroConfig.members.filter(m => {
+              const hId = String(m.id || '').toLowerCase().trim()
+              const hName = String(m.name || '').toLowerCase().trim()
+              return hId !== mSlug && hName !== mName
+            })
+            await api.patch('/config', { hero_settings: JSON.stringify(heroConfig) })
+          } else {
+            // Jika diaktifkan kembali, tambahkan jika belum ada di hero
+            const exists = heroConfig.members.some(m => {
+              const hId = String(m.id || '').toLowerCase().trim()
+              const hName = String(m.name || '').toLowerCase().trim()
+              return hId === mSlug || hName === mName
+            })
+            if (!exists) {
+              const photo = member.is_secret && member.silhouette_image_url
+                ? member.silhouette_image_url
+                : (member.image_url || getAssetPath('/images/members/placeholder.svg'))
+              heroConfig.members.push({
+                id: mSlug,
+                name: member.is_secret ? '???' : (member.nama_panggung || 'MEMBER').toUpperCase(),
+                color: member.color || 'bg-[#5A8F5A]',
+                photo: photo,
+                is_secret: Boolean(member.is_secret),
+                posX: 50,
+                posY: 30,
+                scale: 1.8,
+                translateX: 0,
+                translateY: 0,
+                mobilePosX: 50,
+                mobilePosY: 25,
+                mobileScale: 1.4,
+                mobileTranslateX: 0,
+                mobileTranslateY: 0,
+                flipX: false,
+                mobileFlipX: false
+              })
+              await api.patch('/config', { hero_settings: JSON.stringify(heroConfig) })
+            }
+          }
+        }
+      } catch (heroSyncErr) {
+        console.warn('Auto-sync toggle to hero failed (non-critical):', heroSyncErr)
+      }
+
       showToast.success(`Status ${member.nama_panggung} diubah menjadi ${newStatus ? 'Aktif' : 'Nonaktif'}`)
       onRefresh()
     } catch (err) {
@@ -412,6 +477,26 @@ const MembersTab = ({ members = [], onRefresh }) => {
     if (result.isConfirmed) {
       try {
         await api.delete(`/members/${member.id}`)
+
+        // Bersihkan juga dari hero_settings jika ada
+        try {
+          const configRes = await api.get('/config')
+          let heroConfig = configRes.data?.data?.hero_settings
+          if (typeof heroConfig === 'string') {
+            try { heroConfig = JSON.parse(heroConfig) } catch (_) {}
+          }
+          if (heroConfig && Array.isArray(heroConfig.members)) {
+            const mSlug = String(member.member_id || member.id || '').toLowerCase().trim()
+            const mName = String(member.nama_panggung || '').toLowerCase().trim()
+            heroConfig.members = heroConfig.members.filter(m => {
+              const hId = String(m.id || '').toLowerCase().trim()
+              const hName = String(m.name || '').toLowerCase().trim()
+              return hId !== mSlug && hName !== mName
+            })
+            await api.patch('/config', { hero_settings: JSON.stringify(heroConfig) })
+          }
+        } catch (_) {}
+
         showToast.success(`Member ${member.nama_panggung} telah dihapus.`)
         onRefresh()
       } catch (err) {
@@ -449,7 +534,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
                   {isEditing ? (isGroup ? 'Edit Profil & Banner Grup' : `Edit Member: ${editingMember.nama_panggung}`) : 'Tambah Member Baru'}
                 </h2>
                 <p className="text-[11px] text-zinc-400">
-                  {isGroup ? 'Pengaturan visual banner utama & paket Cheki grup' : 'Pengaturan identitas, warna neon, dan foto idol'}
+                  {isGroup ? 'Pengaturan visual banner utama & paket Cheki grup' : 'Pengaturan profil, foto, dan identitas idol'}
                 </p>
               </div>
             </div>
@@ -492,8 +577,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
             {/* Foto Utama Card */}
             <div className="bg-[#111726] border border-white/10 rounded-2xl p-5 shadow-lg space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                  <FaCamera className="text-emerald-400" />
+                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
                   Foto {isGroup ? 'Banner / Cover Utama' : 'Profil Member'}
                 </label>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
@@ -558,8 +642,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
             {/* Foto Pajangan Shop (Tiket Cheki) Card */}
             <div className="bg-[#111726] border border-white/10 rounded-2xl p-5 shadow-lg space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                  <FaCamera className="text-teal-400" />
+                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
                   Foto Pajangan Shop (Tiket Cheki)
                 </label>
                 <div className="flex items-center gap-1.5">
@@ -680,8 +763,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
             <div className="bg-[#111726] border border-white/10 rounded-2xl p-5 shadow-lg space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                    <FaImages className="text-emerald-400" />
+                  <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
                     3 Slot Galeri Foto
                   </label>
                   <p className="text-[10px] text-zinc-500 mt-0.5">Tampil pada popup detail profil member di halaman publik</p>
@@ -1060,12 +1142,11 @@ const MembersTab = ({ members = [], onRefresh }) => {
       {/* Top Action Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#111726] border border-white/10 p-4 md:p-6 rounded-2xl">
         <div>
-          <h2 className="text-lg md:text-xl font-black uppercase tracking-wider flex items-center gap-2.5">
-            <FaUsers className="text-[#079108]" />
+          <h2 className="text-lg md:text-xl font-black uppercase tracking-wider">
             Manajemen Member & Grup
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
-            Kelola profil member, foto kartu cheki, warna neon, dan foto galeri secara langsung.
+            Daftar member & profil idol.
           </p>
         </div>
 

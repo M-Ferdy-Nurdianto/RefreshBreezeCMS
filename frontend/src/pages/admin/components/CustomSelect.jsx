@@ -29,10 +29,13 @@ const CustomSelect = ({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Close the dropdown on scroll to prevent the floating effect
+  // Close the dropdown on window/container scroll to prevent floating effect, but ignore scrolls inside dropdown menu
   useEffect(() => {
     if (!isOpen) return
-    const handleScroll = () => {
+    const handleScroll = (e) => {
+      if (e.target && (e.target.closest?.('.custom-dropdown-portal-menu') || e.target.classList?.contains('custom-dropdown-portal-menu'))) {
+        return
+      }
       setIsOpen(false)
     }
     window.addEventListener('scroll', handleScroll, { capture: true })

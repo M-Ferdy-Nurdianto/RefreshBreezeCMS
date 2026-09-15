@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Swal from 'sweetalert2'
 import { FaShoppingCart, FaPlus, FaTimes, FaFileExcel, FaBox, FaEye, FaTrash, FaStar, FaTruck, FaClipboardList } from 'react-icons/fa'
 import RenderTable from '../components/RenderTable'
@@ -59,6 +59,25 @@ const OrdersTab = ({
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [showInlineOTS, setShowInlineOTS] = useState(false)
+  const otsTopRef = useRef(null)
+
+  const handleToggleOTS = () => {
+    setShowInlineOTS(prev => {
+      const next = !prev
+      if (next) {
+        setTimeout(() => {
+          if (otsTopRef.current) {
+            otsTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+          const adminMain = document.querySelector('main')
+          if (adminMain) adminMain.scrollTo({ top: 0, behavior: 'smooth' })
+        }, 50)
+      }
+      return next
+    })
+  }
 
   const handleTriggerExport = async (exportData) => {
     const { format, scope, value } = exportData
@@ -71,6 +90,7 @@ const OrdersTab = ({
 
   return (
     <div className="space-y-6">
+      <div ref={otsTopRef} />
       {/* Inline OTS Form (Collapsible, Direct in Page) */}
       {showInlineOTS && (
         <OTSOrderInlineForm
@@ -88,11 +108,11 @@ const OrdersTab = ({
       <div className="bg-[#111726]/80 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-xl relative">
         <div className="flex overflow-x-auto gap-2 custom-scrollbar snap-x snap-mandatory scroll-smooth pr-8">
           {[
-            { id: 'all', label: 'All (Reg)', icon: FaShoppingCart, color: 'bg-[#079108] text-white shadow-[0_0_15px_rgba(7,145,8,0.4)]' },
-            { id: 'ots', label: 'OTS', icon: null, color: 'bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]' },
-            { id: 'po', label: 'PO', icon: null, color: 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]' },
-            { id: 'special', label: 'Special', icon: null, color: 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)]' },
-            { id: 'merch', label: 'Merch', icon: FaBox, color: 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]', onClick: () => { setOrderSubTab('merch'); onFetchMerchOrders() } }
+            { id: 'all', label: 'All (Reg)', color: 'bg-[#079108] text-white shadow-[0_0_15px_rgba(7,145,8,0.4)]' },
+            { id: 'ots', label: 'OTS', color: 'bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]' },
+            { id: 'po', label: 'PO', color: 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]' },
+            { id: 'special', label: 'Special', color: 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)]' },
+            { id: 'merch', label: 'Merch', color: 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]', onClick: () => { setOrderSubTab('merch'); onFetchMerchOrders() } }
           ].map(tab => (
             <button
               key={tab.id}
@@ -103,8 +123,7 @@ const OrdersTab = ({
                   : 'text-zinc-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="flex items-center justify-center gap-2">
-                {tab.icon && <tab.icon className="text-sm" />}
+              <span className="flex items-center justify-center">
                 {tab.label}
               </span>
             </button>
@@ -195,19 +214,6 @@ const OrdersTab = ({
 
         <div className="flex gap-3 justify-end border-t border-white/10 pt-4 flex-wrap">
           <button
-            onClick={() => {
-              setShowInlineOTS(prev => !prev)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-[0_0_15px_rgba(7,145,8,0.3)] active:scale-95 ${
-              showInlineOTS
-                ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
-                : 'bg-[#079108] hover:bg-[#067a07] text-white'
-            }`}
-          >
-            {showInlineOTS ? <><FaTimes /> Tutup Form OTS</> : <><FaPlus /> Order OTS</>}
-          </button>
-          <button
             onClick={() => setShowExportModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-xs font-bold border border-white/10 active:scale-95"
           >
@@ -221,7 +227,6 @@ const OrdersTab = ({
         <RenderTable
           data={specialOrders}
           title="Special Event Orders"
-          icon={<FaStar className="text-[#079108]" />}
           emptyMessage="Tidak ada order special event"
           loading={loading}
           onView={onViewOrder}
@@ -234,7 +239,6 @@ const OrdersTab = ({
         <RenderTable
           data={otsOrders}
           title="Order OTS (On The Spot)"
-          icon={<FaTruck className="text-[#079108]" />}
           emptyMessage="Tidak ada data OTS"
           loading={loading}
           onView={onViewOrder}
@@ -242,10 +246,7 @@ const OrdersTab = ({
           onStatusChange={onStatusChange}
           action={
             <button
-              onClick={() => {
-                setShowInlineOTS(prev => !prev)
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-              }}
+              onClick={handleToggleOTS}
               className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(7,145,8,0.3)] active:scale-95 ${
                 showInlineOTS 
                   ? 'bg-zinc-700 hover:bg-zinc-600 text-white' 
@@ -262,7 +263,6 @@ const OrdersTab = ({
         <RenderTable
           data={poOrders}
           title="Pre-Order (Online)"
-          icon={<FaClipboardList className="text-[#079108]" />}
           emptyMessage="Tidak ada data Pre-Order"
           loading={loading}
           onView={onViewOrder}

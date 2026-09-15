@@ -36,7 +36,7 @@ const MerchTab = ({
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
               <h2 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase">Manajemen <span className="text-[#079108]">Merchandise</span></h2>
-              <p className="text-xs text-zinc-400 font-medium">Kelola catalog produk, stok, ukuran, dan harga merch.</p>
+              <p className="text-xs text-zinc-400 font-medium mt-1">Katalog & stok merchandise.</p>
             </div>
             <button
               onClick={() => openMerchForm()}

@@ -1,4 +1,5 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
 import ExcelJS from 'exceljs'
@@ -72,22 +73,36 @@ router.get('/:id', authMiddleware, async (req, res) => {
     if (error) throw error
     res.json({ success: true, data })
   } catch (error) {
+    console.error('Error fetching merch order:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// POST create merch order (public)
+// POST create merch order (customer checkout)
 router.post('/', async (req, res) => {
   try {
-    // Check maintenance mode
-    const { data: mtConfig } = await supabase
-      .from('config')
-      .select('value')
-      .eq('key', 'maintenance_mode')
-      .maybeSingle()
+    // Check maintenance mode (Admin with valid token can bypass for testing)
+    let isAdmin = false
+    const token = req.headers.authorization?.split(' ')[1]
+    if (token) {
+      try {
+        jwt.verify(token, process.env.JWT_SECRET)
+        isAdmin = true
+      } catch {
+        isAdmin = false
+      }
+    }
 
-    if (mtConfig && (mtConfig.value === 'true' || mtConfig.value === true)) {
-      return res.status(503).json({ error: 'Sistem sedang dalam pemeliharaan. Transaksi merchandise saat ini belum dapat diproses.' })
+    if (!isAdmin) {
+      const { data: mtConfig } = await supabase
+        .from('config')
+        .select('value')
+        .eq('key', 'maintenance_mode')
+        .maybeSingle()
+
+      if (mtConfig && (mtConfig.value === 'true' || mtConfig.value === true)) {
+        return res.status(503).json({ error: 'Sistem sedang dalam pemeliharaan. Transaksi merchandise saat ini belum dapat diproses.' })
+      }
     }
 
     const { nama_lengkap, whatsapp, instagram, catatan, items, payment_proof_url } = req.body

@@ -162,7 +162,12 @@ const ShopPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [step])
 
-  const payment = { bank: "BCA", rekening: "0902683273", atasNama: "Natasya Angelina Putri" }
+  const payment = {
+    bank: config?.payment_bank || "BCA",
+    rekening: config?.payment_rekening || "0902683273",
+    atasNama: config?.payment_atas_nama || "Natasya Angelina Putri",
+    method: config?.payment_method || "Manual TF"
+  }
 
   const handleMerchFileChange = (e) => {
     const f = e.target.files[0]
@@ -225,7 +230,7 @@ const ShopPage = () => {
       const invalidItems = cartHook.cart.filter(item => item.member_id !== 'group' && !allowedMemberIds.includes(String(item.member_id)))
       if (invalidItems.length > 0) {
         const memberNames = invalidItems.map(i => i.name).join(', ')
-        rbToast.error(`${memberNames} tidak terdapat di lineup event ini!`, 'Cek lineup event kamu')
+        rbToast.error(`${memberNames} tidak ada di lineup event ini`)
         return
       }
     }
@@ -369,7 +374,7 @@ const ShopPage = () => {
                   addToCart={(type, m, startPos) => {
                     if (type === 'member' || type === 'group') {
                       if (!formData.event_id) {
-                        rbToast.info("Silakan pilih jadwal event dulu!", "Pilih event terlebih dahulu")
+                        rbToast.info("Pilih jadwal event dulu")
                         return;
                       }
                     }

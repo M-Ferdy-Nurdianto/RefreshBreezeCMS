@@ -1,84 +1,145 @@
 import { toast } from 'react-toastify'
-import { FaCheckCircle, FaExclamationCircle, FaInfoCircle } from 'react-icons/fa'
+import {
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaInfoCircle,
+  FaExclamationTriangle,
+  FaTrash,
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaFileDownload
+} from 'react-icons/fa'
 
+// Palet warna minimalis sesuai tema admin Refresh Breeze:
+// - success  -> #079108 (hijau brand)
+// - error    -> #f76464 (merah status)
+// - info     -> #00e5e5 (cyan status checked)
+// - warning  -> #f59e0b (amber)
+// - delete   -> #f76464 (merah hapus)
+// - auth     -> #f0efec (netral login/logout)
+// - download -> #079108 (hijau brand)
 const toastStyles = {
   success: {
-    icon: <FaCheckCircle className="text-emerald-500" />,
-    accent: 'emerald',
-    label: 'Success'
+    icon: <FaCheckCircle />,
+    color: '#079108'
   },
   error: {
-    icon: <FaExclamationCircle className="text-rose-500" />,
-    accent: 'rose',
-    label: 'Error'
+    icon: <FaExclamationCircle />,
+    color: '#f76464'
   },
   info: {
-    icon: <FaInfoCircle className="text-blue-500" />,
-    accent: 'blue',
-    label: 'Info'
+    icon: <FaInfoCircle />,
+    color: '#00e5e5'
+  },
+  warning: {
+    icon: <FaExclamationTriangle />,
+    color: '#f59e0b'
+  },
+  delete: {
+    icon: <FaTrash />,
+    color: '#f76464'
+  },
+  auth: {
+    icon: <FaSignInAlt />,
+    color: '#f0efec'
+  },
+  logout: {
+    icon: <FaSignOutAlt />,
+    color: '#f0efec'
+  },
+  download: {
+    icon: <FaFileDownload />,
+    color: '#079108'
   }
 }
 
-const CustomToast = ({ message, type = 'info', label }) => {
+const CustomToast = ({ message, type = 'info', customIcon, customColor }) => {
   const style = toastStyles[type] || toastStyles.info
-  
+  const icon = customIcon || style.icon
+  const color = customColor || style.color
+
   return (
-    <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-4 bg-gray-900/95 backdrop-blur-xl rounded-[1.25rem] border border-white/10 shadow-2xl w-[90vw] sm:w-auto sm:min-w-[320px] sm:max-w-[400px] mx-auto">
-      <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
-        {style.icon}
-      </div>
-      <div className="flex flex-col min-w-0">
-        <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-1.5 ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}`}>
-          {label || style.label}
-        </p>
-        <p className="text-xs sm:text-sm font-black text-white leading-tight sm:leading-relaxed truncate sm:whitespace-normal">{message}</p>
-      </div>
+    <div className="flex items-center gap-2.5 px-4 py-3.5 bg-[#111726] border border-white/10 rounded-2xl shadow-xl w-[92vw] sm:w-auto sm:min-w-[280px] sm:max-w-[380px] mx-auto">
+      <span style={{ color }} className="text-[17px] shrink-0">
+        {icon}
+      </span>
+      <p className="text-[13px] font-normal text-[#f0efec] leading-snug truncate sm:whitespace-normal">
+        {message}
+      </p>
     </div>
   )
 }
 
 const toastOptions = (id) => ({
   toastId: id,
-  position: "bottom-center",
-  autoClose: 1500,
-  className: "!bg-transparent !p-0 !shadow-none min-h-0",
-  bodyClassName: "!p-0 !m-0",
+  position: 'bottom-center',
+  autoClose: 2200,
+  className: '!bg-transparent !p-0 !shadow-none min-h-0',
+  bodyClassName: '!p-0 !m-0',
   closeButton: false,
 })
 
 export const showToast = {
-  success: (message, label = 'Berhasil') => {
+  success: (message) => {
     const id = `success-${message}`
-    const content = <CustomToast message={message} type="success" label={label} />
+    const content = <CustomToast message={message} type="success" />
     if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
     else toast(content, toastOptions(id))
   },
-  error: (message, label = 'Gagal') => {
+  error: (message) => {
     const id = `error-${message}`
-    const content = <CustomToast message={message} type="error" label={label} />
+    const content = <CustomToast message={message} type="error" />
     if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
     else toast(content, toastOptions(id))
   },
-  info: (message, label = 'Info') => {
+  info: (message) => {
     const id = `info-${message}`
-    const content = <CustomToast message={message} type="info" label={label} />
+    const content = <CustomToast message={message} type="info" />
     if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
     else toast(content, toastOptions(id))
   },
-  // Custom for cart with emoji support
-  cart: (message, emoji = '', label = 'Added to Cart') => {
+  warning: (message) => {
+    const id = `warn-${message}`
+    const content = <CustomToast message={message} type="warning" />
+    if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
+    else toast(content, toastOptions(id))
+  },
+  // Toast khusus keranjang belanja / cart (emoji polos + teks tanpa bulatan background & tanpa label)
+  cart: (message, emoji = '🛒') => {
     const id = `cart-${message}`
     const content = (
-      <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-4 bg-gray-900/95 backdrop-blur-xl rounded-[1.25rem] border border-white/10 shadow-2xl w-[90vw] sm:w-auto sm:min-w-[320px] sm:max-w-[400px] mx-auto">
-        <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xl shadow-inner border border-white/5">
-          {emoji}
-        </div>
-        <div className="flex flex-col min-w-0">
-          <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 leading-none mb-1.5">{label}</p>
-          <p className="text-xs sm:text-sm font-black text-white leading-tight sm:leading-relaxed truncate sm:whitespace-normal">{message}</p>
-        </div>
+      <div className="flex items-center gap-2.5 px-4 py-3.5 bg-[#111726] border border-white/10 rounded-2xl shadow-xl w-[92vw] sm:w-auto sm:min-w-[280px] sm:max-w-[380px] mx-auto">
+        <span className="text-[17px] shrink-0">{emoji}</span>
+        <p className="text-[13px] font-normal text-[#f0efec] leading-snug truncate sm:whitespace-normal">
+          {message}
+        </p>
       </div>
     )
+    if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
+    else toast(content, toastOptions(id))
+  },
+  // Helper opsional untuk kasus umum lainnya
+  delete: (message) => {
+    const id = `del-${message}`
+    const content = <CustomToast message={message} type="delete" />
+    if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
+    else toast(content, toastOptions(id))
+  },
+  auth: (message) => {
+    const id = `auth-${message}`
+    const content = <CustomToast message={message} type="auth" />
+    if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
+    else toast(content, toastOptions(id))
+  },
+  logout: (message) => {
+    const id = `logout-${message}`
+    const content = <CustomToast message={message} type="logout" />
+    if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
+    else toast(content, toastOptions(id))
+  },
+  download: (message) => {
+    const id = `dl-${message}`
+    const content = <CustomToast message={message} type="download" />
     if (toast.isActive(id)) toast.update(id, { render: content, ...toastOptions(id) })
     else toast(content, toastOptions(id))
   }

@@ -161,7 +161,7 @@ const RecapTab = ({ orders, events, recapEventFilter, setRecapEventFilter }) => 
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">Rekapitulasi <span className="text-[#079108]">Penjualan</span></h2>
-          <p className="text-xs text-zinc-400 font-medium mt-0.5">Analisis omset, jumlah order, dan performa per member.</p>
+          <p className="text-xs text-zinc-400 font-medium mt-1">Ringkasan omset & performa penjualan.</p>
         </div>
 
         <CustomSelect

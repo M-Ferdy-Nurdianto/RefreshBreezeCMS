@@ -20,7 +20,9 @@ import {
   FaArrowRight,
   FaTrash,
   FaGripVertical,
-  FaTimes
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa'
 
 const DEFAULT_TITLE = "REFRESH BREEZE"
@@ -75,6 +77,36 @@ const HeroTab = () => {
 
   const previewContainerRef = useRef(null)
   const [previewScale, setPreviewScale] = useState(1)
+
+  // Horizontal Tab Scroll Controls
+  const memberTabsScrollRef = useRef(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const checkTabScroll = () => {
+    const el = memberTabsScrollRef.current
+    if (!el) return
+    const hasOverflow = el.scrollWidth > el.clientWidth + 2
+    setCanScrollLeft(el.scrollLeft > 2)
+    setCanScrollRight(hasOverflow && el.scrollLeft < (el.scrollWidth - el.clientWidth - 2))
+  }
+
+  useEffect(() => {
+    checkTabScroll()
+    window.addEventListener('resize', checkTabScroll)
+    return () => window.removeEventListener('resize', checkTabScroll)
+  }, [members])
+
+  const scrollTabs = (direction) => {
+    const el = memberTabsScrollRef.current
+    if (!el) return
+    const scrollAmount = 220
+    el.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    })
+    setTimeout(checkTabScroll, 300)
+  }
 
   useEffect(() => {
     const el = previewContainerRef.current
@@ -205,21 +237,18 @@ const HeroTab = () => {
         // 1. Cek ketersediaan foto hero resmi (e.g. storage /hero/id.webp)
         // 2. Jika tidak ada, pakai foto galeri nomor 1
         // 3. Jika tidak ada, pakai placeholder siluet
-        const knownHeroPhotos = {
-          piya: 'http://127.0.0.1:54321/storage/v1/object/public/members/hero/piya.webp',
-          yanyee: 'http://127.0.0.1:54321/storage/v1/object/public/members/hero/yanyee.webp'
-        }
-
         const galleryFirstPhoto = dbM.member_gallery?.[0]?.image_url
-        let initialPhoto = knownHeroPhotos[dbId] || getAssetPath('/images/members/placeholder.svg')
+        let initialPhoto = getAssetPath('/images/members/placeholder.svg')
         
         // Jika member secret / silhouette
         if (dbM.is_secret && dbM.silhouette_image_url) {
           initialPhoto = dbM.silhouette_image_url
-        } else if (!knownHeroPhotos[dbId] && galleryFirstPhoto && typeof galleryFirstPhoto === 'string' && galleryFirstPhoto.trim()) {
+        } else if (galleryFirstPhoto && typeof galleryFirstPhoto === 'string' && galleryFirstPhoto.trim()) {
           initialPhoto = (galleryFirstPhoto.startsWith('http') || galleryFirstPhoto.startsWith('/')) 
             ? galleryFirstPhoto 
             : getAssetPath(`/images/members/${galleryFirstPhoto}`)
+        } else if (dbM.image_url && typeof dbM.image_url === 'string' && dbM.image_url.trim()) {
+          initialPhoto = dbM.image_url
         }
 
         return {
@@ -441,11 +470,11 @@ const HeroTab = () => {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c111d]/80 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-xl">
         <div>
-          <h1 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-2">
-            <FaEye className="text-[#079108]" /> Hero Section CMS
+          <h1 className="text-xl font-black text-white uppercase tracking-tight">
+            Pengaturan Hero
           </h1>
           <p className="text-xs font-semibold text-zinc-400 mt-1">
-            Kelola judul, warna teks, foto hero, perbesaran (zoom), posisi foto, & warna tint dengan Live Preview.
+            Visual & layout hero section.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -489,8 +518,8 @@ const HeroTab = () => {
           
           {/* 1. General Hero Text & Color Settings */}
           <div className="bg-[#0c111d]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl space-y-4">
-            <h2 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#079108]">
-              <FaSlidersH /> Teks Header & Warna Judul
+            <h2 className="text-sm font-black uppercase tracking-wider text-[#079108]">
+              Teks Header & Warna Judul
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
@@ -579,79 +608,122 @@ const HeroTab = () => {
 
           {/* 2. Member Hero Customizer */}
           <div className="bg-[#0c111d]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#079108]">
-                <FaImage /> Foto & Pengaturan Posisi Per Member
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h2 className="text-sm font-black uppercase tracking-wider text-[#079108]">
+                Foto & Posisi Member
               </h2>
-              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#079108]/20 text-[#079108] border border-[#079108]/30">
-                Member: {currentMember?.name}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/5 text-zinc-300 border border-white/10">
+                  {members.length} Member Aktif di Hero
+                </span>
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#079108]/20 text-[#079108] border border-[#079108]/30">
+                  Dipilih: {currentMember?.name}
+                </span>
+              </div>
             </div>
 
-            {/* Member Selector Tabs & Reorder Controls */}
+            {/* Member Selector Tabs with Horizontal Scroll, Arrows & Reorder Controls */}
             <div className="space-y-3 pb-3 border-b border-white/10">
-              <div className="flex flex-wrap gap-2">
-                {members.map((m, idx) => (
-                  <div
-                    key={m.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, idx)}
-                    onDragOver={(e) => handleDragOver(e, idx)}
-                    onDrop={(e) => handleDrop(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    className={`flex items-center rounded-xl p-1 border cursor-grab active:cursor-grabbing select-none transition-all duration-150 ${
-                      draggedIdx === idx ? 'opacity-40 scale-95 border-dashed border-[#079108]' : ''
-                    } ${
-                      dragOverIdx === idx && draggedIdx !== idx
-                        ? 'border-2 border-teal-400 scale-105 bg-teal-500/20'
-                        : ''
-                    } ${
-                      selectedMemberId === m.id
-                        ? 'bg-[#079108] border-[#079108] shadow-[0_0_12px_rgba(7,145,8,0.5)]'
-                        : 'bg-[#111726] border-white/10 hover:border-white/20'
-                    }`}
+              <div className="relative group">
+                {/* Scroll Button Left */}
+                {canScrollLeft && (
+                  <button
+                    type="button"
+                    onClick={() => scrollTabs('left')}
+                    className="absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-[#161f33] border border-white/20 text-white shadow-xl flex items-center justify-center hover:bg-[#079108] hover:border-[#079108] transition-all text-xs"
+                    title="Geser ke kiri"
                   >
-                    {/* Drag Grip Handle */}
-                    <div 
-                      className="text-zinc-400 hover:text-white px-1 cursor-grab"
-                      title="Tahan dan geser (drag & drop) untuk ubah urutan"
-                    >
-                      <FaGripVertical className="text-xs opacity-60" />
-                    </div>
+                    <FaChevronLeft className="text-[10px]" />
+                  </button>
+                )}
 
-                    {/* Member Select Button */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMemberId(m.id)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase flex items-center gap-2 transition-all ${
-                        selectedMemberId === m.id ? 'text-white' : 'text-zinc-400 hover:text-white'
+                {/* Left Gradient Fade Indicator */}
+                {canScrollLeft && (
+                  <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0c111d] to-transparent z-10" />
+                )}
+
+                {/* Horizontal Scrollable Tabs Container */}
+                <div
+                  ref={memberTabsScrollRef}
+                  onScroll={checkTabScroll}
+                  className="flex items-center gap-2 overflow-x-auto custom-scrollbar scroll-smooth py-1 px-0.5"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {members.map((m, idx) => (
+                    <div
+                      key={m.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, idx)}
+                      onDragOver={(e) => handleDragOver(e, idx)}
+                      onDrop={(e) => handleDrop(e, idx)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex items-center shrink-0 rounded-xl p-1 border cursor-grab active:cursor-grabbing select-none transition-all duration-150 ${
+                        draggedIdx === idx ? 'opacity-40 scale-95 border-dashed border-[#079108]' : ''
+                      } ${
+                        dragOverIdx === idx && draggedIdx !== idx
+                          ? 'border-2 border-teal-400 scale-105 bg-teal-500/20'
+                          : ''
+                      } ${
+                        selectedMemberId === m.id
+                          ? 'bg-[#079108] border-[#079108] shadow-[0_0_12px_rgba(7,145,8,0.5)]'
+                          : 'bg-[#111726] border-white/10 hover:border-white/20'
                       }`}
                     >
-                      <span 
-                        className={`w-2.5 h-2.5 rounded-full ${getMemberOverlayClass(m.color)}`} 
-                        style={getMemberOverlayStyle(m.color)}
-                      />
-                      {m.name}
-                    </button>
+                      {/* Drag Grip Handle */}
+                      <div 
+                        className="text-zinc-400 hover:text-white px-1 cursor-grab"
+                        title="Tahan dan geser (drag & drop) untuk ubah urutan"
+                      >
+                        <FaGripVertical className="text-xs opacity-60" />
+                      </div>
 
-                    {/* Delete Member from Hero Button */}
-                    <div className="flex items-center pr-1 pl-1 border-l border-white/10 ml-0.5">
+                      {/* Member Select Button */}
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleRemoveMemberFromHero(m.id, m.name); }}
-                        title="Keluarkan dari Hero Section"
-                        className="p-1 text-[10px] rounded hover:bg-red-500/30 text-red-300 hover:text-red-200 transition"
+                        onClick={() => setSelectedMemberId(m.id)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase flex items-center gap-2 transition-all ${
+                          selectedMemberId === m.id ? 'text-white' : 'text-zinc-400 hover:text-white'
+                        }`}
                       >
-                        <FaTrash />
+                        <span 
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${getMemberOverlayClass(m.color)}`} 
+                          style={getMemberOverlayStyle(m.color)}
+                        />
+                        <span className="whitespace-nowrap">{m.name}</span>
                       </button>
+
+                      {/* Delete Member from Hero Button */}
+                      <div className="flex items-center pr-1 pl-1 border-l border-white/10 ml-0.5">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleRemoveMemberFromHero(m.id, m.name); }}
+                          title="Keluarkan dari Hero Section"
+                          className="p-1 text-[10px] rounded hover:bg-red-500/30 text-red-300 hover:text-red-200 transition"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+
+                {/* Right Gradient Fade Indicator */}
+                {canScrollRight && (
+                  <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0c111d] to-transparent z-10" />
+                )}
+
+                {/* Scroll Button Right */}
+                {canScrollRight && (
+                  <button
+                    type="button"
+                    onClick={() => scrollTabs('right')}
+                    className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-[#161f33] border border-white/20 text-white shadow-xl flex items-center justify-center hover:bg-[#079108] hover:border-[#079108] transition-all text-xs"
+                    title="Geser ke kanan"
+                  >
+                    <FaChevronRight className="text-[10px]" />
+                  </button>
+                )}
               </div>
-              <p className="text-[11px] text-zinc-400 flex items-center gap-1.5">
-                <span className="text-[#079108] font-bold">Fitur Drag & Drop:</span> 
-                Anda bisa klik & tahan ikon titik baris di kartu member lalu geser (drag & drop) untuk mengatur urutan panggung Hero secara instan!
-              </p>
             </div>
 
             {/* Editing Panel for Selected Member */}
@@ -716,23 +788,23 @@ const HeroTab = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => { setDeviceEditMode('desktop'); setPreviewMode('desktop'); }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                         deviceEditMode === 'desktop'
                           ? 'bg-[#079108] text-white shadow-[0_0_10px_rgba(7,145,8,0.4)]'
                           : 'text-zinc-400 hover:text-white bg-white/5'
                       }`}
                     >
-                      <FaDesktop /> Mode Desktop
+                      Desktop
                     </button>
                     <button
                       onClick={() => { setDeviceEditMode('mobile'); setPreviewMode('mobile'); }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                         deviceEditMode === 'mobile'
                           ? 'bg-[#079108] text-white shadow-[0_0_10px_rgba(7,145,8,0.4)]'
                           : 'text-zinc-400 hover:text-white bg-white/5'
                       }`}
                     >
-                      <FaMobileAlt /> Mode Mobile
+                      Mobile
                     </button>
                   </div>
                 </div>

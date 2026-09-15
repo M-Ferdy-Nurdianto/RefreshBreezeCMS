@@ -161,7 +161,7 @@ const RenderTable = ({ data, title, icon, emptyMessage, action, loading, onView,
       {/* Header */}
       <div className="p-4 md:p-5 border-b border-white/10 flex justify-between items-center bg-[#161f33]/80">
         <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
-          {icon} <span>{title}</span>
+          <span>{title}</span>
           <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/10 text-zinc-300 border border-white/10 ml-2">
             {data.length} items
           </span>

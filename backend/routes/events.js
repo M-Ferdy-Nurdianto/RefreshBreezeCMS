@@ -184,13 +184,13 @@ router.post('/', authMiddleware, async (req, res) => {
       .from('events')
       .insert({
         nama,
-        tanggal,
+        tanggal: parseInt(tanggal, 10),
         bulan,
-        tahun,
+        tahun: parseInt(tahun, 10),
         lokasi,
         event_time,
         cheki_time,
-        is_past,
+        is_past: Boolean(is_past),
         type: type || 'regular',
         is_special: type === 'special',
         theme_name: type === 'special' ? theme_name : null,

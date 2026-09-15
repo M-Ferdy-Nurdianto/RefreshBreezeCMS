@@ -11,107 +11,133 @@ import imageCompression from 'browser-image-compression'
 // --- SHARED SUB-COMPONENTS ---
 
 const InternalPaymentInfo = ({ payment, copyToClipboard, copied }) => (
-  <div className="bg-emerald-50/50 dark:bg-[#151c2e] rounded-2xl p-5 shadow-sm border border-emerald-100/80 dark:border-white/10 transition-colors">
-    <div className="flex items-center gap-3 mb-5 pb-5 border-b border-emerald-100 dark:border-white/10">
-      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 flex-shrink-0">
-        <FaUniversity className="text-emerald-600 dark:text-emerald-400 text-lg" />
-      </div>
-      <div className="min-w-0">
-        <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-tight truncate">{payment?.bank || 'Bank Central Asia'}</h4>
-        <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">Official Account</span>
-      </div>
-    </div>
-    
-    <div className="flex items-center justify-between gap-4 mb-5">
-      <div className="min-w-0">
-        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Holder</span>
-        <p className="text-xs font-bold text-[#079108] dark:text-emerald-400 uppercase truncate leading-none">{payment?.atasNama || 'Natasya Angelina Putri'}</p>
-      </div>
-      <div className="flex-shrink-0 text-right">
-        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Method</span>
-        <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
-           <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-           <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Manual TF</span>
+  <div className="bg-emerald-50/50 dark:bg-[#151c2e] rounded-2xl p-4 sm:p-5 shadow-sm border border-emerald-100/80 dark:border-white/10 transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/25 shrink-0">
+          <FaUniversity className="text-emerald-600 dark:text-emerald-400 text-base" />
         </div>
-      </div>
-    </div>
-
-    <div 
-      onClick={() => copyToClipboard(payment?.rekening)}
-      className="bg-white dark:bg-white/5 border border-emerald-100 dark:border-white/10 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-emerald-300 dark:hover:border-white/20 transition-all group shadow-sm"
-    >
-      <div className="flex-1 min-w-0">
-        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block mb-1">Account Number</span>
-        <span className="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-wider block">{payment?.rekening || '0902683273'}</span>
-      </div>
-      <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-        copied 
-          ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30' 
-          : 'bg-emerald-50 text-[#079108] border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30'
-      }`}>
-        {copied ? <FaCheckCircle className="text-sm" /> : <FaRegCopy className="text-sm" />}
-      </div>
-    </div>
-  </div>
-)
-
-const InternalCartSummary = ({ items, type, updateQuantity, updateMerchQuantity, removeFromCart, removeFromMerchCart, total }) => (
-  <div className="flex flex-col h-full">
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h3 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white leading-none">Keranjang Belanja</h3>
-        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-widest mt-2">Daftar item yang akan kamu pesan</p>
-      </div>
-      <div className="text-right">
-        <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 block leading-none">{items?.length || 0}</span>
-        <span className="text-[10px] font-black text-gray-400 dark:text-gray-400 uppercase tracking-[0.2em]">Items</span>
-      </div>
-    </div>
-
-    <div className="flex-1 space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-      {items?.map((item, index) => (
-        <motion.div layout key={item.cartId || item.id} className="group relative flex items-start gap-3 bg-white dark:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/10 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all shadow-sm">
-          <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 w-3 pt-2">{index + 1}.</span>
-          <div className="w-12 h-12 rounded-lg bg-gray-50 dark:bg-white/5 overflow-hidden flex-shrink-0 border border-gray-100 dark:border-white/10 mt-1">
-            <img src={item.image || item.gambar_url} alt="Item" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0 pt-1">
-            <h4 className="font-black text-[11px] text-gray-900 dark:text-white uppercase tracking-tight leading-tight mb-1.5 break-words">
-              {(item.name || item.nama || '').replace(/cheki/gi, '').trim()}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">
+              {payment?.bank || 'Bank Central Asia'}
             </h4>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[9px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-100/50 dark:border-emerald-500/20">IDR {(item.price || item.harga || 0).toLocaleString()}</span>
-              {item.size && <span className="text-[8px] font-bold text-gray-500 dark:text-slate-300 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded uppercase">Size: {item.size}</span>}
-            </div>
-            
-            <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/10 p-0.5">
-                 <button onClick={() => type === 'cheki' ? updateQuantity(item.id, -1) : updateMerchQuantity(item.cartId, -1)} className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"><FaMinus className="text-[8px]" /></button>
-                 <span className="w-5 text-center font-black text-[10px] text-gray-900 dark:text-white">{item.quantity}</span>
-                 <button onClick={() => type === 'cheki' ? updateQuantity(item.id, 1) : updateMerchQuantity(item.cartId, 1)} className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"><FaPlus className="text-[8px]" /></button>
-              </div>
-              <button onClick={() => type === 'cheki' ? removeFromCart(item.id) : removeFromMerchCart(item.cartId)} className="text-gray-300 hover:text-red-500 transition-colors p-2"><FaTrash className="text-[10px]" /></button>
-            </div>
+            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              {payment?.method || 'Manual TF'}
+            </span>
           </div>
-        </motion.div>
-      ))}
-    </div>
-
-    <div className="mt-8 -mx-6 -mb-6 bg-emerald-50/70 dark:bg-[#151c2e] rounded-b-3xl p-6 flex items-center justify-between border-t border-emerald-100 dark:border-white/10 transition-colors">
-      <div className="flex flex-col">
-        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Total Order</span>
-        <div className="flex items-baseline gap-1">
-           <span className="text-xs font-bold text-gray-500 dark:text-gray-400">IDR</span>
-           <span className="text-2xl font-black text-gray-900 dark:text-white">{(total || 0).toLocaleString()}</span>
+          <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 truncate">
+            a.n. {payment?.atasNama || 'Natasya Angelina Putri'}
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
-         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-         <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Ready to Pay</span>
+
+      <div 
+        onClick={() => copyToClipboard(payment?.rekening)}
+        className="flex items-center justify-between sm:justify-end gap-3 bg-white dark:bg-white/5 border border-emerald-100 dark:border-white/10 rounded-xl px-3 py-2 cursor-pointer hover:border-emerald-300 dark:hover:border-white/20 transition-all group shadow-sm"
+      >
+        <span className="text-sm sm:text-base font-mono font-black text-gray-900 dark:text-white tracking-wider">
+          {payment?.rekening || '0902683273'}
+        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            copyToClipboard(payment?.rekening)
+          }}
+          aria-label="Salin nomor rekening"
+          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0 ${
+            copied 
+              ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30' 
+              : 'bg-emerald-50 text-[#079108] border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30 active:scale-95'
+          }`}
+        >
+          {copied ? <FaCheckCircle className="text-xs" /> : <FaRegCopy className="text-xs" />}
+        </button>
       </div>
     </div>
   </div>
 )
+
+const InternalCartSummary = ({
+  items,
+  type,
+  total,
+  onConfirm,
+  isDisabled,
+}) => {
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header ringkas */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+          Ringkasan
+        </span>
+        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+          {items?.length || 0} items
+        </span>
+      </div>
+
+      {/* List item — scroll tipis, tanpa tombol qty/hapus */}
+      <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar mb-4 space-y-2">
+        {items?.map((item) => (
+          <motion.div
+            layout
+            key={item.cartId || item.id}
+            className="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-white/5 last:border-0"
+          >
+            <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-white/5 overflow-hidden flex-shrink-0 border border-gray-100 dark:border-white/10">
+              <img
+                src={item.image || item.gambar_url}
+                alt="Item"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">
+                {(item.name || item.nama || '').replace(/cheki/gi, '').trim()}
+              </p>
+              {item.size && (
+                <span className="text-[9px] text-gray-400 uppercase">
+                  Size: {item.size}
+                </span>
+              )}
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className="text-[11px] font-bold text-emerald-500">
+                Rp {(item.price || item.harga || 0).toLocaleString()}
+              </p>
+              <p className="text-[9px] text-gray-400">×{item.quantity}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Total */}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/10 mb-4">
+        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+          Total
+        </span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-xs font-bold text-gray-400">IDR</span>
+          <span className="text-lg font-black text-gray-900 dark:text-white">
+            {(total || 0).toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      {/* Tombol Confirm — hidden di mobile, tampil di desktop */}
+      <button
+        type="button"
+        onClick={onConfirm}
+        disabled={isDisabled}
+        className="hidden lg:flex w-full bg-[#079108] hover:bg-[#067a07] text-white py-3.5 rounded-2xl font-bold text-sm items-center justify-center transition-all disabled:opacity-50 active:scale-95"
+      >
+        CONFIRM PESANAN
+      </button>
+    </div>
+  )
+}
 
 // --- MAIN COMPONENT ---
 
@@ -123,6 +149,7 @@ const CheckoutProcess = ({
   receiptData, merchReceiptData, payment, copied, setCopied, fileInputRef, merchFileInputRef
 }) => {
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
   const eventDropdownRef = useRef(null)
 
   useEffect(() => {
@@ -224,177 +251,465 @@ const CheckoutProcess = ({
     )
   }
 
+  const currentTotal = step === 2 ? totalHarga : totalMerchHarga
+  const isSubmitDisabled =
+    (step === 2 ? submitting : merchSubmitting) ||
+    (step === 2 ? cart.length === 0 : merchCart.length === 0)
+
+  const activeFilePreview = step === 2 ? filePreview : merchFilePreview
+
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl mx-auto px-4 pb-10">
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12 items-start">
-          <div className="bg-white dark:bg-[#111726] rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-100 dark:border-white/10 transition-colors">
-             <InternalCartSummary 
-                items={step === 2 ? cart : merchCart} 
-                type={step === 2 ? 'cheki' : 'merch'} 
-                updateQuantity={updateQuantity}
-                updateMerchQuantity={updateMerchQuantity}
-                removeFromCart={removeFromCart}
-                removeFromMerchCart={removeFromMerchCart}
-                total={step === 2 ? totalHarga : totalMerchHarga}
-             />
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-6xl mx-auto px-4 pb-28 lg:pb-10"
+    >
+      {/* Grid utama: flex row di desktop, column di mobile */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
 
-          <div className="bg-white dark:bg-[#111726] rounded-3xl p-6 sm:p-10 shadow-xl border border-gray-100 dark:border-white/10 transition-colors">
-             <div className="space-y-8">
-                <div className="flex flex-col gap-4">
-                   <div className="flex items-center justify-between">
-                       <button onClick={() => setStep(1)} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-white/20 shadow-sm border border-gray-200 dark:border-white/10"><FaChevronRight className="rotate-180 text-[10px]" /></div>
-                         <span className="text-[10px] font-black uppercase tracking-widest">Ganti Member / Tambah Pesanan</span>
-                      </button>
-                      <div className="bg-emerald-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                        {step === 2 ? 'Tickets' : 'Merchandise'}
-                      </div>
-                   </div>
-                    <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter leading-none">Checkout Data</h2>
-                   <div className="h-1 w-20 bg-emerald-500 rounded-full"></div>
+        {/* ===== KOLOM KIRI: FORM CHECKOUT ===== */}
+        <div className="w-full lg:flex-1 bg-white dark:bg-[#111726] rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-100 dark:border-white/10 transition-colors flex flex-col">
+          <div className="space-y-6 flex flex-col flex-1">
+
+            {/* Nav bar atas */}
+            <div className="flex items-center justify-between gap-3 bg-gray-50 dark:bg-white/5 p-2 rounded-2xl border border-gray-100 dark:border-white/10">
+              <button
+                onClick={() => setStep(1)}
+                className="flex items-center gap-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors group px-2 py-1"
+              >
+                <div className="w-7 h-7 rounded-full bg-white dark:bg-white/10 flex items-center justify-center group-hover:scale-105 shadow-sm border border-gray-200 dark:border-white/10">
+                  <FaChevronRight className="rotate-180 text-[10px]" />
                 </div>
-                <InternalPaymentInfo payment={payment} copyToClipboard={copyToClipboard} copied={copied} />
-                <form onSubmit={step === 2 ? handleSubmit : handleMerchSubmit} className="space-y-6">
-                    {step === 2 && events.length > 0 && (
-                      <div className="space-y-2 relative z-30" ref={eventDropdownRef}>
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Jadwal Event *</label>
-                        
-                        <div 
-                          onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
-                          className={`w-full bg-gray-50/70 dark:bg-white/5 border transition-all cursor-pointer rounded-2xl px-6 py-3.5 flex items-center justify-between shadow-sm ${
-                            eventDropdownOpen 
-                              ? 'border-emerald-500 bg-white dark:bg-[#162035] ring-4 ring-emerald-500/10' 
-                              : 'border-gray-200 dark:border-white/10 hover:border-emerald-300 dark:hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
-                            <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full shrink-0 ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
-                            <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
-                              {selectedEventObj 
-                                ? selectedEventObj.nama 
-                                : '-- PILIH JADWAL EVENT --'
-                              }
-                            </span>
-                          </div>
-                          <FaChevronDown className={`text-gray-400 text-xs sm:text-sm shrink-0 transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180 text-emerald-500' : ''}`} />
-                        </div>
+                <span className="text-xs font-semibold">
+                  Ganti Member / Tambah Pesanan
+                </span>
+              </button>
+              <div className="flex items-center gap-2 pl-3 border-l border-gray-200 dark:border-white/10">
+                <span className="bg-[#079108] text-white px-3 py-1 rounded-full text-[10px] font-bold">
+                  {step === 2 ? 'Tickets' : 'Merchandise'}
+                </span>
+              </div>
+            </div>
 
-                        <AnimatePresence>
-                          {eventDropdownOpen && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: -10 }} 
-                              animate={{ opacity: 1, y: 0 }} 
-                              exit={{ opacity: 0, y: -10 }}
-                              className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#162035] rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50 dark:border-white/10"
-                            >
-                              <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
-                                {events.map((ev) => {
-                                  const isSelected = formData.event_id === ev.id
-                                  return (
-                                    <div 
-                                      key={ev.id}
-                                      onClick={() => {
-                                        setFormData({ ...formData, event_id: ev.id })
-                                        setEventDropdownOpen(false)
-                                      }}
-                                      className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${
-                                        isSelected ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'hover:bg-gray-50 dark:hover:bg-white/5'
-                                      }`}
-                                    >
-                                      <div className="flex flex-col">
-                                        <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${
-                                          isSelected ? 'text-[#079108] dark:text-emerald-400' : 'text-gray-900 dark:text-white'
-                                        }`}>
-                                          {ev.nama}
-                                        </span>
-                                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
-                                          {ev.tanggal} {ev.bulan} {ev.tahun}
-                                        </span>
-                                      </div>
-                                      {isSelected && (
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] shrink-0 ml-2" />
-                                      )}
-                                    </div>
-                                  )
-                                })}
+            {/* Judul */}
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter leading-none mb-2">
+                Checkout Data
+              </h2>
+              <div className="h-1 w-16 bg-emerald-500 rounded-full" />
+            </div>
+
+            {/* Info rekening — compact 1 baris */}
+            <div
+              onClick={() => copyToClipboard(payment?.rekening)}
+              className="flex items-center gap-3 bg-emerald-50/50 dark:bg-[#151c2e] border border-emerald-100/80 dark:border-white/10 rounded-2xl px-4 py-3 cursor-pointer hover:border-emerald-300 dark:hover:border-white/20 transition-all group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <FaUniversity className="text-emerald-600 dark:text-emerald-400 text-sm" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-black text-gray-900 dark:text-white">
+                    {payment?.bank || 'BCA'}
+                  </span>
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/20">
+                    {payment?.method || 'Manual TF'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                  a.n. {payment?.atasNama || 'Natasya Angelina Putri'}
+                </p>
+              </div>
+              <span className="text-base sm:text-lg font-black text-gray-900 dark:text-white tracking-wider font-mono flex-shrink-0">
+                {payment?.rekening || '0902683273'}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyToClipboard(payment?.rekening)
+                }}
+                aria-label="Salin nomor rekening"
+                className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                  copied
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-emerald-50 text-[#079108] border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30 active:scale-95'
+                }`}
+              >
+                {copied ? (
+                  <FaCheckCircle className="text-sm" />
+                ) : (
+                  <FaRegCopy className="text-sm" />
+                )}
+              </button>
+            </div>
+
+            {/* Form */}
+            <form
+              id="checkout-form"
+              onSubmit={step === 2 ? handleSubmit : handleMerchSubmit}
+              className="space-y-5 flex flex-col flex-1"
+            >
+              {/* Event dropdown */}
+              {step === 2 && events.length > 0 && (
+                <div className="space-y-2 relative z-30" ref={eventDropdownRef}>
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 ml-1">
+                    Jadwal event *
+                  </label>
+                  <div
+                    onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
+                    className={`w-full bg-gray-50/70 dark:bg-white/5 border transition-all cursor-pointer rounded-2xl px-5 py-3.5 flex items-center justify-between shadow-sm ${
+                      eventDropdownOpen
+                        ? 'border-emerald-500 bg-white dark:bg-[#162035] ring-4 ring-emerald-500/10'
+                        : 'border-gray-200 dark:border-white/10 hover:border-emerald-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'
+                        }`}
+                      />
+                      <span
+                        className={`font-semibold text-sm truncate ${
+                          formData.event_id
+                            ? 'text-gray-900 dark:text-white'
+                            : 'text-gray-400'
+                        }`}
+                      >
+                        {selectedEventObj ? selectedEventObj.nama : '-- Pilih Jadwal Event --'}
+                      </span>
+                    </div>
+                    <FaChevronDown
+                      className={`text-gray-400 text-sm shrink-0 transition-transform duration-300 ${
+                        eventDropdownOpen ? 'rotate-180 text-emerald-500' : ''
+                      }`}
+                    />
+                  </div>
+                  <AnimatePresence>
+                    {eventDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#162035] rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50 dark:border-white/10"
+                      >
+                        <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
+                          {events.map((ev) => {
+                            const isSelected = formData.event_id === ev.id
+                            return (
+                              <div
+                                key={ev.id}
+                                onClick={() => {
+                                  setFormData({ ...formData, event_id: ev.id })
+                                  setEventDropdownOpen(false)
+                                }}
+                                className={`px-6 py-3.5 cursor-pointer flex items-center justify-between transition-all ${
+                                  isSelected
+                                    ? 'bg-emerald-50 dark:bg-emerald-500/20'
+                                    : 'hover:bg-gray-50 dark:hover:bg-white/5'
+                                }`}
+                              >
+                                <div className="flex flex-col">
+                                  <span
+                                    className={`font-bold text-sm ${
+                                      isSelected
+                                        ? 'text-[#079108] dark:text-emerald-400'
+                                        : 'text-gray-900 dark:text-white'
+                                    }`}
+                                  >
+                                    {ev.nama}
+                                  </span>
+                                  <span className="text-[11px] text-gray-400 mt-0.5">
+                                    {ev.tanggal} {ev.bulan} {ev.tahun}
+                                  </span>
+                                </div>
+                                {isSelected && (
+                                  <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ml-2" />
+                                )}
                               </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                            )
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Nama & kontak */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 ml-1">
+                    Nama panggilan *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Contoh: Kiki"
+                    value={step === 2 ? formData.nama_panggilan : merchForm.nama_lengkap}
+                    onChange={(e) =>
+                      step === 2
+                        ? setFormData({ ...formData, nama_panggilan: e.target.value })
+                        : setMerchForm({ ...merchForm, nama_lengkap: e.target.value })
+                    }
+                    className="w-full text-sm bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-5 py-3.5 font-medium outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 ml-1">
+                    {step === 2 ? 'WhatsApp / IG *' : 'Nomor WhatsApp *'}
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder={step === 2 ? '08xxx / @username' : '08xxxxxxxxx'}
+                    value={step === 2 ? formData.kontak : merchForm.whatsapp}
+                    onChange={(e) =>
+                      step === 2
+                        ? setFormData({ ...formData, kontak: e.target.value })
+                        : setMerchForm({ ...merchForm, whatsapp: e.target.value })
+                    }
+                    className="w-full text-sm bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-5 py-3.5 font-medium outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Instagram — khusus merch */}
+              {step === 4 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 ml-1">
+                    Instagram (opsional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="@username"
+                    value={merchForm.instagram}
+                    onChange={(e) =>
+                      setMerchForm({ ...merchForm, instagram: e.target.value })
+                    }
+                    className="w-full text-sm bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-5 py-3.5 font-medium outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm"
+                  />
+                </div>
+              )}
+
+              {/* Upload bukti transfer — SELALU tinggi fixed, preview via modal */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    Bukti transfer (screenshot) *
+                  </label>
+                  {activeFilePreview && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPhotoModal(true)}
+                      className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-100 transition-all"
+                    >
+                      <FaCheckCircle className="text-[10px]" /> Terpilih — Lihat foto
+                    </button>
+                  )}
+                </div>
+
+                {/* Area upload — tinggi FIXED, tidak berubah walau ada preview */}
+                <div
+                  onClick={() =>
+                    step === 2
+                      ? fileInputRef.current?.click()
+                      : merchFileInputRef.current?.click()
+                  }
+                  className={`relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden group h-28 flex items-center justify-center ${
+                    activeFilePreview
+                      ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-500/5'
+                      : 'border-gray-200 dark:border-white/15 border-dashed hover:border-emerald-500 bg-gray-50 dark:bg-[#0b101d]'
+                  }`}
+                >
+                  {activeFilePreview ? (
+                    /* State: sudah ada foto — tampilkan thumbnail kecil + info */
+                    <div className="flex items-center gap-4 px-5 w-full">
+                      {/* Thumbnail kecil */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setShowPhotoModal(true)
+                        }}
+                        className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border-2 border-emerald-500/40 shadow-md"
+                      >
+                        <img
+                          src={activeFilePreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Nama Panggilan</label>
-                          <input required type="text" placeholder="Contoh: Kiki" value={step === 2 ? formData.nama_panggilan : merchForm.nama_lengkap} onChange={(e) => step === 2 ? setFormData({...formData, nama_panggilan: e.target.value}) : setMerchForm({...merchForm, nama_lengkap: e.target.value})} className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-7 py-4 font-bold outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm" />
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">{step === 2 ? 'WhatsApp / IG' : 'WhatsApp Number'}</label>
-                          <input required type="text" placeholder={step === 2 ? "08xxx / @username" : "08xxxxxxxxx"} value={step === 2 ? formData.kontak : merchForm.whatsapp} onChange={(e) => step === 2 ? setFormData({...formData, kontak: e.target.value}) : setMerchForm({...merchForm, whatsapp: e.target.value})} className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-7 py-4 font-bold outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm" />
-                       </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">
+                          Foto sudah dipilih
+                        </p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                          Ketuk foto untuk lihat preview · Ketuk area ini untuk ganti
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/20 flex items-center justify-center border border-emerald-200 dark:border-emerald-500/30">
+                        <FaCheckCircle className="text-emerald-500 text-sm" />
+                      </div>
                     </div>
-                    {step === 4 && (
-                       <div className="space-y-2">
-                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Instagram (Optional)</label>
-                         <input type="text" placeholder="@username" value={merchForm.instagram} onChange={(e) => setMerchForm({...merchForm, instagram: e.target.value})} className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-7 py-4 font-bold outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm" />
-                       </div>
-                    )}
-                    <div className="space-y-3">
-                       <div className="flex items-center justify-between px-1">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Bukti Transfer (Screenshot)</label>
-                          {(step === 2 ? filePreview : merchFilePreview) && (
-                             <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20">
-                                <FaCheckCircle className="text-[10px]" /> File Selected
-                             </span>
-                          )}
-                       </div>
-                       
-                       <div 
-                          onClick={() => step === 2 ? fileInputRef.current?.click() : merchFileInputRef.current?.click()} 
-                          className={`relative aspect-[16/9] rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden group ${
-                             (step === 2 ? filePreview : merchFilePreview) 
-                                ? 'border-emerald-500 shadow-lg shadow-emerald-500/10' 
-                                : 'border-gray-200 dark:border-white/15 border-dashed hover:border-emerald-500 bg-gray-50 dark:bg-[#0b101d]'
-                          }`}
-                       >
-                          {(step === 2 ? filePreview : merchFilePreview) ? (
-                             <>
-                                <img src={step === 2 ? filePreview : merchFilePreview} alt="Preview" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                                   <div className="flex flex-col items-center gap-2">
-                                      <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
-                                         <FaCamera className="text-sm" />
-                                      </div>
-                                      <span className="text-[9px] font-black text-white uppercase tracking-widest">Ganti Foto</span>
-                                   </div>
-                                </div>
-                             </>
-                          ) : (
-                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                                <div className="w-12 h-12 rounded-xl bg-white dark:bg-white/10 shadow-sm border border-gray-200 dark:border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-emerald-200 transition-all">
-                                   <FaCamera className="text-gray-400 group-hover:text-emerald-500 transition-colors text-lg" />
-                                </div>
-                                <div className="text-center">
-                                   <p className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest">Upload Bukti Transfer</p>
-                                   <p className="text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase mt-1">Ketuk untuk memilih file</p>
-                                </div>
-                             </div>
-                          )}
-                          <input ref={step === 2 ? fileInputRef : merchFileInputRef} type="file" accept="image/*" onChange={(e) => onFileSelect(e, step === 2 ? 'cheki' : 'merch')} className="hidden" />
-                       </div>
+                  ) : (
+                    /* State: belum ada foto */
+                    <div className="flex flex-row items-center gap-4 px-5 w-full">
+                      <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/10 shadow-sm border border-gray-200 dark:border-white/10 flex items-center justify-center group-hover:scale-105 group-hover:border-emerald-200 transition-all flex-shrink-0">
+                        <FaCamera className="text-gray-400 group-hover:text-emerald-500 transition-colors text-lg" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">
+                          Upload bukti transfer
+                        </p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                          Ketuk untuk memilih foto / screenshot
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-4">Catatan Pesanan (Optional)</label>
-                       <textarea placeholder="Bisa ditulis bila tidak datang" value={step === 2 ? formData.catatan : merchForm.catatan} onChange={(e) => step === 2 ? setFormData({...formData, catatan: e.target.value}) : setMerchForm({...merchForm, catatan: e.target.value})} className="w-full bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-7 py-4 font-bold outline-none min-h-[100px] resize-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm" />
-                    </div>
-                    <motion.button type="submit" disabled={(step === 2 ? submitting : merchSubmitting) || (step === 2 ? cart.length === 0 : merchCart.length === 0)} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="w-full bg-[#079108] hover:bg-[#067a07] text-white py-5 rounded-2xl font-black uppercase tracking-[0.4em] text-[12px] shadow-xl shadow-emerald-500/20 flex items-center justify-center transition-all disabled:opacity-50">
-                       CONFIRM
-                    </motion.button>
-                 </form>
-             </div>
+                  )}
+                  <input
+                    ref={step === 2 ? fileInputRef : merchFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onFileSelect(e, step === 2 ? 'cheki' : 'merch')}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Catatan */}
+              <div className="space-y-2 flex-1 flex flex-col">
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 ml-1">
+                  Catatan pesanan (opsional)
+                </label>
+                <textarea
+                  placeholder="Bisa ditulis bila tidak datang / pesan khusus"
+                  value={step === 2 ? formData.catatan : merchForm.catatan}
+                  onChange={(e) =>
+                    step === 2
+                      ? setFormData({ ...formData, catatan: e.target.value })
+                      : setMerchForm({ ...merchForm, catatan: e.target.value })
+                  }
+                  className="w-full flex-1 text-sm bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-5 py-3.5 font-medium outline-none min-h-[90px] resize-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm"
+                />
+              </div>
+            </form>
           </div>
-       </div>
+        </div>
+
+        {/* ===== KOLOM KANAN: SIDEBAR STICKY ===== */}
+        <div className="w-full lg:w-[300px] lg:sticky lg:top-24 lg:self-start flex-shrink-0">
+          <div className="bg-white dark:bg-[#111726] rounded-3xl p-5 shadow-xl border border-gray-100 dark:border-white/10 transition-colors">
+            <InternalCartSummary
+              items={step === 2 ? cart : merchCart}
+              type={step === 2 ? 'cheki' : 'merch'}
+              total={currentTotal}
+              onConfirm={() =>
+                document.getElementById('checkout-form').requestSubmit()
+              }
+              isDisabled={isSubmitDisabled}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ===== MODAL PREVIEW FOTO BUKTI TRANSFER ===== */}
+      <AnimatePresence>
+        {showPhotoModal && activeFilePreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowPhotoModal(false)}
+            className="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white dark:bg-[#111726] rounded-3xl overflow-hidden shadow-2xl max-w-lg w-full"
+            >
+              {/* Header modal */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/10">
+                <div className="flex items-center gap-2">
+                  <FaCheckCircle className="text-emerald-500 text-sm" />
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    Preview Bukti Transfer
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowPhotoModal(false)}
+                  className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Foto */}
+              <div className="p-4">
+                <img
+                  src={activeFilePreview}
+                  alt="Bukti Transfer"
+                  className="w-full rounded-2xl object-contain max-h-[60vh]"
+                />
+              </div>
+
+              {/* Footer modal */}
+              <div className="px-5 pb-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPhotoModal(false)
+                    setTimeout(() => {
+                      step === 2
+                        ? fileInputRef.current?.click()
+                        : merchFileInputRef.current?.click()
+                    }, 200)
+                  }}
+                  className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-white/10 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                >
+                  Ganti Foto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPhotoModal(false)}
+                  className="flex-1 py-3 rounded-2xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-all"
+                >
+                  Sudah Benar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* STICKY BOTTOM BAR MOBILE */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-[#111726]/95 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+        <div className="max-w-md mx-auto flex items-center justify-between gap-4">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-none">
+              Total pesanan
+            </span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-[11px] font-bold text-gray-400">IDR</span>
+              <span className="text-lg font-black text-gray-900 dark:text-white truncate">
+                {(currentTotal || 0).toLocaleString()}
+              </span>
+            </div>
+          </div>
+          <button
+            type="submit"
+            form="checkout-form"
+            disabled={isSubmitDisabled}
+            className="flex-1 bg-[#079108] hover:bg-[#067a07] text-white py-3.5 px-6 rounded-2xl font-bold text-xs shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-all disabled:opacity-50 active:scale-95"
+          >
+            CONFIRM
+          </button>
+        </div>
+      </div>
+
        <LoadingOverlay isVisible={(step === 2 ? submitting : merchSubmitting)} message={(step === 2 ? uploading : merchUploading) ? 'Optimizing Receipt...' : 'Processing Order...'} />
     </motion.div>
   )

@@ -84,7 +84,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const updateQuantity = (id, delta) => {
     const item = cart.find(i => i.id === id)
     if (item && item.quantity === 1 && delta === -1) {
-      rbToast.error(item.name, 'Dihapus dari keranjang')
+      rbToast.error(`${item.name} dihapus dari keranjang`)
     }
 
     setCart(prev => {
@@ -104,7 +104,7 @@ export const useShopCart = (hargaMember, hargaGrup) => {
   const removeFromCart = (id) => {
     const item = cart.find(i => i.id === id)
     if (item) {
-      rbToast.error(item.name, 'Dihapus dari keranjang')
+      rbToast.error(`${item.name} dihapus dari keranjang`)
     }
     setCart(prev => prev.filter(item => item.id !== id))
   }

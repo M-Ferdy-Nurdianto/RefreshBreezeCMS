@@ -21,15 +21,19 @@ import { ThemeProvider } from './context/ThemeContext'
 import { FlyToCartProvider } from './context/FlyToCartContext'
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext'
 import MaintenanceScreen from './components/MaintenanceScreen'
+import MaintenanceAdminBadge from './components/MaintenanceAdminBadge'
 
 function MaintenanceGuard({ children }) {
   const { isMaintenance, maintenanceMessage, maintenanceEstimatedEnd, loading } = useMaintenance()
+  const isAdmin = Boolean(typeof window !== 'undefined' && localStorage.getItem('admin_token'))
 
   if (loading) {
     return <LoadingSpinner />
   }
 
-  if (isMaintenance) {
+  // Jika sedang maintenance, hanya block jika BUKAN admin.
+  // Jika admin login, admin diizinkan masuk untuk testing / live preview.
+  if (isMaintenance && !isAdmin) {
     return <MaintenanceScreen message={maintenanceMessage} estimatedEnd={maintenanceEstimatedEnd} />
   }
 
@@ -52,6 +56,8 @@ function App() {
       <MaintenanceProvider>
         <FlyToCartProvider>
           <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          {/* Floating badge for logged in admin when website is in Maintenance Mode */}
+          <MaintenanceAdminBadge />
           {/* RBToast — custom shop/global notifications (dual-theme, centered) */}
           <RBToastContainer />
           {/* Legacy ToastContainer — kept for admin pages */}

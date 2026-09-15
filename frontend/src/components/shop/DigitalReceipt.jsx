@@ -265,20 +265,20 @@ const DigitalReceipt = ({ data, payment, onBack, onDownload, isPreview = false }
         <div className="space-y-2 mb-4 px-4 text-sm font-bold">
           <div className="flex justify-between">
             <span className="w-40 text-gray-700">Metode Bayar</span>
-            <span className="text-right">Transfer</span>
+            <span className="text-right">{payment?.method || 'Transfer'}</span>
           </div>
           <div className="flex justify-between">
             <span className="w-40 text-gray-700">Bank</span>
-            <span className="text-right">BCA</span>
+            <span className="text-right">{payment?.bank || 'BCA'}</span>
           </div>
           <div className="flex justify-between">
             <span className="w-40 text-gray-700">No. Rek</span>
-            <span className="text-right">0902683273</span>
+            <span className="text-right font-mono">{payment?.rekening || '0902683273'}</span>
           </div>
           <div className="flex flex-col text-right">
             <div className="flex justify-between">
               <span className="w-40 text-left text-gray-700">A/n</span>
-              <span className="font-black uppercase text-gray-900">NATASYA ANGELINA PUTRI</span>
+              <span className="font-black uppercase text-gray-900">{payment?.atasNama || 'NATASYA ANGELINA PUTRI'}</span>
             </div>
           </div>
         </div>

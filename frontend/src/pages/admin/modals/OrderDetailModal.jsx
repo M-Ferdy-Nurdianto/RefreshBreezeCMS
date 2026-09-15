@@ -1,5 +1,6 @@
 import React from 'react'
 import { FaDownload, FaTimes, FaEye } from 'react-icons/fa'
+import { showToast } from '../../../lib/toast'
 
 const OrderDetailModal = ({ isOpen = false, order, events = [], onClose }) => {
   if (!isOpen || !order) {
@@ -173,7 +174,7 @@ const OrderDetailModal = ({ isOpen = false, order, events = [], onClose }) => {
     }
 
     logo.onerror = () => {
-      alert('Gagal memuat logo. Pastikan koneksi internet aman.')
+      showToast.error('Gagal memuat logo. Pastikan koneksi internet aman.')
     }
   }
 

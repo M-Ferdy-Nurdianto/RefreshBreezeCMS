@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import api from '../lib/api'
-import { FaUserShield, FaSpinner, FaSignInAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { getAssetPath } from '../lib/pathUtils'
+import { FaSpinner, FaSignInAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const AdminLogin = () => {
   const navigate = useNavigate()
@@ -68,8 +69,12 @@ const AdminLogin = () => {
 
       <div className="relative bg-[#111726]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.6)] p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 bg-[#079108]/10 border border-[#079108]/30 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(7,145,8,0.2)]">
-            <FaUserShield className="text-3xl text-[#079108]" />
+          <div className="w-20 h-20 mx-auto mb-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center p-3 shadow-[0_0_25px_rgba(7,145,8,0.15)]">
+            <img 
+              src={getAssetPath('/images/logos/logo.webp')} 
+              alt="Refresh Breeze Logo" 
+              className="w-full h-full object-contain drop-shadow"
+            />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white uppercase">
             Login <span className="text-[#079108]">Staff</span>
