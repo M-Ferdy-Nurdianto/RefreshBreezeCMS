@@ -281,7 +281,7 @@ const ShopPage = () => {
   )
 
   const mainPadding = step === 1 
-    ? 'pb-20 lg:pb-30'  // clearance untuk mobile floating cart bar + bottom navbar
+    ? 'pb-8 lg:pb-20'   // clearance mobile lebih rapat ke bottom navbar
     : 'pb-0 lg:pb-10'   // checkout form & halaman sukses, konten pendek
 
   return (
