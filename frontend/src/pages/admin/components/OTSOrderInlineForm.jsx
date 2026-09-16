@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Swal from 'sweetalert2'
 import { FaTimes, FaPlus, FaMinus, FaCheckCircle, FaMoneyBillWave, FaQrcode, FaUsers, FaChevronUp, FaChevronDown } from 'react-icons/fa'
 import api from '../../../lib/api'
@@ -10,6 +10,7 @@ const OTSOrderInlineForm = ({
   events = [],
   onClose,
   onSuccess,
+  onCartChange,
   hargaOtsPerMember = 25000,
   hargaOtsGrup = 30000
 }) => {
@@ -31,6 +32,12 @@ const OTSOrderInlineForm = ({
   })
   const [submitting, setSubmitting] = useState(false)
   const [cartExpanded, setCartExpanded] = useState(false)
+
+  useEffect(() => {
+    if (onCartChange) {
+      onCartChange(formData.items.length)
+    }
+  }, [formData.items.length, onCartChange])
 
   const selectedEvent = events.find(e => e.id === formData.event_id)
 
@@ -281,17 +288,15 @@ const OTSOrderInlineForm = ({
   return (
     // pb-24 di mobile = ruang aman untuk floating cart bar + bottom navbar; md:pb-0 supaya tidak nambah spasi di desktop
     <div className="bg-[#111726]/95 border border-[#079108]/30 rounded-2xl p-5 md:p-6 shadow-[0_12px_36px_rgba(0,0,0,0.6)] animate-fade-in relative pb-24 md:pb-6">
-      {/* Header — 2 baris di mobile (< md), 1 baris di desktop (≥ md) */}
+      {/* Header — compact 1 baris teratur di mobile (< md), 1 baris di desktop (≥ md) */}
       <div className="pb-4 mb-5 border-b border-white/10">
         {/* Mobile Header (< md) */}
-        <div className="md:hidden space-y-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#079108] animate-pulse shadow-[0_0_8px_#079108] shrink-0"></span>
-              <h3 className="text-base font-black text-white">Order OTS</h3>
-            </div>
+        <div className="md:hidden flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#079108] animate-pulse shadow-[0_0_8px_#079108] shrink-0"></span>
+            <h3 className="text-base font-black text-white truncate">Order OTS</h3>
             {totalQty > 0 && (
-              <span className="px-2.5 py-0.5 rounded-full bg-[#079108]/20 text-[#079108] border border-[#079108]/30 text-xs font-bold font-mono">
+              <span className="px-2 py-0.5 rounded-full bg-[#079108]/20 text-[#079108] border border-[#079108]/30 text-xs font-bold font-mono shrink-0">
                 {totalQty} items
               </span>
             )}
@@ -299,9 +304,11 @@ const OTSOrderInlineForm = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white text-xs font-bold transition flex items-center justify-center gap-2"
+            aria-label="Tutup Form OTS"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white transition shrink-0 active:scale-95"
+            title="Tutup Form OTS"
           >
-            <FaTimes /> Tutup Form OTS
+            <FaTimes className="text-sm" />
           </button>
         </div>
 
@@ -469,10 +476,10 @@ const OTSOrderInlineForm = ({
 
       {/* ============ MOBILE: floating cart bar ============ */}
       {formData.items.length > 0 && (
-        <div className="lg:hidden fixed bottom-[64px] left-0 right-0 z-40">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
           {/* Expanded sheet — daftar item + kosongkan, muncul di atas bar ringkas */}
           {cartExpanded && (
-            <div className="bg-[#111726] border-t border-x border-white/10 rounded-t-2xl p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.5)] max-h-[50vh] overflow-y-auto">
+            <div className="bg-[#111726]/98 backdrop-blur-xl border-t border-x border-white/10 rounded-t-2xl p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.7)] max-h-[50vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-bold text-zinc-300">Pesanan ({totalQty} tiket)</span>
                 <button type="button" onClick={() => setFormData({ ...formData, items: [] })} className="text-[10px] text-red-400 hover:underline font-semibold">
@@ -483,22 +490,24 @@ const OTSOrderInlineForm = ({
             </div>
           )}
 
-          {/* Bar ringkas — background solid, selalu di atas bottom navbar */}
+          {/* Bar ringkas — flush bottom-0 mengisi posisi bottom navbar secara eksklusif */}
           <button
             type="button"
             onClick={() => setCartExpanded(prev => !prev)}
-            className={`w-full bg-[#111726] border-t border-white/10 px-4 py-3 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.5)] ${cartExpanded ? '' : 'rounded-t-2xl'}`}
+            className={`w-full bg-[#0c111d]/98 backdrop-blur-xl border-t border-white/10 px-4 py-3 flex items-center justify-between shadow-[0_-4px_24px_rgba(0,0,0,0.6)] ${cartExpanded ? '' : 'rounded-t-2xl'}`}
           >
-            <div className="flex items-center gap-2 text-left">
-              {cartExpanded ? <FaChevronDown className="text-zinc-400 text-xs" /> : <FaChevronUp className="text-zinc-400 text-xs" />}
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400">
+                {cartExpanded ? <FaChevronDown className="text-xs" /> : <FaChevronUp className="text-xs" />}
+              </div>
               <div>
                 <div className="text-xs font-bold text-white">{totalQty} tiket · Rp {totalPrice.toLocaleString('id-ID')}</div>
-                <div className="text-[10px] text-zinc-500">Tap untuk detail</div>
+                <div className="text-[10px] text-zinc-400">Tap untuk detail item</div>
               </div>
             </div>
             <span
               onClick={(e) => { e.stopPropagation(); handleSubmit(e) }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 ${
                 submitting ? 'bg-[#079108]/50 text-white' : 'bg-[#079108] hover:bg-[#067a07] text-white shadow-[0_0_12px_rgba(7,145,8,0.4)]'
               }`}
             >

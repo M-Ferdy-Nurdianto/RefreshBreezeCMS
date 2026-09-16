@@ -58,6 +58,7 @@ const AdminPage = () => {
   const [showOrderDetailModal, setShowOrderDetailModal] = useState(false)
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [isOtsCartActive, setIsOtsCartActive] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
 
   const [hargaPerMember, setHargaPerMember] = useState('25000')
@@ -813,6 +814,7 @@ const AdminPage = () => {
             hargaOtsPerMember={hargaOtsPerMember}
             hargaOtsGrup={hargaOtsGrup}
             onRefreshOrders={fetchOrders}
+            onOtsCartActiveChange={setIsOtsCartActive}
           />
         )}
 
@@ -957,42 +959,44 @@ const AdminPage = () => {
       )}
 
       {/* ── BOTTOM NAVBAR (mobile only) ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0c111d]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]">
-        <div className="flex items-stretch">
-          {bottomNavItems.map(item => (
+      {!isOtsCartActive && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0c111d]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]">
+          <div className="flex items-stretch">
+            {bottomNavItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => { setActiveTab(item.id); setShowMoreDrawer(false) }}
+                className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold transition-all ${
+                  activeTab === item.id
+                    ? 'text-[#079108]'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                <item.icon className={`text-lg transition-all ${activeTab === item.id ? 'text-[#079108] drop-shadow-[0_0_6px_#079108]' : ''}`} />
+                {item.label}
+                {activeTab === item.id && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-[#079108] rounded-full" />
+                )}
+              </button>
+            ))}
+            {/* More button */}
             <button
-              key={item.id}
-              onClick={() => { setActiveTab(item.id); setShowMoreDrawer(false) }}
+              onClick={() => setShowMoreDrawer(prev => !prev)}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold transition-all ${
-                activeTab === item.id
+                showMoreDrawer || ['members','settings'].includes(activeTab)
                   ? 'text-[#079108]'
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              <item.icon className={`text-lg transition-all ${activeTab === item.id ? 'text-[#079108] drop-shadow-[0_0_6px_#079108]' : ''}`} />
-              {item.label}
-              {activeTab === item.id && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-[#079108] rounded-full" />
-              )}
+              <FaEllipsisH className={`text-lg ${showMoreDrawer || ['members','settings'].includes(activeTab) ? 'text-[#079108]' : ''}`} />
+              More
             </button>
-          ))}
-          {/* More button */}
-          <button
-            onClick={() => setShowMoreDrawer(prev => !prev)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold transition-all ${
-              showMoreDrawer || ['members','settings'].includes(activeTab)
-                ? 'text-[#079108]'
-                : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <FaEllipsisH className={`text-lg ${showMoreDrawer || ['members','settings'].includes(activeTab) ? 'text-[#079108]' : ''}`} />
-            More
-          </button>
-        </div>
-      </nav>
+          </div>
+        </nav>
+      )}
 
       {/* ── MORE DRAWER (mobile) ── */}
-      {showMoreDrawer && (
+      {!isOtsCartActive && showMoreDrawer && (
         <>
           {/* Overlay */}
           <div

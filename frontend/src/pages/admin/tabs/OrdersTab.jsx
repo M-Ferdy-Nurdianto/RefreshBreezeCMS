@@ -44,7 +44,8 @@ const OrdersTab = ({
   members = [],
   hargaOtsPerMember = 25000,
   hargaOtsGrup = 30000,
-  onRefreshOrders
+  onRefreshOrders,
+  onOtsCartActiveChange
 }) => {
   // Helper to check if order is from special event
   const isSpecialOrder = (order) => {
@@ -64,6 +65,9 @@ const OrdersTab = ({
   const handleToggleOTS = () => {
     setShowInlineOTS(prev => {
       const next = !prev
+      if (!next && onOtsCartActiveChange) {
+        onOtsCartActiveChange(false)
+      }
       if (next) {
         setTimeout(() => {
           if (otsTopRef.current) {
@@ -96,9 +100,16 @@ const OrdersTab = ({
         <OTSOrderInlineForm
           members={members}
           events={events}
-          onClose={() => setShowInlineOTS(false)}
+          onClose={() => {
+            setShowInlineOTS(false)
+            if (onOtsCartActiveChange) onOtsCartActiveChange(false)
+          }}
           onSuccess={() => {
+            if (onOtsCartActiveChange) onOtsCartActiveChange(false)
             if (onRefreshOrders) onRefreshOrders()
+          }}
+          onCartChange={(count) => {
+            if (onOtsCartActiveChange) onOtsCartActiveChange(count > 0)
           }}
           hargaOtsPerMember={hargaOtsPerMember}
           hargaOtsGrup={hargaOtsGrup}
