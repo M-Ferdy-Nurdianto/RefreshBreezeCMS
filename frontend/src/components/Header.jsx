@@ -147,13 +147,12 @@ const Header = ({ cartCount = 0, onCartClick }) => {
         </nav>
       </header>
 
-      {/* Floating Bottom Navbar for Mobile (hidden on /shop to prevent collision with sticky checkout/cart bars) */}
-      {!location.pathname.startsWith('/shop') && (
-        <nav 
-          aria-label="Mobile Bottom Navigation"
-          className="fixed bottom-3 inset-x-0 z-50 lg:hidden px-3 pointer-events-none"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-        >
+      {/* Floating Bottom Navbar for Mobile */}
+      <nav 
+        aria-label="Mobile Bottom Navigation"
+        className="fixed bottom-3 inset-x-0 z-50 lg:hidden px-3 pointer-events-none"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
           <div className={`mx-auto max-w-md w-full pointer-events-auto rounded-3xl p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300 border flex items-center justify-between ${
             theme === 'dark'
               ? 'bg-[#0b101d]/90 border-white/15 text-white shadow-black/80'
@@ -247,7 +246,6 @@ const Header = ({ cartCount = 0, onCartClick }) => {
             </button>
           </div>
         </nav>
-      )}
 
       {/* Mobile Bottom Sheet Menu (Drawer for complete navigation & socials) */}
       <AnimatePresence>
