@@ -282,7 +282,7 @@ const ShopPage = () => {
 
   const mainPadding = step === 1 
     ? 'pb-20 lg:pb-30'  // clearance untuk mobile floating cart bar + bottom navbar
-    : 'pb-4 lg:pb-10'   // checkout form & halaman sukses, konten pendek
+    : 'pb-0 lg:pb-10'   // checkout form & halaman sukses, konten pendek
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 dark:bg-[#090d16] dark:from-[#090d16] dark:via-[#090d16] dark:to-[#090d16] text-gray-900 dark:text-white transition-colors duration-300">

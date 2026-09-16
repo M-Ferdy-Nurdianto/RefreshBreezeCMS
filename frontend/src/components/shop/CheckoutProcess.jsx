@@ -339,7 +339,7 @@ const CheckoutProcess = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-6xl mx-auto px-4 pb-16 lg:pb-10"
+      className="max-w-6xl mx-auto px-4 pb-4 lg:pb-10"
     >
       {/* Grid utama: flex row di desktop, column di mobile */}
       <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
