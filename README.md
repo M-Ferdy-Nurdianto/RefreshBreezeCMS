@@ -1,41 +1,57 @@
 # Refresh Breeze - Idol Merchandise & Cheki Ecommerce Platform
 
-Refresh Breeze is a fullstack web platform engineered for idol fan communities, featuring a high-conversion Cheki and merchandise shop, digital collectible receipts, and an Admin Command Center.
+Refresh Breeze is a fullstack web platform engineered for idol fan communities, featuring a high-conversion Cheki and merchandise shop, digital collectible receipts, and a comprehensive Admin Command Center. Built with a signature **Kawaii Metal** design aesthetic (glassmorphism, vibrant accents, and clean contrast).
+
+---
 
 ## Architecture & Technology Stack
 
 ### Frontend
-- Framework: React 18
-- Build Tool: Vite
-- Styling: Vanilla CSS with custom design tokens, Glassmorphism, and Tailwind utility classes
-- Icons: `react-icons` and `lucide-react`
-- Animations: `framer-motion`
-- Notifications: Custom toast notification system (`src/lib/toast.jsx`)
+- **Framework**: React 18
+- **Build Tool**: Vite 5
+- **Progressive Web App (PWA)**: `vite-plugin-pwa` with service worker caching for offline readiness and native mobile installability
+- **Styling**: Vanilla CSS design tokens with Glassmorphism, Tailwind CSS utility classes, and Dual-Theme support (Clean Light Mode & Metal Dark Mode)
+- **Icons**: `react-icons` and `lucide-react` (No-Emojis Policy across all action UI elements)
+- **Data Visualization**: `chart.js` & `react-chartjs-2` for order and member sales analytics
+- **Animations & Interactivity**: `framer-motion`, `react-parallax-tilt`, and `aos`
+- **Notifications**: Custom toast notification system (`src/lib/toast.jsx`) and SweetAlert2 for confirmations
 
-### Backend & Database
-- Runtime: Node.js with Express.js
-- Database: PostgreSQL hosted on Supabase
-- Authentication: Supabase Auth and custom JWT middleware
-- Storage: Supabase Storage with automated WebP compression via Sharp
-- Realtime: Supabase Realtime for order notifications
+### Backend, Database & Serverless
+- **Runtime**: Node.js with Express.js (Local & Production Server)
+- **Serverless API**: Vercel Serverless Functions (`/api`) for cloud-native deployment
+- **Database**: PostgreSQL hosted on Supabase with Row Level Security (RLS)
+- **Authentication**: Supabase Auth and secure JWT middleware
+- **Storage & Compression**: Supabase Storage with automated server-side WebP compression via Sharp (`sharp`)
+- **Realtime**: Supabase Realtime WebSocket subscriptions for instant order and inventory alerts
+- **Security & Rate Limiting**: `helmet`, `express-rate-limit`, `express-slow-down`, and CORS protection
 
 ---
 
 ## Core Features
 
-### Public Portal
-- Dynamic Member Showcase: Complete idol profiles, stage names, catchphrases, birthdates, social links, custom neon color branding, and 3-photo galleries loaded dynamically from the database.
-- Cheki & Merchandise Store: Event-based ordering, dynamic quantity calculators, bundle discounts, and cart management.
-- Simplified Checkout Flow: Two-field checkout (Customer Name and Contact info), proof-of-payment upload with automated WebP image compression.
-- Digital Collectibles & Receipts: Client-side HTML5 canvas receipt generator suitable for saving and Instagram Story sharing.
+### 1. Public Portal & Shopping Experience
+- **Dynamic Member Showcase**: Idol profiles, stage names, catchphrases, birthdates, social media links, custom neon brand colors, and multi-slot photo galleries dynamically driven from Supabase.
+- **Smart Cheki & Merchandise Store**: Event-based ordering, dynamic quantity calculators, bundle discounts, merchandise size variants, and real-time cart persistence.
+- **Optimized Checkout Flow**: Streamlined two-field checkout (Customer Name and Contact info/WhatsApp), instant price calculation (PO vs OTS), and proof-of-payment upload with automated WebP conversion.
+- **Digital Collectibles & Receipts**: Client-side canvas receipt generator formatted for high-res downloading and direct Instagram Story sharing.
+- **Maintenance Barrier**: Centralized maintenance mode screen with customized announcement messages and estimated completion timers.
+- **Static Member Landing Pages**: Built-in support for dedicated member subpaths (`/aca`, `/cally`, `/channie`, etc.).
 
-### Admin Command Center
-- Live Order Management: Realtime order tracking, multi-criteria filtering (status, event, OTS, PO, merch), search, and bulk actions.
-- Full CMS Member Management: Full-page editor (no modal popups) for creating and updating idol profiles, group banners, custom HEX color pickers, 3-slot photo galleries, and sort ordering.
-- Dual-Photo Management: Independent photo upload workflows for member profile portraits and vertical 2-Shot Cheki store displays.
-- Event Scheduling: Management of regular and special event lineups.
-- Merchandise Inventory: Size variants, stock controls, and dimension charts.
-- Export Capabilities: Excel and PDF order export per event.
+### 2. Admin Command Center
+- **Live Order Management**: Realtime order feed, multi-criteria filtering (status, event, OTS, PO, merch), search, and bulk order actions.
+- **Interactive Sales Recap & Analytics (`RecapTab`)**: Visual bar charts (`chart.js`) breaking down sales by member, total gross revenue, OTS vs PO ratio, and completed Polaroid counts.
+- **Full CMS Member Management (`MembersTab`)**: Full-page editor (no modal popups) for creating and updating idol profiles, group banners, custom HEX color branding, and sort ordering.
+- **Dual-Photo System**: Independent image upload pipelines for Member Profile portraits (`image_url`) and vertical 2-Shot Cheki store displays (`shop_image_url`).
+- **Interactive Hero Section Customizer (`HeroTab`)**: Real-time visual drag/scale/position editor for hero idol cutouts on desktop (1440x800) and mobile (390x600) viewports with instant live preview and preset color backdrops.
+- **Merchandise Inventory Management (`MerchTab`)**: Variant controls (sizes S/M/L/XL/XXL), pricing, stock tracking, and dimension chart management.
+- **Event Scheduling (`EventsTab`)**: Full scheduling and status toggles for upcoming live events and preorder deadlines.
+- **System Settings & Storage Purge (`SettingsTab`)**:
+  - Pre-Order (PO) and On-The-Spot (OTS) global price configurations with live comparison calculators.
+  - Payment credentials (Bank, e-wallet, account number, account holder name).
+  - Instant toggle for site-wide Maintenance Mode with custom banner messaging.
+  - Automated purge tool for old payment proofs (>1 month) to save Supabase Storage quota.
+  - Bulk order reset / event-based transactional purge.
+- **Export Capabilities**: One-click Excel (`exceljs`) and PDF (`jspdf`, `jspdf-autotable`) report generation per event.
 
 ---
 
@@ -43,8 +59,8 @@ Refresh Breeze is a fullstack web platform engineered for idol fan communities, 
 
 ### Prerequisites
 - Node.js version 18 or later
-- npm or yarn package manager
-- A Supabase project with database and storage initialized
+- npm or yarn
+- Supabase project with PostgreSQL database and Storage buckets initialized
 
 ### Installation
 
@@ -54,17 +70,30 @@ git clone https://github.com/NobodySandJ/RefreshBreezeCMS.git
 cd RefreshBreezeCMS
 ```
 
-2. Install all dependencies across workspaces:
+2. Install all dependencies across all workspaces (`root`, `frontend`, `backend`, `api`):
 ```bash
 npm run install:all
 ```
 
 3. Configure environment variables:
-Create `.env` files in both the `backend` and `frontend` directories using `.env.example` as a reference.
+Create `.env` files in `backend/` and `frontend/` using `.env.example` as a template:
+```env
+# Frontend (.env)
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_URL=http://localhost:5000/api
+
+# Backend (.env)
+PORT=5000
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+JWT_SECRET=your_jwt_secret
+```
 
 4. Apply database migrations:
 ```bash
 npx supabase migration up
+# or execute database/production-full-schema.sql directly in the Supabase SQL editor
 ```
 
 5. Run development servers:
@@ -72,7 +101,10 @@ npx supabase migration up
 npm run dev
 ```
 
-The frontend will run at `http://localhost:3000` and the backend API at `http://localhost:5000`.
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:5000`
+
+> **Alternative Windows Launchers**: You can also use `Start Local Projek.bat` to launch both servers with health monitoring or `Start Vercel Local.bat` for local Vercel CLI testing.
 
 ---
 
@@ -80,27 +112,31 @@ The frontend will run at `http://localhost:3000` and the backend API at `http://
 
 ```
 RefreshBreezeCMS/
+├── .agents/                 # AI vibe coding guidelines and specialized skills
+├── api/                     # Vercel Serverless API endpoints
 ├── backend/
-│   ├── config/              # Supabase and storage service accounts
-│   ├── middleware/          # JWT authentication and upload filters
-│   ├── routes/              # RESTful API endpoints
-│   └── server.js            # API server entrypoint
+│   ├── config/              # Supabase admin and storage service clients
+│   ├── middleware/          # JWT auth, rate limiting, and Sharp upload filters
+│   ├── routes/              # RESTful API endpoints (orders, merch, members, config)
+│   └── server.js            # Express server entrypoint
+├── database/                # Full production SQL schemas and patches
 ├── frontend/
-│   ├── public/              # Static assets and images
+│   ├── public/              # Static assets, PWA icons, member landing pages
 │   ├── src/
-│   │   ├── components/      # Shared components
-│   │   ├── hooks/           # Business logic hooks
-│   │   ├── lib/             # API client and utility functions
-│   │   ├── pages/           # Customer pages and Admin dashboard
+│   │   ├── components/      # Glassmorphism UI components (Hero, Shop, Receipts, Modals)
+│   │   ├── context/         # React Contexts (MaintenanceContext, CartContext)
+│   │   ├── hooks/           # Business logic and query hooks
+│   │   ├── lib/             # API client, toast notifications, export utilities
+│   │   ├── pages/           # Customer pages (Home, Shop, MemberDetail) and Admin CMS
+│   │   │   └── admin/       # Modular Admin Dashboard (tabs, modals, components)
 │   │   └── styles/          # Global tokens and CSS
-│   └── vite.config.js
+│   └── vite.config.js       # Vite build setup with PWA plugin & static route plugins
 ├── supabase/
-│   └── migrations/          # SQL database schema definitions
-├── ARCHITECTURE.md          # System architecture documentation
-├── CHANGELOG.md             # Version history and releases
-├── CLAUDE.md                # AI coding assistant guidelines
-├── CONTRIBUTING.md          # Contribution guidelines
-├── TODO.md                  # Development backlog and roadmap
+│   └── migrations/          # Versioned SQL migrations
+├── ARCHITECTURE.md          # Detailed system architecture
+├── CHANGELOG.md             # Version history and release notes
+├── CONTRIBUTING.md          # Contribution and code quality guide
+├── TODO.md                  # Development roadmap and backlog
 └── README.md                # Project documentation
 ```
 
@@ -108,4 +144,4 @@ RefreshBreezeCMS/
 
 ## License & Intellectual Property
 
-This repository is maintained for transparent deployment and review. Source code and brand assets are reserved exclusively for the official Refresh Breeze production operations.
+This repository is maintained for transparent deployment and review. Source code, design assets, and brand trademarks are reserved exclusively for the official Refresh Breeze production operations.
