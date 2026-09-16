@@ -107,10 +107,10 @@ router.post('/merch-image', upload.single('file'), handleMulterError, async (req
       mimetype: req.file.mimetype
     })
 
-    // Compress image
+    // Compress image to WebP
     const compressedBuffer = await sharp(req.file.buffer)
       .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 85, progressive: true })
+      .webp({ quality: 85 })
       .toBuffer()
 
     console.log('[Upload] Merch image compressed:', {
@@ -118,11 +118,13 @@ router.post('/merch-image', upload.single('file'), handleMulterError, async (req
       compressedSize: `${(compressedBuffer.length / 1024).toFixed(2)} KB`,
     })
 
-    const fileName = `merch_${Date.now()}_${req.file.originalname.replace(/\.[^/.]+$/, '')}.jpg`
+    const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()
+    const fileName = `merch_${Date.now()}_${sanitizedName}.webp`
     const result = await uploadToSupabaseStorage(
       compressedBuffer,
       fileName,
-      'image/jpeg'
+      'image/webp',
+      'products'
     )
 
     res.json({
