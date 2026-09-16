@@ -376,49 +376,58 @@ const CheckoutProcess = ({
               <div className="h-1 w-16 bg-emerald-500 rounded-full" />
             </div>
 
-            {/* Info rekening — compact 1 baris */}
-            <div
-              onClick={() => copyToClipboard(payment?.rekening)}
-              className="flex items-center gap-3 bg-emerald-50/50 dark:bg-[#151c2e] border border-emerald-100/80 dark:border-white/10 rounded-2xl px-4 py-3 cursor-pointer hover:border-emerald-300 dark:hover:border-white/20 transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <FaUniversity className="text-emerald-600 dark:text-emerald-400 text-sm" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-black text-gray-900 dark:text-white">
-                    {payment?.bank || 'BCA'}
-                  </span>
-                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/20">
-                    {payment?.method || 'Manual TF'}
-                  </span>
+            {/* Info rekening — vertikal di mobile, compact di desktop */}
+            <div className="bg-emerald-50/50 dark:bg-[#151c2e] border border-emerald-100/80 dark:border-white/10 rounded-2xl p-4 transition-all">
+              {/* Baris 1: Icon + Nama Bank + Badge Metode */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 shrink-0 rounded-lg bg-emerald-500/15 dark:bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <FaUniversity className="text-emerald-600 dark:text-emerald-400 text-sm" />
                 </div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-                  a.n. {payment?.atasNama || 'Natasya Angelina Putri'}
+                <span className="text-sm font-black text-gray-900 dark:text-white">
+                  {payment?.bank || 'BCA'}
+                </span>
+                <span className="ml-auto text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20 shrink-0">
+                  {payment?.method || 'Manual TF'}
+                </span>
+              </div>
+
+              {/* Baris 2: Atas Nama — full width, tidak truncate */}
+              <div className="mt-3">
+                <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">
+                  Atas nama
+                </p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white break-words leading-snug">
+                  {payment?.atasNama || 'Natasya Angelina Putri'}
                 </p>
               </div>
-              <span className="text-base sm:text-lg font-black text-gray-900 dark:text-white tracking-wider font-mono flex-shrink-0">
-                {payment?.rekening || '0902683273'}
-              </span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  copyToClipboard(payment?.rekening)
-                }}
-                aria-label="Salin nomor rekening"
-                className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                  copied
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-emerald-50 text-[#079108] border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30 active:scale-95'
-                }`}
-              >
-                {copied ? (
-                  <FaCheckCircle className="text-sm" />
-                ) : (
-                  <FaRegCopy className="text-sm" />
-                )}
-              </button>
+
+              {/* Baris 3: Nomor Rekening + Tombol Copy — baris sendiri */}
+              <div className="mt-3 flex items-center justify-between gap-3 bg-white/70 dark:bg-[#0d1724] border border-emerald-100 dark:border-white/10 rounded-xl px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">
+                    Nomor rekening
+                  </p>
+                  <p className="font-mono font-black text-gray-900 dark:text-white text-base tracking-wider">
+                    {payment?.rekening || '0902683273'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(payment?.rekening)}
+                  aria-label="Salin nomor rekening"
+                  className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 ${
+                    copied
+                      ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                      : 'bg-emerald-50 text-[#079108] border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30'
+                  }`}
+                >
+                  {copied ? (
+                    <FaCheckCircle className="text-sm" />
+                  ) : (
+                    <FaRegCopy className="text-sm" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Form */}
