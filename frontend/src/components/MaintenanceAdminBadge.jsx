@@ -6,7 +6,12 @@ import { useMaintenance } from '../context/MaintenanceContext'
 const MaintenanceAdminBadge = () => {
   const { isMaintenance } = useMaintenance()
   const [isAdmin, setIsAdmin] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 640
+    }
+    return false
+  })
 
   useEffect(() => {
     const checkAdmin = () => {

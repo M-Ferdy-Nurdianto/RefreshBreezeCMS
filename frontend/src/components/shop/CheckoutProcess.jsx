@@ -65,52 +65,129 @@ const InternalCartSummary = ({
   total,
   onConfirm,
   isDisabled,
+  onUpdateQty,
+  onRemoveItem,
+  onBackToShop,
 }) => {
+  const hasItems = items && items.length > 0
+
   return (
     <div className="flex flex-col h-full">
       {/* Header ringkas */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-          Ringkasan
+          Ringkasan Pesanan
         </span>
         <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
           {items?.length || 0} items
         </span>
       </div>
 
-      {/* List item — scroll tipis, tanpa tombol qty/hapus */}
-      <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar mb-4 space-y-2">
-        {items?.map((item) => (
-          <motion.div
-            layout
-            key={item.cartId || item.id}
-            className="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-white/5 last:border-0"
-          >
-            <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-white/5 overflow-hidden flex-shrink-0 border border-gray-100 dark:border-white/10">
-              <img
-                src={item.image || item.gambar_url}
-                alt="Item"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">
-                {(item.name || item.nama || '').replace(/cheki/gi, '').trim()}
-              </p>
-              {item.size && (
-                <span className="text-[9px] text-gray-400 uppercase">
-                  Size: {item.size}
-                </span>
-              )}
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-[11px] font-bold text-emerald-500">
-                Rp {(item.price || item.harga || 0).toLocaleString()}
-              </p>
-              <p className="text-[9px] text-gray-400">×{item.quantity}</p>
-            </div>
-          </motion.div>
-        ))}
+      {/* List item dengan kontrol tambah / kurang / hapus */}
+      <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar mb-4 space-y-3">
+        {hasItems ? (
+          <AnimatePresence initial={false}>
+            {items.map((item) => {
+              const itemId = item.cartId || item.id
+              const itemName = (item.name || item.nama || '').replace(/cheki/gi, '').trim()
+              const itemImg = item.image || item.gambar_url
+
+              return (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  key={itemId}
+                  className="p-2.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex flex-col gap-2 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-white/10">
+                      {itemImg ? (
+                        <img
+                          src={itemImg}
+                          alt={itemName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                          RB
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">
+                        {itemName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                          Rp {(item.price || item.harga || 0).toLocaleString()}
+                        </span>
+                        {item.size && (
+                          <span className="text-[9px] bg-gray-200 dark:bg-white/10 px-1.5 py-0.2 rounded text-gray-600 dark:text-gray-300 font-bold uppercase">
+                            {item.size}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kontrol Qty (+ / -) & Hapus */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-200/60 dark:border-white/5">
+                    <div className="flex items-center bg-white dark:bg-white/10 rounded-lg p-0.5 border border-gray-200 dark:border-white/10 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => onUpdateQty && onUpdateQty(item, -1)}
+                        className="w-6 h-6 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 rounded text-gray-500 dark:text-gray-400 transition-colors"
+                        title="Kurangi"
+                      >
+                        <FaMinus className="text-[8px]" />
+                      </button>
+                      <span className="w-7 text-center text-xs font-black text-gray-900 dark:text-white">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onUpdateQty && onUpdateQty(item, 1)}
+                        className="w-6 h-6 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 rounded text-emerald-600 dark:text-emerald-400 transition-colors"
+                        title="Tambah"
+                      >
+                        <FaPlus className="text-[8px]" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                        Subtotal: <span className="text-gray-900 dark:text-white font-black">Rp {((item.price || item.harga || 0) * item.quantity).toLocaleString()}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onRemoveItem && onRemoveItem(item)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                        title="Hapus dari keranjang"
+                      >
+                        <FaTrash className="text-[11px]" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        ) : (
+          <div className="py-8 px-4 text-center rounded-2xl border border-dashed border-gray-200 dark:border-white/10">
+            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3">
+              Keranjang kamu kosong
+            </p>
+            <button
+              type="button"
+              onClick={onBackToShop}
+              className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+            >
+              + Tambah Pesanan
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Total */}
@@ -130,8 +207,8 @@ const InternalCartSummary = ({
       <button
         type="button"
         onClick={onConfirm}
-        disabled={isDisabled}
-        className="hidden lg:flex w-full bg-[#079108] hover:bg-[#067a07] text-white py-3.5 rounded-2xl font-bold text-sm items-center justify-center transition-all disabled:opacity-50 active:scale-95"
+        disabled={isDisabled || !hasItems}
+        className="hidden lg:flex w-full bg-[#079108] hover:bg-[#067a07] text-white py-3.5 rounded-2xl font-bold text-sm items-center justify-center transition-all disabled:opacity-50 active:scale-95 shadow-md shadow-emerald-500/20"
       >
         CONFIRM PESANAN
       </button>
@@ -599,7 +676,7 @@ const CheckoutProcess = ({
         </div>
 
         {/* ===== KOLOM KANAN: SIDEBAR STICKY ===== */}
-        <div className="w-full lg:w-[300px] lg:sticky lg:top-24 lg:self-start flex-shrink-0">
+        <div className="w-full lg:w-[320px] lg:sticky lg:top-24 lg:self-start flex-shrink-0">
           <div className="bg-white dark:bg-[#111726] rounded-3xl p-5 shadow-xl border border-gray-100 dark:border-white/10 transition-colors">
             <InternalCartSummary
               items={step === 2 ? cart : merchCart}
@@ -609,6 +686,24 @@ const CheckoutProcess = ({
                 document.getElementById('checkout-form').requestSubmit()
               }
               isDisabled={isSubmitDisabled}
+              onUpdateQty={(item, delta) => {
+                if (step === 2) {
+                  updateQuantity(item.id, delta)
+                } else {
+                  updateMerchQuantity(item.cartId, delta)
+                }
+              }}
+              onRemoveItem={(item) => {
+                if (step === 2) {
+                  removeFromCart(item.id)
+                } else {
+                  removeFromMerchCart(item.cartId)
+                }
+              }}
+              onBackToShop={() => {
+                setStep(1)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
             />
           </div>
         </div>

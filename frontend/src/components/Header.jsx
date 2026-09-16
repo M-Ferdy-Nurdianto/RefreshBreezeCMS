@@ -147,105 +147,107 @@ const Header = ({ cartCount = 0, onCartClick }) => {
         </nav>
       </header>
 
-      {/* Floating Bottom Navbar for Mobile */}
-      <nav 
-        aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-3 inset-x-0 z-50 lg:hidden px-3 pointer-events-none"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <div className={`mx-auto max-w-md w-full pointer-events-auto rounded-3xl p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300 border flex items-center justify-between ${
-          theme === 'dark'
-            ? 'bg-[#0b101d]/90 border-white/15 text-white shadow-black/80'
-            : 'bg-white/90 border-emerald-500/20 text-gray-800 shadow-emerald-950/10'
-        }`}>
-          {/* Main Quick Nav Items */}
-          {mobilePrimaryLinks.map((item) => {
-            const Icon = item.icon
-            const active = isActive(item.href)
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl select-none transition-all duration-300 ${
-                  active
-                    ? 'text-white'
-                    : theme === 'dark'
-                      ? 'text-gray-400 hover:text-gray-200'
-                      : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                {/* Active Highlight Glow Pill with layout animation */}
-                {active && (
-                  <motion.div
-                    layoutId="activeBottomNavPill"
-                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                    className="absolute inset-0 bg-gradient-to-tr from-[#079108] to-emerald-400 rounded-2xl shadow-[0_4px_20px_rgba(7,145,8,0.45)] -z-0"
-                  />
-                )}
-
-                {/* Animated Icon & Label */}
-                <motion.div
-                  animate={{
-                    scale: active ? 1.15 : 1,
-                    y: active ? -2 : 0,
-                  }}
-                  whileTap={{ scale: 0.88 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  className="relative z-10 flex flex-col items-center justify-center gap-0.5"
+      {/* Floating Bottom Navbar for Mobile (hidden on /shop to prevent collision with sticky checkout/cart bars) */}
+      {!location.pathname.startsWith('/shop') && (
+        <nav 
+          aria-label="Mobile Bottom Navigation"
+          className="fixed bottom-3 inset-x-0 z-50 lg:hidden px-3 pointer-events-none"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <div className={`mx-auto max-w-md w-full pointer-events-auto rounded-3xl p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300 border flex items-center justify-between ${
+            theme === 'dark'
+              ? 'bg-[#0b101d]/90 border-white/15 text-white shadow-black/80'
+              : 'bg-white/90 border-emerald-500/20 text-gray-800 shadow-emerald-950/10'
+          }`}>
+            {/* Main Quick Nav Items */}
+            {mobilePrimaryLinks.map((item) => {
+              const Icon = item.icon
+              const active = isActive(item.href)
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl select-none transition-all duration-300 ${
+                    active
+                      ? 'text-white'
+                      : theme === 'dark'
+                        ? 'text-gray-400 hover:text-gray-200'
+                        : 'text-gray-500 hover:text-gray-900'
+                  }`}
                 >
-                  <Icon className={`text-base transition-transform duration-200 ${active ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : ''}`} />
-                  <span className={`text-[10px] font-black tracking-tight leading-none uppercase ${
-                    active 
-                      ? 'text-white' 
-                      : theme === 'dark' 
-                        ? 'text-gray-400 font-semibold' 
-                        : 'text-gray-500 font-semibold'
-                  }`}>
-                    {item.name}
-                  </span>
-                </motion.div>
-              </Link>
-            )
-          })}
+                  {/* Active Highlight Glow Pill with layout animation */}
+                  {active && (
+                    <motion.div
+                      layoutId="activeBottomNavPill"
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                      className="absolute inset-0 bg-gradient-to-tr from-[#079108] to-emerald-400 rounded-2xl shadow-[0_4px_20px_rgba(7,145,8,0.45)] -z-0"
+                    />
+                  )}
 
-          {/* More / Menu Drawer Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open Full Menu"
-            className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl select-none transition-all duration-300 ${
-              mobileMenuOpen
-                ? 'text-white'
-                : theme === 'dark'
-                  ? 'text-gray-400 hover:text-gray-200'
-                  : 'text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            {mobileMenuOpen && (
-              <motion.div
-                layoutId="activeBottomNavPill"
-                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                className="absolute inset-0 bg-gradient-to-tr from-[#079108] to-emerald-400 rounded-2xl shadow-[0_4px_20px_rgba(7,145,8,0.45)] -z-0"
-              />
-            )}
-            <motion.div
-              animate={{
-                scale: mobileMenuOpen ? 1.15 : 1,
-                y: mobileMenuOpen ? -2 : 0,
-              }}
-              whileTap={{ scale: 0.88 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-              className="relative z-10 flex flex-col items-center justify-center gap-0.5"
+                  {/* Animated Icon & Label */}
+                  <motion.div
+                    animate={{
+                      scale: active ? 1.15 : 1,
+                      y: active ? -2 : 0,
+                    }}
+                    whileTap={{ scale: 0.88 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    className="relative z-10 flex flex-col items-center justify-center gap-0.5"
+                  >
+                    <Icon className={`text-base transition-transform duration-200 ${active ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : ''}`} />
+                    <span className={`text-[10px] font-black tracking-tight leading-none uppercase ${
+                      active 
+                        ? 'text-white' 
+                        : theme === 'dark' 
+                          ? 'text-gray-400 font-semibold' 
+                          : 'text-gray-500 font-semibold'
+                    }`}>
+                      {item.name}
+                    </span>
+                  </motion.div>
+                </Link>
+              )
+            })}
+
+            {/* More / Menu Drawer Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open Full Menu"
+              className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl select-none transition-all duration-300 ${
+                mobileMenuOpen
+                  ? 'text-white'
+                  : theme === 'dark'
+                    ? 'text-gray-400 hover:text-gray-200'
+                    : 'text-gray-500 hover:text-gray-900'
+              }`}
             >
-              <FaBars className={`text-base transition-transform duration-200 ${mobileMenuOpen ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : ''}`} />
-              <span className={`text-[10px] font-semibold tracking-tight leading-none uppercase ${
-                mobileMenuOpen ? 'text-white font-black' : ''
-              }`}>
-                Menu
-              </span>
-            </motion.div>
-          </button>
-        </div>
-      </nav>
+              {mobileMenuOpen && (
+                <motion.div
+                  layoutId="activeBottomNavPill"
+                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  className="absolute inset-0 bg-gradient-to-tr from-[#079108] to-emerald-400 rounded-2xl shadow-[0_4px_20px_rgba(7,145,8,0.45)] -z-0"
+                />
+              )}
+              <motion.div
+                animate={{
+                  scale: mobileMenuOpen ? 1.15 : 1,
+                  y: mobileMenuOpen ? -2 : 0,
+                }}
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                className="relative z-10 flex flex-col items-center justify-center gap-0.5"
+              >
+                <FaBars className={`text-base transition-transform duration-200 ${mobileMenuOpen ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : ''}`} />
+                <span className={`text-[10px] font-semibold tracking-tight leading-none uppercase ${
+                  mobileMenuOpen ? 'text-white font-black' : ''
+                }`}>
+                  Menu
+                </span>
+              </motion.div>
+            </button>
+          </div>
+        </nav>
+      )}
 
       {/* Mobile Bottom Sheet Menu (Drawer for complete navigation & socials) */}
       <AnimatePresence>
