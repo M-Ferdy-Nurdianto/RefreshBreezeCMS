@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { showToast } from './toast'
+import { isGuestMode, maskOrderForGuest, maskMerchOrderForGuest, generateGuestMockResponse } from './guestMock'
 
 // In production (Vercel), use the API URL from environment variable
 // In development, use localhost
@@ -24,7 +25,7 @@ if (import.meta.env.MODE === 'production') {
   // console.log('[API] Base URL:', API_URL)
 }
 
-// Add auth token to requests and handle Content-Type
+// Add auth token to requests and handle Content-Type + Guest Mode sandbox interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('admin_token')
@@ -38,6 +39,26 @@ api.interceptors.request.use(
       config.headers['Content-Type'] = 'application/json'
     }
 
+    // GUEST SANDBOX INTERCEPTOR:
+    // If guest mode is active, do NOT send write requests to the server / database.
+    // Intercept with an in-memory mock adapter so the UI behaves as if successfully saved!
+    if (isGuestMode()) {
+      const method = (config.method || 'get').toLowerCase()
+      if (method !== 'get') {
+        config.adapter = async (cfg) => {
+          const mockRes = generateGuestMockResponse(cfg)
+          return {
+            data: mockRes.data,
+            status: mockRes.status,
+            statusText: 'OK',
+            headers: {},
+            config: cfg,
+            request: {}
+          }
+        }
+      }
+    }
+
     return config
   },
   (error) => Promise.reject(error)
@@ -46,7 +67,28 @@ api.interceptors.request.use(
 const rateLimitToastId = 'rate-limit-toast'
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // GUEST MODE DATA MASKING:
+    // Mask sensitive customer data (name, contact, payment proof) while preserving cheki item details & quantities
+    if (isGuestMode() && response?.data) {
+      const url = response.config?.url || ''
+      if (url.includes('/orders') && !url.includes('/orders/stats')) {
+        if (Array.isArray(response.data.data)) {
+          response.data.data = response.data.data.map(maskOrderForGuest)
+        } else if (response.data.data && typeof response.data.data === 'object') {
+          response.data.data = maskOrderForGuest(response.data.data)
+        }
+      } else if (url.includes('/merch-orders')) {
+        if (Array.isArray(response.data.data)) {
+          response.data.data = response.data.data.map(maskMerchOrderForGuest)
+        } else if (response.data.data && typeof response.data.data === 'object') {
+          response.data.data = maskMerchOrderForGuest(response.data.data)
+        }
+      }
+    }
+
+    return response
+  },
   (error) => {
     const status = error?.response?.status
     if (status === 429) {
@@ -104,4 +146,5 @@ api.get = async (url, config) => {
 }
 
 export default api
+
 

@@ -32,10 +32,37 @@ const AdminLogin = () => {
     e.preventDefault()
     setLoading(true)
 
+    // CHECK FOR GUEST PLAYGROUND CREDENTIALS (GS123 / GS321)
+    if (formData.username?.trim() === 'GS123' && formData.password === 'GS321') {
+      try {
+        localStorage.setItem('is_guest_mode', 'true')
+        localStorage.setItem('admin_token', 'demo_guest_token_rb_2026')
+        localStorage.setItem('admin_user', JSON.stringify({
+          id: 'guest-demo-user',
+          username: 'GS123',
+          full_name: 'Guest Tester (Demo)',
+          role: 'guest'
+        }))
+
+        await Swal.fire({
+          icon: 'success',
+          title: 'Login Guest Berhasil!',
+          text: 'Selamat datang di Mode Tamu. Semua fitur dapat dicoba dengan aman tanpa mengubah database.',
+          confirmButtonColor: '#079108',
+          timer: 2200
+        })
+        navigate('/admin')
+        return
+      } finally {
+        setLoading(false)
+      }
+    }
+
     try {
       const response = await api.post('/auth/login', formData)
       
       if (response.data.success) {
+        localStorage.removeItem('is_guest_mode')
         localStorage.setItem('admin_token', response.data.token)
         localStorage.setItem('admin_user', JSON.stringify(response.data.user))
         
@@ -59,6 +86,28 @@ const AdminLogin = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleQuickGuestLogin = () => {
+    setFormData({ username: 'GS123', password: 'GS321' })
+    localStorage.setItem('is_guest_mode', 'true')
+    localStorage.setItem('admin_token', 'demo_guest_token_rb_2026')
+    localStorage.setItem('admin_user', JSON.stringify({
+      id: 'guest-demo-user',
+      username: 'GS123',
+      full_name: 'Guest Tester (Demo)',
+      role: 'guest'
+    }))
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Masuk sebagai Guest (GS123)!',
+      text: 'Mode simulasi interaktif aktif. Data sensitif disensor dan database aman.',
+      confirmButtonColor: '#079108',
+      timer: 1800,
+      showConfirmButton: false
+    })
+    navigate('/admin')
   }
 
   return (
@@ -138,6 +187,20 @@ const AdminLogin = () => {
               </>
             )}
           </button>
+
+          {/* Quick Guest / Demo Mode Button */}
+          <div className="pt-3 border-t border-white/10 mt-3 text-center">
+            <button
+              type="button"
+              onClick={handleQuickGuestLogin}
+              className="w-full py-2.5 px-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-xs transition-all flex items-center justify-center gap-2"
+            >
+              <span>Masuk Sebagai Tamu / Guest (GS123)</span>
+            </button>
+            <p className="text-[11px] text-zinc-400 mt-1.5">
+              Testing interaktif: coba semua fitur tanpa mengubah database asli.
+            </p>
+          </div>
         </form>
 
         <div className="mt-6 text-center">
