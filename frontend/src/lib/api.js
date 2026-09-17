@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { showToast } from './toast'
 import { isGuestMode, maskOrderForGuest, maskMerchOrderForGuest, generateGuestMockResponse } from './guestMock'
+import { getValidAdminToken, touchAdminSession } from './authSession'
 
 // In production (Vercel), use the API URL from environment variable
 // In development, use localhost
@@ -28,9 +29,10 @@ if (import.meta.env.MODE === 'production') {
 // Add auth token to requests and handle Content-Type + Guest Mode sandbox interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('admin_token')
+    const token = getValidAdminToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      touchAdminSession()
     }
 
     // Only set Content-Type to JSON if data is not FormData
@@ -116,7 +118,7 @@ const apiCache = new Map()
 const originalGet = api.get
 
 api.get = async (url, config) => {
-  const token = localStorage.getItem('admin_token')
+  const token = getValidAdminToken()
 
   // Always bypass cache for logged-in admin or if skipCache is set
   if (config?.skipCache || token) {

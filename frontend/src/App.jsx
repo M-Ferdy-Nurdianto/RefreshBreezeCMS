@@ -22,10 +22,11 @@ import { FlyToCartProvider } from './context/FlyToCartContext'
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext'
 import MaintenanceScreen from './components/MaintenanceScreen'
 import MaintenanceAdminBadge from './components/MaintenanceAdminBadge'
+import { getValidAdminToken } from './lib/authSession'
 
 function MaintenanceGuard({ children }) {
   const { isMaintenance, maintenanceMessage, maintenanceEstimatedEnd, loading } = useMaintenance()
-  const isAdmin = Boolean(typeof window !== 'undefined' && localStorage.getItem('admin_token'))
+  const isAdmin = Boolean(getValidAdminToken())
 
   if (loading) {
     return <LoadingSpinner />

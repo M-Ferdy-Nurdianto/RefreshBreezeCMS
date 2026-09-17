@@ -20,6 +20,7 @@ import EventModal from './admin/modals/EventModal'
 
 import { generateExcel, generateMerchExcel, generateMerchPDF, generatePDF } from '../lib/exportUtils'
 import { isGuestMode, clearGuestSession } from '../lib/guestMock'
+import { getValidAdminToken, logoutAdminSession, touchAdminSession } from '../lib/authSession'
 
 import {
   FaSignOutAlt,
@@ -155,7 +156,7 @@ const AdminPage = () => {
   }, [statusFilter, otsFilter, eventFilter, recapEventFilter, dateFilter, searchQuery, dateFrom, dateTo])
 
   const checkAuth = () => {
-    if (!localStorage.getItem('admin_token')) {
+    if (!getValidAdminToken()) {
       navigate('/admin/login')
     }
   }
@@ -296,9 +297,7 @@ const AdminPage = () => {
       cancelButtonText: 'Batal'
     }).then(r => {
       if (r.isConfirmed) {
-        clearGuestSession()
-        localStorage.removeItem('admin_token')
-        localStorage.removeItem('admin_user')
+        logoutAdminSession()
         navigate('/admin/login')
       }
     })

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FaTools, FaExternalLinkAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { useMaintenance } from '../context/MaintenanceContext'
+import { getValidAdminToken } from '../lib/authSession'
 
 const MaintenanceAdminBadge = () => {
   const { isMaintenance } = useMaintenance()
@@ -15,7 +16,7 @@ const MaintenanceAdminBadge = () => {
 
   useEffect(() => {
     const checkAdmin = () => {
-      const token = localStorage.getItem('admin_token')
+      const token = getValidAdminToken()
       setIsAdmin(Boolean(token))
     }
 

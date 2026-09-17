@@ -4,6 +4,7 @@ import Swal from 'sweetalert2'
 import api from '../lib/api'
 import { getAssetPath } from '../lib/pathUtils'
 import { FaSpinner, FaSignInAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { touchAdminSession } from '../lib/authSession'
 
 const AdminLogin = () => {
   const navigate = useNavigate()
@@ -43,6 +44,7 @@ const AdminLogin = () => {
           full_name: 'Guest Tester (Demo)',
           role: 'guest'
         }))
+        touchAdminSession()
 
         await Swal.fire({
           icon: 'success',
@@ -65,6 +67,7 @@ const AdminLogin = () => {
         localStorage.removeItem('is_guest_mode')
         localStorage.setItem('admin_token', response.data.token)
         localStorage.setItem('admin_user', JSON.stringify(response.data.user))
+        touchAdminSession()
         
         await Swal.fire({
           icon: 'success',
@@ -98,6 +101,7 @@ const AdminLogin = () => {
       full_name: 'Guest Tester (Demo)',
       role: 'guest'
     }))
+    touchAdminSession()
 
     Swal.fire({
       icon: 'success',

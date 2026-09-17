@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import Swal from 'sweetalert2'
+import { getValidAdminToken } from './authSession'
 
 export const stripEmoji = (text) => String(text || '').replace(/[^a-zA-Z0-9\s()]/gu, '').trim()
 
@@ -19,7 +20,7 @@ export const generateExcel = async ({ scope, value, params, events, api }) => {
     }
 
     const queryString = new URLSearchParams(exportParams).toString()
-    const token = localStorage.getItem('admin_token')
+    const token = getValidAdminToken()
     const apiUrl = import.meta.env.MODE === 'production' ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
 
     Swal.fire({ title: 'Downloading Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
@@ -63,7 +64,7 @@ export const generateMerchExcel = async ({ statusFilter, searchQuery }) => {
     if (searchQuery) params.search = searchQuery
 
     const queryString = new URLSearchParams(params).toString()
-    const token = localStorage.getItem('admin_token')
+    const token = getValidAdminToken()
     const apiUrl = import.meta.env.MODE === 'production' ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
 
     Swal.fire({ title: 'Downloading Merch Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
