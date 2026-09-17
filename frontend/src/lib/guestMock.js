@@ -64,7 +64,11 @@ export const maskOrderForGuest = (order) => {
     nama_lengkap: maskName(order.nama_lengkap),
     whatsapp: maskPhone(order.whatsapp),
     instagram: maskInstagram(order.instagram),
-    payment_proof_url: order.payment_proof_url ? MASKED_PAYMENT_PROOF_URL : null,
+    // For OTS orders, payment_proof_url stores payment method ('Cash' / 'QR') so keep it as is!
+    // For online PO orders with photo upload, replace with masked placeholder.
+    payment_proof_url: order.is_ots 
+      ? (order.payment_proof_url || 'Cash')
+      : (order.payment_proof_url ? MASKED_PAYMENT_PROOF_URL : null),
     // Keep items, prices, quantities, event info, and notes intact so testing is 100% functional
     is_masked_for_guest: true
   }

@@ -291,7 +291,7 @@ const RenderTable = ({ data, title, icon, emptyMessage, action, loading, onView,
                             ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
                             : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
                         }`}>
-                          OTS: {order.payment_proof_url || 'Cash'}
+                          OTS: {order.payment_proof_url?.startsWith('data:') || order.payment_proof_url?.startsWith('http') ? 'Cash' : (order.payment_proof_url || 'Cash')}
                         </span>
                       ) : (
                         <span className="text-zinc-500 text-xs">-</span>
