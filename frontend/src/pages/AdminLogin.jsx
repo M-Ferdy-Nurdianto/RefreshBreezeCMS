@@ -14,6 +14,7 @@ const AdminLogin = () => {
   })
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [logoClickCount, setLogoClickCount] = useState(0)
 
   useEffect(() => {
     document.documentElement.classList.add('dark')
@@ -114,6 +115,20 @@ const AdminLogin = () => {
     navigate('/admin')
   }
 
+  const handleLogoClick = () => {
+    const nextCount = logoClickCount + 1
+    if (nextCount >= 3) {
+      setLogoClickCount(0)
+      handleQuickGuestLogin()
+    } else {
+      setLogoClickCount(nextCount)
+      // Reset count after 1.5 seconds if user stops clicking
+      setTimeout(() => {
+        setLogoClickCount(0)
+      }, 1500)
+    }
+  }
+
   return (
     <div className="admin-layout min-h-screen bg-[#090d16] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Subtle Radial Glows */}
@@ -122,11 +137,16 @@ const AdminLogin = () => {
 
       <div className="relative bg-[#111726]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.6)] p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center p-3 shadow-[0_0_25px_rgba(7,145,8,0.15)]">
+          {/* Logo without box/shape background - Clickable 3x for secret guest login */}
+          <div 
+            onClick={handleLogoClick}
+            className="w-24 h-24 mx-auto mb-4 flex items-center justify-center cursor-pointer select-none transition-transform active:scale-95 group"
+            title="Refresh Breeze"
+          >
             <img 
               src={getAssetPath('/images/logos/logo.webp')} 
               alt="Refresh Breeze Logo" 
-              className="w-full h-full object-contain drop-shadow"
+              className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(7,145,8,0.2)] group-hover:brightness-110 transition-all"
             />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white uppercase">
@@ -191,20 +211,6 @@ const AdminLogin = () => {
               </>
             )}
           </button>
-
-          {/* Quick Guest / Demo Mode Button */}
-          <div className="pt-3 border-t border-white/10 mt-3 text-center">
-            <button
-              type="button"
-              onClick={handleQuickGuestLogin}
-              className="w-full py-2.5 px-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-xs transition-all flex items-center justify-center gap-2"
-            >
-              <span>Masuk Sebagai Tamu / Guest (GS123)</span>
-            </button>
-            <p className="text-[11px] text-zinc-400 mt-1.5">
-              Testing interaktif: coba semua fitur tanpa mengubah database asli.
-            </p>
-          </div>
         </form>
 
         <div className="mt-6 text-center">
