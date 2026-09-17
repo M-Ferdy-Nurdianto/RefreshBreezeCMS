@@ -4,7 +4,7 @@ import { getMemberColor, formatMemberName } from '../../lib/memberUtils'
 import { useFlyToCart } from '../../context/FlyToCartContext'
 
 const MemberCard = ({ member, idx, addToCart, getMemberImage, hargaMember, inLineup = true }) => {
-  const accentColor = getMemberColor(member.nama_panggung)
+  const accentColor = member?.color || getMemberColor(member?.nama_panggung)
   const { triggerFly } = useFlyToCart()
   
   const handleClick = (e) => {
