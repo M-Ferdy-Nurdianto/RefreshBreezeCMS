@@ -14,6 +14,20 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Username and password required' })
     }
 
+    // Direct guest sandbox credentials
+    if (username.trim() === 'GS123' && password === 'GS321') {
+      return res.json({
+        success: true,
+        token: 'demo_guest_token_rb_2026',
+        user: {
+          id: 'guest-demo-user',
+          username: 'GS123',
+          full_name: 'Guest Tester (Demo)',
+          role: 'guest'
+        }
+      })
+    }
+
     // Fetch admin user
     const { data: admin, error } = await supabase
       .from('admin_users')

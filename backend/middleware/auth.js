@@ -8,6 +8,12 @@ export const authMiddleware = (req, res, next) => {
       return res.status(401).json({ error: 'No token provided' })
     }
 
+    // Support Guest Sandbox token for reading data
+    if (token === 'demo_guest_token_rb_2026') {
+      req.user = { id: 'guest-demo-user', username: 'GS123', role: 'guest' }
+      return next()
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     req.user = decoded
     next()
