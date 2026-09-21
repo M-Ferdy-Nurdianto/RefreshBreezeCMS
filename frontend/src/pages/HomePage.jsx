@@ -21,6 +21,7 @@ let cachedHomeData = {
   events: null,
   faqs: null,
   members: null,
+  heroSettings: null,
   cachedMembersList: null,
 }
 

@@ -396,8 +396,9 @@ body.dark-theme .bg-\[\#079108\] * {
 
 /* 7 Column Layout Helpers */
 .hero-column {
-  @apply relative h-full transition-all duration-700 ease-in-out cursor-pointer overflow-hidden;
+  @apply relative h-full cursor-pointer overflow-hidden;
   flex: 1;
+  transition: flex-grow 0.5s ease-in-out;
 }
 
 .hero-column::after {

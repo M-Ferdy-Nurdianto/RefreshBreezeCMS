@@ -76,7 +76,7 @@ const HeroSection = ({
                   alt={member.name} 
                   fetchpriority={idx < 3 ? "high" : "auto"}
                   loading="eager"
-                  className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-[filter,opacity] duration-500"
                   style={getMemberStyle(member)}
                   onError={(e) => {
                     e.target.onerror = null
