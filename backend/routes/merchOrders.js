@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import { supabase } from '../config/supabase.js'
 import { authMiddleware } from '../middleware/auth.js'
 import ExcelJS from 'exceljs'
+import { verifyTurnstileToken } from '../utils/turnstile.js'
 
 const router = express.Router()
 
@@ -106,6 +107,16 @@ router.post('/', async (req, res) => {
     }
 
     const { nama_lengkap, whatsapp, instagram, catatan, items, payment_proof_url } = req.body
+    const turnstileToken = req.body['cf-turnstile-response'] || req.body.turnstile_token
+
+    // Cloudflare Turnstile Server-side verification (skip for logged-in admin testing if needed)
+    if (!isAdmin) {
+      const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+      const turnstileResult = await verifyTurnstileToken(turnstileToken, clientIp)
+      if (!turnstileResult.success) {
+        return res.status(400).json({ error: turnstileResult.error || 'Verifikasi keamanan gagal' })
+      }
+    }
 
     if (!whatsapp) {
       return res.status(400).json({ error: 'No. WhatsApp wajib diisi' })

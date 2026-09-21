@@ -59,7 +59,7 @@ const Header = ({ cartCount = 0, onCartClick }) => {
             to="/" 
             className="flex items-center gap-2 group"
           >
-            <div data-aos="zoom-in-right" data-aos-duration="1000">
+            <div>
               <img src={getAssetPath('/images/logos/logo.webp')} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-sm" />
             </div>
             <span className={`text-sm sm:text-xl font-black tracking-widest group-hover:text-[#079108] transition-colors line-clamp-1 ${

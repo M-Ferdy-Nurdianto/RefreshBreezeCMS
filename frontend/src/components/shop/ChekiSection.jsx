@@ -59,15 +59,20 @@ const ChekiSection = ({
       </motion.div>
 
       {/* Group Cheki Hero Banner */}
-      <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.2 }}
-          whileHover={{ y: -6 }}
-          transition={{ duration: 0.3 }}
-          className="relative w-full h-56 sm:h-64 md:h-72 lg:h-96 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 hover:shadow-[0_15px_40px_rgba(7,145,8,0.4)] group cursor-pointer border border-emerald-500/20 hover:border-emerald-500/60 transition-all duration-300"
-          onClick={handleGroupClick}
-      >
+      {loading && members.length === 0 ? (
+        <div className="w-full h-56 sm:h-64 md:h-72 lg:h-96 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden bg-white/50 dark:bg-white/5 border border-emerald-500/20 p-4">
+          <Skeleton className="w-full h-full rounded-[1.2rem] sm:rounded-[1.5rem]" />
+        </div>
+      ) : (
+        <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.2 }}
+            whileHover={{ y: -6 }}
+            transition={{ duration: 0.3 }}
+            className="relative w-full h-56 sm:h-64 md:h-72 lg:h-96 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 hover:shadow-[0_15px_40px_rgba(7,145,8,0.4)] group cursor-pointer border border-emerald-500/20 hover:border-emerald-500/60 transition-all duration-300"
+            onClick={handleGroupClick}
+        >
           <div className="absolute inset-0">
               <img 
                  src={getAssetPath('/images/members/group.webp')} 
@@ -108,6 +113,7 @@ const ChekiSection = ({
               </div>
           </div>
       </motion.div>
+      )}
 
       {/* Member Solo Cheki Section */}
       <div className="space-y-8">
@@ -119,13 +125,13 @@ const ChekiSection = ({
          </div>
          
          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-           {loading ? (
-              [...Array(6)].map((_, i) => (
-                <div key={i} className="aspect-[3/4] rounded-3xl bg-white/50 backdrop-blur-sm border border-white/50 p-4">
-                   <Skeleton className="w-full h-full rounded-2xl" />
-                </div>
-              ))
-           ) : (
+            {loading && members.length === 0 ? (
+               [...Array(6)].map((_, i) => (
+                 <div key={i} className="aspect-[3/4] rounded-3xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-gray-100 dark:border-white/10 p-4">
+                    <Skeleton className="w-full h-full rounded-2xl" />
+                 </div>
+               ))
+            ) : (
               members.map((member, idx) => (
                 <MemberCard 
                   key={member.id}

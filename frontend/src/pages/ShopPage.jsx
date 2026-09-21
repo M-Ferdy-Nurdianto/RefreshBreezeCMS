@@ -15,15 +15,25 @@ import MerchSection from '../components/shop/MerchSection'
 import CartSidebar from '../components/shop/CartSidebar'
 import MerchDetailModal from '../components/shop/MerchDetailModal'
 import CheckoutProcess from '../components/shop/CheckoutProcess'
+import Skeleton from '../components/Skeleton'
+
+// In-memory cache for instant navigation without re-loading screen
+let cachedShopData = {
+  config: null,
+  members: null,
+  groupMember: null,
+  events: null,
+  merch: null,
+}
 
 const ShopPage = () => {
   const navigate = useNavigate()
   const { triggerFly } = useFlyToCart()
-  const [config, setConfig] = useState(null)
-  const [members, setMembers] = useState([])
-  const [groupMember, setGroupMember] = useState(null)
-  const [events, setEvents] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [config, setConfig] = useState(cachedShopData.config)
+  const [members, setMembers] = useState(cachedShopData.members || [])
+  const [groupMember, setGroupMember] = useState(cachedShopData.groupMember)
+  const [events, setEvents] = useState(cachedShopData.events || [])
+  const [loading, setLoading] = useState(!cachedShopData.events)
   const [copied, setCopied] = useState(false)
   const [step, setStep] = useState(1)
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
@@ -34,13 +44,15 @@ const ShopPage = () => {
   const [filePreview, setFilePreview] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [merchTurnstileToken, setMerchTurnstileToken] = useState('')
   const [orderSuccess, setOrderSuccess] = useState(null)
   const [receiptData, setReceiptData] = useState(null)
   const [activeDropdownId, setActiveDropdownId] = useState(null)
   const fileInputRef = useRef(null)
 
   // Merch State
-  const [merch, setMerch] = useState([])
+  const [merch, setMerch] = useState(cachedShopData.merch || [])
   const [merchForm, setMerchForm] = useState({ nama_lengkap: '', whatsapp: '', instagram: '', catatan: '' })
   const [merchFile, setMerchFile] = useState(null)
   const [merchFilePreview, setMerchFilePreview] = useState(null)
@@ -117,19 +129,29 @@ const ShopPage = () => {
 
         try {
           const merchRes = await api.get('/merchandise')
-          if (merchRes.data.success) setMerch(merchRes.data.data)
+          if (merchRes.data.success) {
+            setMerch(merchRes.data.data)
+            cachedShopData.merch = merchRes.data.data
+          }
         } catch (_) {}
         
-        if (configRes.data.success) setConfig(configRes.data.data)
+        if (configRes.data.success) {
+          setConfig(configRes.data.data)
+          cachedShopData.config = configRes.data.data
+        }
         if (membersRes.data.success) {
            const allMembers = membersRes.data.data || []
            const group = allMembers.find(m => m.member_id === 'group')
-           if (group) setGroupMember(group)
+           if (group) {
+             setGroupMember(group)
+             cachedShopData.groupMember = group
+           }
 
            const activeMembers = allMembers
              .filter(m => m.member_id !== 'group' && m.hadir !== false)
              .sort((a, b) => (a.order_index ?? 99) - (b.order_index ?? 99))
            setMembers(activeMembers)
+           cachedShopData.members = activeMembers
         }
         if (eventsRes.data.success) {
           const activeEvents = eventsRes.data.data.filter(event => {
@@ -141,6 +163,7 @@ const ShopPage = () => {
             return eventDate >= today;
           });
           setEvents(activeEvents);
+          cachedShopData.events = activeEvents;
           if (activeEvents.length > 0) {
             setFormData(prev => ({
               ...prev,
@@ -178,6 +201,7 @@ const ShopPage = () => {
     e.preventDefault()
     if (!merchForm.nama_lengkap.trim()) return alert('Silakan isi nama lengkap kamu')
     if (!merchFile) return alert('Silakan unggah bukti transfer')
+    if (!merchTurnstileToken) return rbToast.error('Silakan selesaikan verifikasi keamanan (Turnstile)')
     setMerchSubmitting(true); setMerchUploading(true)
     const startTime = Date.now()
     try {
@@ -188,7 +212,8 @@ const ShopPage = () => {
       const orderData = {
         nama_lengkap: merchForm.nama_lengkap, whatsapp: merchForm.whatsapp, instagram: merchForm.instagram || null, catatan: merchForm.catatan || null,
         items: cartHook.merchCart.map(i => ({ merchandise_id: i.id, nama: i.nama, harga: i.harga, quantity: i.quantity, size: i.size || null })),
-        payment_proof_url: uploadRes.data.data.url
+        payment_proof_url: uploadRes.data.data.url,
+        'cf-turnstile-response': merchTurnstileToken
       }
       const orderRes = await api.post('/merch-orders', orderData)
       if (orderRes.data.success) {
@@ -210,7 +235,10 @@ const ShopPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (error) {
-      console.error('Merch order failed:', error); alert('Terjadi kesalahan saat memesan.')
+      console.error('Merch order failed:', error)
+      const errorMsg = error.response?.data?.error || 'Terjadi kesalahan saat memesan.'
+      rbToast.error(errorMsg)
+      setMerchTurnstileToken('')
     } finally { setMerchSubmitting(false); setMerchUploading(false) }
   }
 
@@ -223,6 +251,7 @@ const ShopPage = () => {
     e.preventDefault()
     if (!file) return alert('Silakan unggah bukti transfer')
     if (!formData.event_id) return alert('Silakan pilih jadwal event')
+    if (!turnstileToken) return rbToast.error('Silakan selesaikan verifikasi keamanan (Turnstile)')
     const selectedEvent = events.find(e => e.id === formData.event_id)
     const isEventSpecial = selectedEvent?.is_special || selectedEvent?.type === 'special' || !!selectedEvent?.theme_name || !!selectedEvent?.theme_color
     if (selectedEvent && selectedEvent.event_lineup && selectedEvent.event_lineup.length > 0) {
@@ -241,7 +270,15 @@ const ShopPage = () => {
       const uploadRes = await api.post('/upload/payment-proof', uploadData)
       setUploading(false)
       if (!uploadRes.data.success) throw new Error('Gagal mengunggah bukti bayar')
-      const orderData = { nama_lengkap: formData.nama_panggilan, kontak: formData.kontak, event_id: formData.event_id, items: cartHook.cart, payment_proof_url: uploadRes.data.data.url, catatan: formData.catatan || null }
+      const orderData = { 
+        nama_lengkap: formData.nama_panggilan, 
+        kontak: formData.kontak, 
+        event_id: formData.event_id, 
+        items: cartHook.cart, 
+        payment_proof_url: uploadRes.data.data.url, 
+        catatan: formData.catatan || null,
+        'cf-turnstile-response': turnstileToken
+      }
       const orderRes = await api.post('/orders', orderData)
       if (orderRes.data.success) {
         const elapsedTime = Date.now() - startTime
@@ -266,7 +303,10 @@ const ShopPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (error) {
-      console.error('Order failed:', error); alert('Terjadi kesalahan saat memesan.')
+      console.error('Order failed:', error)
+      const errorMsg = error.response?.data?.error || 'Terjadi kesalahan saat memesan.'
+      rbToast.error(errorMsg)
+      setTurnstileToken('')
     } finally { setSubmitting(false); setUploading(false) }
   }
 
@@ -274,11 +314,7 @@ const ShopPage = () => {
   const isSpecialEvent = selectedEventForTheme?.is_special || selectedEventForTheme?.type === 'special' || !!selectedEventForTheme?.theme_name || !!selectedEventForTheme?.theme_color
   const themeColor = isSpecialEvent ? (selectedEventForTheme.theme_color || '#FF6B9D') : '#079108'
 
-  if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 dark:bg-[#090d16] dark:from-[#090d16] dark:via-[#090d16] dark:to-[#090d16] flex items-center justify-center">
-        <FaSpinner className="text-4xl text-[#079108] animate-spin" />
-    </div>
-  )
+
 
   const mainPadding = step === 1 
     ? 'pb-8 lg:pb-20'   // clearance mobile lebih rapat ke bottom navbar
@@ -321,51 +357,55 @@ const ShopPage = () => {
                     </div>
                   </div>
 
-                  <div className="relative custom-dropdown-container">
-                    <div 
-                      onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
-                      className={`w-full bg-gray-50 dark:bg-white/5 border-2 rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white dark:bg-white/10 shadow-md' : 'border-transparent hover:border-gray-200 dark:hover:border-white/10'}`}
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
-                        <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
-                          {events.find(e => e.id === formData.event_id)?.nama || 'Klik untuk memilih event...'}
-                        </span>
+                  {loading && events.length === 0 ? (
+                    <Skeleton className="w-full h-14 rounded-xl sm:rounded-2xl" />
+                  ) : (
+                    <div className="relative custom-dropdown-container">
+                      <div 
+                        onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
+                        className={`w-full bg-gray-50 dark:bg-white/5 border-2 rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between cursor-pointer transition-all ${formData.event_id ? 'border-emerald-500 bg-white dark:bg-white/10 shadow-md' : 'border-transparent hover:border-gray-200 dark:hover:border-white/10'}`}
+                      >
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${formData.event_id ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                          <span className={`font-black uppercase tracking-widest text-xs sm:text-sm truncate max-w-[180px] sm:max-w-none ${formData.event_id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                            {events.find(e => e.id === formData.event_id)?.nama || 'Klik untuk memilih event...'}
+                          </span>
+                        </div>
+                        <FaChevronDown className={`text-gray-400 text-xs sm:text-sm transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180' : ''}`} />
                       </div>
-                      <FaChevronDown className={`text-gray-400 text-xs sm:text-sm transition-transform duration-300 ${eventDropdownOpen ? 'rotate-180' : ''}`} />
-                    </div>
 
-                    <AnimatePresence>
-                      {eventDropdownOpen && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }} 
-                          animate={{ opacity: 1, y: 0 }} 
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#162035] rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50 dark:border-white/10"
-                        >
-                          <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
-                            {events.length > 0 ? events.map(event => (
-                              <div 
-                                key={event.id}
-                                onClick={() => { setFormData({...formData, event_id: event.id}); setEventDropdownOpen(false); }}
-                                className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${formData.event_id === event.id ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
-                              >
-                                <div className="flex flex-col">
-                                  <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${formData.event_id === event.id ? 'text-[#079108] dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>{event.nama}</span>
-                                  <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{event.tanggal} {event.bulan}</span>
+                      <AnimatePresence>
+                        {eventDropdownOpen && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: -10 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#162035] rounded-2xl shadow-2xl z-[100] overflow-hidden border border-emerald-100/50 dark:border-white/10"
+                          >
+                            <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
+                              {events.length > 0 ? events.map(event => (
+                                <div 
+                                  key={event.id}
+                                  onClick={() => { setFormData({...formData, event_id: event.id}); setEventDropdownOpen(false); }}
+                                  className={`px-6 py-4 cursor-pointer flex items-center justify-between group transition-all ${formData.event_id === event.id ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                                >
+                                  <div className="flex flex-col">
+                                    <span className={`font-black text-xs sm:text-sm uppercase tracking-tight ${formData.event_id === event.id ? 'text-[#079108] dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>{event.nama}</span>
+                                    <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{event.tanggal} {event.bulan}</span>
+                                  </div>
+                                  {formData.event_id === event.id && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                  )}
                                 </div>
-                                {formData.event_id === event.id && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                )}
-                              </div>
-                            )) : (
-                              <div className="px-8 py-6 text-center text-gray-400 font-bold italic">Tidak ada event tersedia</div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                              )) : (
+                                <div className="px-8 py-6 text-center text-gray-400 font-bold italic">Tidak ada event tersedia</div>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </div>
 
                 <ChekiSection 
@@ -389,7 +429,7 @@ const ShopPage = () => {
                   getMemberImage={getMemberImage} getAssetPath={getAssetPath} 
                 />
                 <MerchSection 
-                  merch={merch} merchCart={cartHook.merchCart} setSelectedMerch={setSelectedMerch} addToMerchCart={cartHook.addToMerchCart} 
+                  loading={loading} merch={merch} merchCart={cartHook.merchCart} setSelectedMerch={setSelectedMerch} addToMerchCart={cartHook.addToMerchCart} 
                 />
             </div>
             <CartSidebar 
@@ -412,6 +452,8 @@ const ShopPage = () => {
             maskContact={maskContact} setMaskContact={setMaskContact} maskMerchContact={maskMerchContact} setMaskMerchContact={setMaskMerchContact}
             activeDropdownId={activeDropdownId} setActiveDropdownId={setActiveDropdownId} 
             fileInputRef={fileInputRef} merchFileInputRef={merchFileInputRef} themeColor={themeColor} isSpecialEvent={isSpecialEvent} payment={payment}
+            turnstileToken={turnstileToken} setTurnstileToken={setTurnstileToken}
+            merchTurnstileToken={merchTurnstileToken} setMerchTurnstileToken={setMerchTurnstileToken}
             copied={copied} setCopied={setCopied}
           />
         )}

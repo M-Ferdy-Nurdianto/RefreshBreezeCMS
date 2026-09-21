@@ -7,6 +7,7 @@ import {
 import { useState, useRef, useEffect } from 'react'
 import DigitalReceipt from './DigitalReceipt'
 import imageCompression from 'browser-image-compression'
+import TurnstileWidget from './TurnstileWidget'
 
 // --- SHARED SUB-COMPONENTS ---
 
@@ -223,7 +224,8 @@ const CheckoutProcess = ({
   updateMerchQuantity, removeFromMerchCart, formData, setFormData, merchForm, setMerchForm,
   file, setFile, filePreview, setFilePreview, merchFile, setMerchFile, merchFilePreview, setMerchFilePreview,
   events = [], submitting, uploading, merchSubmitting, merchUploading, handleSubmit, handleMerchSubmit,
-  receiptData, merchReceiptData, payment, copied, setCopied, fileInputRef, merchFileInputRef
+  receiptData, merchReceiptData, payment, copied, setCopied, fileInputRef, merchFileInputRef,
+  turnstileToken, setTurnstileToken, merchTurnstileToken, setMerchTurnstileToken
 }) => {
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
   const [showPhotoModal, setShowPhotoModal] = useState(false)
@@ -329,9 +331,11 @@ const CheckoutProcess = ({
   }
 
   const currentTotal = step === 2 ? totalHarga : totalMerchHarga
+  const activeTurnstileToken = step === 2 ? turnstileToken : merchTurnstileToken
   const isSubmitDisabled =
     (step === 2 ? submitting : merchSubmitting) ||
-    (step === 2 ? cart.length === 0 : merchCart.length === 0)
+    (step === 2 ? cart.length === 0 : merchCart.length === 0) ||
+    !activeTurnstileToken
 
   const activeFilePreview = step === 2 ? filePreview : merchFilePreview
 
@@ -678,6 +682,25 @@ const CheckoutProcess = ({
                       : setMerchForm({ ...merchForm, catatan: e.target.value })
                   }
                   className="w-full flex-1 text-sm bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:bg-white dark:focus:bg-[#162035] focus:ring-4 focus:ring-emerald-500/10 rounded-2xl px-5 py-3.5 font-medium outline-none min-h-[90px] resize-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white shadow-sm"
+                />
+              </div>
+
+              {/* Cloudflare Turnstile Verification Widget */}
+              <div className="pt-2">
+                <TurnstileWidget
+                  key={`turnstile-step-${step}`}
+                  onSuccess={(token) => {
+                    if (step === 2) setTurnstileToken(token)
+                    else setMerchTurnstileToken(token)
+                  }}
+                  onExpire={() => {
+                    if (step === 2) setTurnstileToken('')
+                    else setMerchTurnstileToken('')
+                  }}
+                  onError={() => {
+                    if (step === 2) setTurnstileToken('')
+                    else setMerchTurnstileToken('')
+                  }}
                 />
               </div>
             </form>

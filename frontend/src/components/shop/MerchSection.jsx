@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
 import { FaBox, FaPlus } from 'react-icons/fa'
 import { useFlyToCart } from '../../context/FlyToCartContext'
+import Skeleton from '../Skeleton'
 
-const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) => {
+const MerchSection = ({ loading = false, merch, merchCart, setSelectedMerch, addToMerchCart }) => {
   const { triggerFly } = useFlyToCart()
-  if (merch.length === 0) return null
+  if (!loading && merch.length === 0) return null
 
   return (
     <div className="space-y-8">
@@ -19,7 +20,14 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-        {merch.map((item, idx) => {
+        {loading && merch.length === 0 ? (
+          [...Array(3)].map((_, i) => (
+            <div key={i} className="aspect-[3/4] rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-4 overflow-hidden">
+              <Skeleton className="w-full h-full rounded-2xl" />
+            </div>
+          ))
+        ) : (
+          merch.map((item, idx) => {
           const inCart = merchCart.find(i => i.id === item.id)
           const isClosed = item.available === false
           const habis = !isClosed && item.stok > 0 && item.stok <= (inCart?.quantity || 0)
@@ -95,7 +103,7 @@ const MerchSection = ({ merch, merchCart, setSelectedMerch, addToMerchCart }) =>
               </div>
             </motion.div>
           )
-        })}
+        }))}
       </div>
     </div>
   )

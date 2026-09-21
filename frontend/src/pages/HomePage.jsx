@@ -16,14 +16,23 @@ import MediaSection from '../components/home/MediaSection'
 import FAQSection from '../components/home/FAQSection'
 import SpotifySection from '../components/home/SpotifySection'
 
+// In-memory cache for instant navigation without re-loading screen
+let cachedHomeData = {
+  events: null,
+  faqs: null,
+  members: null,
+  heroSettings: null,
+  merchPreview: null,
+}
+
 const HomePage = () => {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
-  const [faqs, setFaqs] = useState([])
+  const [loading, setLoading] = useState(!cachedHomeData.events)
+  const [faqs, setFaqs] = useState(cachedHomeData.faqs || [])
   const [openFaq, setOpenFaq] = useState(null)
   const [activeMemberId, setActiveMemberId] = useState(null)
-  const [events, setEvents] = useState([])
-  const [merchPreview, setMerchPreview] = useState([])
+  const [events, setEvents] = useState(cachedHomeData.events || [])
+  const [merchPreview, setMerchPreview] = useState(cachedHomeData.merchPreview || [])
 
   const defaultMembers = [
     { id: 'cissi', name: 'CISSI', color: 'bg-[#5A8F5A]', photo: getAssetPath('/images/hero/cissi.webp?v=33'), posX: 26, posY: 25, scale: 2.1, translateX: -27, translateY: 5 },
@@ -34,13 +43,13 @@ const HomePage = () => {
     { id: 'rara', name: 'RARA', color: 'bg-[#386638]', photo: getAssetPath('/images/hero/rara.webp?v=33'), posX: 34, posY: 28, scale: 1.8, translateX: -14, translateY: 0 },
   ]
 
-  const [members, setMembers] = useState(defaultMembers)
-  const [heroTitle, setHeroTitle] = useState('')
-  const [heroSubtitle, setHeroSubtitle] = useState('')
-  const [heroTagline, setHeroTagline] = useState('')
-  const [heroTitleColor, setHeroTitleColor] = useState('#FFFFFF')
-  const [heroSubtitleColor, setHeroSubtitleColor] = useState('#FBBF24')
-  const [heroTaglineColor, setHeroTaglineColor] = useState('#FFFFFF')
+  const [members, setMembers] = useState(cachedHomeData.members || defaultMembers)
+  const [heroTitle, setHeroTitle] = useState(cachedHomeData.heroSettings?.title || '')
+  const [heroSubtitle, setHeroSubtitle] = useState(cachedHomeData.heroSettings?.subtitle || '')
+  const [heroTagline, setHeroTagline] = useState(cachedHomeData.heroSettings?.tagline || '')
+  const [heroTitleColor, setHeroTitleColor] = useState(cachedHomeData.heroSettings?.titleColor || '#FFFFFF')
+  const [heroSubtitleColor, setHeroSubtitleColor] = useState(cachedHomeData.heroSettings?.subtitleColor || '#FBBF24')
+  const [heroTaglineColor, setHeroTaglineColor] = useState(cachedHomeData.heroSettings?.taglineColor || '#FFFFFF')
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true })
@@ -71,9 +80,11 @@ const HomePage = () => {
                     })
                     .slice(0, 3)
                 setEvents(upcoming)
+                cachedHomeData.events = upcoming
             }
             if (faqsRes.status === 'fulfilled' && faqsRes.value.data.success) {
               setFaqs(faqsRes.value.data.data)
+              cachedHomeData.faqs = faqsRes.value.data.data
             }
 
             // Dapatkan daftar member aktif dari database (bukan group dan hadir !== false)
@@ -108,6 +119,8 @@ const HomePage = () => {
                 if (settings.titleColor) setHeroTitleColor(settings.titleColor)
                 if (settings.subtitleColor) setHeroSubtitleColor(settings.subtitleColor)
                 if (settings.taglineColor) setHeroTaglineColor(settings.taglineColor)
+                cachedHomeData.heroSettings = settings
+
                 if (Array.isArray(settings.members) && settings.members.length > 0) {
                   const filteredMembers = activeMemberSlugs
                     ? settings.members.filter(m => {
@@ -117,13 +130,18 @@ const HomePage = () => {
                       })
                     : settings.members
                   setMembers(filteredMembers)
+                  cachedHomeData.members = filteredMembers
                 }
               }
             }
 
             try {
                 const merchRes = await api.get('/merchandise?available=true')
-                if (merchRes.data.success) setMerchPreview(merchRes.data.data.slice(0, 4))
+                if (merchRes.data.success) {
+                  const merchData = merchRes.data.data.slice(0, 4)
+                  setMerchPreview(merchData)
+                  cachedHomeData.merchPreview = merchData
+                }
             } catch (_) {}
         } catch (error) {
             console.error('Failed to fetch home data:', error)
@@ -134,7 +152,7 @@ const HomePage = () => {
     fetchData()
   }, [])
   
-  if (loading) return null // Or a loader
+  // Render immediately using default/cached states to avoid blank screen transition
 
   return (
     <div className="min-h-screen bg-white text-dark overflow-x-hidden relative">
@@ -158,7 +176,7 @@ const HomePage = () => {
       
       <AboutSection navigate={navigate} getAssetPath={getAssetPath} />
       
-      <ScheduleSection events={events} navigate={navigate} />
+      <ScheduleSection loading={loading} events={events} navigate={navigate} />
       
       <ShopPreviewSection merchPreview={merchPreview} navigate={navigate} getAssetPath={getAssetPath} />
       

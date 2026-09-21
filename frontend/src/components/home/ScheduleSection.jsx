@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { FaMapMarkerAlt, FaClock, FaArrowRight, FaStar } from 'react-icons/fa'
+import Skeleton from '../Skeleton'
 
-const ScheduleSection = ({ events, navigate }) => {
+const ScheduleSection = ({ loading = false, events, navigate }) => {
   return (
     <section className="py-20 md:py-32 bg-white relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 relative z-10">
@@ -21,7 +22,19 @@ const ScheduleSection = ({ events, navigate }) => {
               </button>
           </div>
 
-          {events.length > 0 ? (
+          {loading && events.length === 0 ? (
+              <div className="grid gap-8">
+                {[...Array(2)].map((_, idx) => (
+                  <div key={idx} className="p-5 sm:p-6 rounded-[2rem] md:rounded-[3rem] bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/10 h-32 flex items-center gap-6">
+                    <Skeleton className="w-20 h-20 sm:w-28 sm:h-28 rounded-[1.5rem] shrink-0" />
+                    <div className="flex-1 space-y-3">
+                      <Skeleton className="w-1/2 h-6 rounded-lg" />
+                      <Skeleton className="w-1/3 h-4 rounded-md" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+          ) : events.length > 0 ? (
               <div className="grid gap-8">
                   {events.map((event, idx) => {
                       const isSpecial = event.is_special || event.nama.toLowerCase().includes('valentine');
