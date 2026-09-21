@@ -178,9 +178,9 @@ body.dark-theme .text-gray-500:not(.digital-receipt-paper *) {
   color: #94a3b8;
 }
 
-/* Card surfaces in Dark Mode (Never touch .digital-receipt-paper) */
-html.dark .bg-white:not(header *):not(.btn-primary):not(input):not(select):not(nav *):not(.digital-receipt-paper):not(.digital-receipt-paper *),
-body.dark-theme .bg-white:not(header *):not(.btn-primary):not(input):not(select):not(nav *):not(.digital-receipt-paper):not(.digital-receipt-paper *) {
+/* Card surfaces in Dark Mode (Never touch .digital-receipt-paper or .polaroid-card) */
+html.dark .bg-white:not(header *):not(.btn-primary):not(input):not(select):not(nav *):not(.digital-receipt-paper):not(.digital-receipt-paper *):not(.polaroid-card):not(.polaroid-card *),
+body.dark-theme .bg-white:not(header *):not(.btn-primary):not(input):not(select):not(nav *):not(.digital-receipt-paper):not(.digital-receipt-paper *):not(.polaroid-card):not(.polaroid-card *) {
   background-color: #111726 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #f4f4f5 !important;
@@ -246,6 +246,17 @@ body.dark-theme .digital-receipt-paper {
 html.dark .bg-gray-50\/50,
 body.dark-theme .bg-gray-50\/50 {
   background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Authentic Polaroid Card (Always clean white canvas in Light and Dark Mode) */
+.polaroid-card {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.25) !important;
+}
+.polaroid-card * {
+  color-scheme: light !important;
 }
 
 /* Inputs & Textareas Dual Theme */

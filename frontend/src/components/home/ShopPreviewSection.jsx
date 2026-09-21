@@ -1,7 +1,40 @@
 import { motion } from 'framer-motion'
 import { FaShoppingCart, FaArrowRight } from 'react-icons/fa'
 
-const ShopPreviewSection = ({ merchPreview, navigate, getAssetPath }) => {
+const ShopPreviewSection = ({ merchPreview, shopMembers = [], navigate, getAssetPath }) => {
+  const sanitizeName = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  
+  const getShopPhoto = (member, fallbackId) => {
+    if (member?.is_secret) {
+      if (member.silhouette_image_url) {
+        if (member.silhouette_image_url.startsWith('http://') || member.silhouette_image_url.startsWith('https://')) return member.silhouette_image_url
+        if (member.silhouette_image_url.startsWith('/')) return getAssetPath(member.silhouette_image_url)
+        return getAssetPath(`/images/members/${member.silhouette_image_url}`)
+      }
+      return getAssetPath('/images/members/placeholder.svg')
+    }
+    if (member?.shop_image_url) {
+      if (member.shop_image_url.startsWith('http://') || member.shop_image_url.startsWith('https://')) return member.shop_image_url
+      if (member.shop_image_url.startsWith('/')) return getAssetPath(member.shop_image_url)
+      return getAssetPath(`/images/shop/${member.shop_image_url}`)
+    }
+    if (member?.image_url && (member.image_url.startsWith('http://') || member.image_url.startsWith('https://'))) {
+      return member.image_url
+    }
+    const clean = member?.member_id ? String(member.member_id).toLowerCase().replace(/[^a-z0-9]/g, '') : fallbackId
+    return getAssetPath(`/images/shop/${clean}.webp`)
+  }
+
+  // Ambil hingga 3 member terdepan dari database shop members
+  const member1 = shopMembers[0]
+  const member2 = shopMembers[1]
+  const member3 = shopMembers[2]
+
+  const photo1 = getShopPhoto(member1, 'aca')
+  const photo2 = getShopPhoto(member2, 'sinta')
+  const photo3 = getShopPhoto(member3, 'cally')
+  const label1 = member1?.nama_panggung ? `${member1.nama_panggung} Cheki` : 'Official Cheki'
+
   return (
     <section className="py-12 sm:py-16 md:py-24 bg-white relative">
       <div className="container mx-auto max-w-7xl px-4">
@@ -27,9 +60,56 @@ const ShopPreviewSection = ({ merchPreview, navigate, getAssetPath }) => {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#079108] rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity"></div>
                   <div><h3 className="text-2xl font-black text-dark uppercase mb-2">Member Cheki</h3><p className="text-gray-500 text-sm font-bold">2-Shot Polaroid</p></div>
                   <div className="relative h-48 w-full">
-                      <div className="absolute bottom-0 right-0 w-32 h-44 bg-white p-1.5 pb-10 shadow-2xl transform rotate-6 group-hover:rotate-12 transition-transform duration-500 z-30 border border-gray-100"><div className="w-full h-full overflow-hidden bg-gray-50/50 rounded-sm"><img src={getAssetPath('/images/shop/aca.webp')} loading="lazy" className="w-full h-full object-contain scale-[1.3] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-2" /></div><p className="absolute bottom-2 left-0 w-full text-center text-[7px] font-black text-gray-400 tracking-[0.2em] uppercase">Official Cheki</p></div>
-                      <div className="absolute bottom-2 right-12 w-30 h-40 bg-white p-1.5 pb-8 shadow-xl transform -rotate-3 group-hover:-rotate-6 transition-transform duration-500 z-20 border border-gray-100"><div className="w-full h-full overflow-hidden bg-gray-50/50 rounded-sm"><img src={getAssetPath('/images/shop/sinta.webp')} loading="lazy" className="w-full h-full object-contain scale-[1.3] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-2" /></div></div>
-                      <div className="absolute bottom-4 right-24 w-28 h-36 bg-white p-1.5 pb-8 shadow-lg transform -rotate-12 group-hover:-rotate-20 transition-transform duration-500 z-10 border border-gray-100 opacity-80 group-hover:opacity-100"><div className="w-full h-full overflow-hidden bg-gray-50/50 rounded-sm"><img src={getAssetPath('/images/shop/cally.webp')} loading="lazy" className="w-full h-full object-contain scale-[1.3] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-2" /></div></div>
+                      {/* Kartu 1 (Depan) - Polaroid Asli Kanvas Putih */}
+                      <div className="polaroid-card absolute bottom-0 right-0 w-32 h-44 p-1.5 pb-9 shadow-2xl transform rotate-6 group-hover:rotate-12 transition-transform duration-500 z-30 rounded-sm">
+                        <div className="w-full h-full overflow-hidden bg-gray-100 rounded-xs">
+                          <img 
+                            src={photo1} 
+                            alt={member1?.nama_panggung || 'Member'}
+                            loading="lazy" 
+                            className="w-full h-full object-contain scale-[1.25] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-1" 
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = getAssetPath('/images/shop/aca.webp')
+                            }}
+                          />
+                        </div>
+                        <p className="absolute bottom-2 left-0 w-full text-center text-[7.5px] font-black text-gray-500 tracking-[0.18em] uppercase select-none truncate px-1">
+                          {label1}
+                        </p>
+                      </div>
+
+                      {/* Kartu 2 (Tengah) - Polaroid Asli Kanvas Putih */}
+                      <div className="polaroid-card absolute bottom-2 right-12 w-30 h-40 p-1.5 pb-8 shadow-xl transform -rotate-3 group-hover:-rotate-6 transition-transform duration-500 z-20 rounded-sm">
+                        <div className="w-full h-full overflow-hidden bg-gray-100 rounded-xs">
+                          <img 
+                            src={photo2} 
+                            alt={member2?.nama_panggung || 'Member'}
+                            loading="lazy" 
+                            className="w-full h-full object-contain scale-[1.25] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-1" 
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = getAssetPath('/images/shop/sinta.webp')
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Kartu 3 (Belakang) - Polaroid Asli Kanvas Putih */}
+                      <div className="polaroid-card absolute bottom-4 right-24 w-28 h-36 p-1.5 pb-8 shadow-lg transform -rotate-12 group-hover:-rotate-20 transition-transform duration-500 z-10 opacity-80 group-hover:opacity-100 rounded-sm">
+                        <div className="w-full h-full overflow-hidden bg-gray-100 rounded-xs">
+                          <img 
+                            src={photo3} 
+                            alt={member3?.nama_panggung || 'Member'}
+                            loading="lazy" 
+                            className="w-full h-full object-contain scale-[1.25] grayscale group-hover:grayscale-0 transition-all duration-700 origin-top pt-1" 
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = getAssetPath('/images/shop/cally.webp')
+                            }}
+                          />
+                        </div>
+                      </div>
                   </div>
                   <div className="flex items-center gap-2 text-dark font-black text-xs uppercase tracking-widest group-hover:text-[#079108] transition-colors">Browse All <FaArrowRight /></div>
                </div>

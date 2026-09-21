@@ -65,11 +65,8 @@ const HeroSection = ({
           style={isPreview ? { height: previewHeight || 460 } : undefined}
         >
           {members.map((member, idx) => (
-            <motion.div 
+            <div 
               key={member.id || idx}
-              initial={isPreview ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: Math.abs(idx - 3) * 0.1, ease: "easeOut" }}
               className="hero-column min-w-0 flex-1 relative group cursor-pointer"
               onClick={() => handleMemberClick(member.id)}
             >
@@ -97,37 +94,34 @@ const HeroSection = ({
                   {member.name}
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
 
           <div className="absolute inset-x-0 bottom-[34%] sm:bottom-[32%] flex flex-col items-center justify-center z-20 pointer-events-none px-2">
             <motion.div 
-              initial={isPreview ? false : "hidden"} 
-              animate="visible"
-              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.8 } } }}
+              initial={isPreview ? false : { opacity: 0 }} 
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
               className="text-center w-full max-w-full"
             >
-              <motion.div 
-                variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 0.8, y: 0 } }} 
+              <div 
                 className={`mb-1 font-bold uppercase tracking-[0.25em] truncate ${isPreview ? 'text-[8px] sm:text-[9px]' : 'text-[9px]'}`}
                 style={{ color: heroTaglineColor || '#FFFFFF' }}
               >
                 {taglineText}
-              </motion.div>
-              <motion.h1 
-                variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }} 
+              </div>
+              <h1 
                 className={`${isPreview ? 'text-lg sm:text-2xl' : 'text-3xl'} font-black tracking-[0.1em] my-0.5 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] uppercase truncate`}
                 style={{ color: heroTitleColor || '#FFFFFF' }}
               >
                 {titleText}
-              </motion.h1>
-              <motion.div 
-                variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }} 
+              </h1>
+              <div 
                 className={`font-black uppercase tracking-[0.3em] truncate ${isPreview ? 'text-[9px] sm:text-[10px]' : 'text-xs'}`}
                 style={{ color: heroSubtitleColor || '#FBBF24' }}
               >
                 {subtitleText}
-              </motion.div>
+              </div>
             </motion.div>
           </div>
           <div className="absolute bottom-0 w-full h-2 caution-pattern z-30 opacity-60"></div>

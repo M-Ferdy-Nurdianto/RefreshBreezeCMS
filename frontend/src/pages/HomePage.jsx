@@ -21,8 +21,7 @@ let cachedHomeData = {
   events: null,
   faqs: null,
   members: null,
-  heroSettings: null,
-  merchPreview: null,
+  cachedMembersList: null,
 }
 
 const HomePage = () => {
@@ -33,6 +32,7 @@ const HomePage = () => {
   const [activeMemberId, setActiveMemberId] = useState(null)
   const [events, setEvents] = useState(cachedHomeData.events || [])
   const [merchPreview, setMerchPreview] = useState(cachedHomeData.merchPreview || [])
+  const [shopMembers, setShopMembers] = useState(cachedHomeData.cachedMembersList || [])
 
   const defaultMembers = [
     { id: 'cissi', name: 'CISSI', color: 'bg-[#5A8F5A]', photo: getAssetPath('/images/hero/cissi.webp?v=33'), posX: 26, posY: 25, scale: 2.1, translateX: -27, translateY: 5 },
@@ -91,6 +91,12 @@ const HomePage = () => {
             let activeMemberSlugs = null
             if (membersRes.status === 'fulfilled' && membersRes.value.data.success) {
               const dbMembers = membersRes.value.data.data || []
+              const activeDbMembers = dbMembers
+                .filter(m => m.hadir !== false && m.member_id !== 'group')
+                .sort((a, b) => (a.order_index ?? 99) - (b.order_index ?? 99))
+              setShopMembers(activeDbMembers)
+              cachedHomeData.cachedMembersList = activeDbMembers
+
               activeMemberSlugs = new Set()
               dbMembers.forEach(m => {
                 if (m.hadir !== false && m.member_id !== 'group') {
@@ -178,7 +184,7 @@ const HomePage = () => {
       
       <ScheduleSection loading={loading} events={events} navigate={navigate} />
       
-      <ShopPreviewSection merchPreview={merchPreview} navigate={navigate} getAssetPath={getAssetPath} />
+      <ShopPreviewSection merchPreview={merchPreview} shopMembers={shopMembers} navigate={navigate} getAssetPath={getAssetPath} />
       
       <MediaSection navigate={navigate} getAssetPath={getAssetPath} />
       
