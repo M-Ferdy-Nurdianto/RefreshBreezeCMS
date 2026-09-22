@@ -787,11 +787,11 @@ const AdminPage = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black uppercase tracking-wider text-amber-300">Mode Tamu / Sandbox Aktif</span>
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-300">Mode Tamu Aktif</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">GS123</span>
                 </div>
                 <p className="text-xs text-zinc-300 mt-0.5">
-                  Anda bebas mencoba semua fitur (tambah/hapus member, event, buat OTS, ubah harga). Perubahan bersifat simulasi lokal tanpa menyentuh database asli. Data sensitif disensor.
+                  Akun ini berjalan dalam mode simulasi. Semua fitur dapat diuji secara bebas — penambahan/penghapusan member, pembuatan event, OTS, maupun perubahan harga — tanpa memengaruhi data produksi. Data sensitif ditampilkan dalam bentuk tersensor.
                 </p>
               </div>
             </div>
