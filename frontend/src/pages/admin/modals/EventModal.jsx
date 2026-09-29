@@ -23,13 +23,14 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
         lineup: existingLineup,
         is_special: editingEvent.is_special || false,
         theme_name: editingEvent.theme_name || '',
-        theme_color: editingEvent.theme_color || '#FF6B9D'
+        theme_color: editingEvent.theme_color || '#FF6B9D',
+        harga_cheki: editingEvent.harga_cheki || ''
       }
     }
     return {
       nama: '', tanggal: '', bulan: '', tahun: new Date().getFullYear(),
       lokasi: '', event_time: '', cheki_time: '', is_past: false,
-      is_special: false, theme_name: '', theme_color: '#FF6B9D', lineup: []
+      is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki: '', lineup: []
     }
   })
   const [submitting, setSubmitting] = useState(false)
@@ -77,6 +78,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
           is_special: eventType === 'special',
           theme_name: eventType === 'special' ? formData.theme_name : null,
           theme_color: eventType === 'special' ? formData.theme_color : null,
+          harga_cheki: eventType === 'special' && formData.harga_cheki ? parseInt(formData.harga_cheki, 10) : null,
           lineup: formData.lineup // Send the array of UUIDs
         }
 
@@ -89,6 +91,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
           is_special: eventType === 'special',
           theme_name: eventType === 'special' ? formData.theme_name : null,
           theme_color: eventType === 'special' ? formData.theme_color : null,
+          harga_cheki: eventType === 'special' && formData.harga_cheki ? parseInt(formData.harga_cheki, 10) : null,
           lineup: formData.lineup 
         }
         await api.post('/events', payload)
@@ -210,11 +213,18 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
             <div className="bg-pink-500/10 border border-pink-500/20 rounded-xl p-3.5 space-y-2.5">
               <input
                 type="text"
-                placeholder="Nama Tema (e.g. Valentine Edition)"
+                placeholder="Nama Tema (e.g. Valentine Edition / Colaboration)"
                 value={formData.theme_name}
                 onChange={(e) => setFormData({...formData, theme_name: e.target.value})}
                 className="w-full px-3.5 py-2 bg-[#182032] border border-pink-500/30 text-white rounded-xl text-xs focus:outline-none focus:border-pink-500"
                 required
+              />
+              <input
+                type="number"
+                placeholder="Harga Cheki Spesial (Rp) - Opsional"
+                value={formData.harga_cheki || ''}
+                onChange={(e) => setFormData({...formData, harga_cheki: e.target.value})}
+                className="w-full px-3.5 py-2 bg-[#182032] border border-pink-500/30 text-white rounded-xl text-xs focus:outline-none focus:border-pink-500"
               />
               <div className="flex items-center gap-1.5 pt-1">
                 <span className="text-xs text-zinc-400 font-bold mr-1">Warna Tema:</span>
@@ -228,7 +238,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
                   />
                 ))}
               </div>
-              <p className="text-[11px] text-pink-400 font-medium">Event spesial hanya tersedia untuk Pre-Order</p>
+              <p className="text-[11px] text-pink-400 font-medium">Event spesial mendukung Pre-Order dan OTS</p>
             </div>
           )}
 

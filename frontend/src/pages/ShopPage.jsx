@@ -72,10 +72,16 @@ const ShopPage = () => {
 
   const isDarkMode = true
 
+  // Selected event detection for custom event / special cheki pricing
+  const selectedEvent = events.find(e => e.id === formData.event_id)
+  const isSpecialEvent = Boolean(selectedEvent?.is_special || selectedEvent?.type === 'special' || selectedEvent?.theme_name || selectedEvent?.theme_color)
+  const effectiveHargaMember = (isSpecialEvent && selectedEvent?.harga_cheki)
+    ? Number(selectedEvent.harga_cheki)
+    : (Number(config?.harga_cheki_per_member) || 25000)
+
   // Cart Hook
-  const hargaMember = Number(config?.harga_cheki_per_member) || 25000
   const hargaGrup = Number(config?.harga_cheki_grup) || 30000
-  const cartHook = useShopCart(hargaMember, hargaGrup)
+  const cartHook = useShopCart(effectiveHargaMember, hargaGrup)
 
   // Click outside listener for event dropdown and custom dropdowns
   useEffect(() => {
@@ -310,9 +316,7 @@ const ShopPage = () => {
     } finally { setSubmitting(false); setUploading(false) }
   }
 
-  const selectedEventForTheme = events.find(e => e.id === formData.event_id)
-  const isSpecialEvent = selectedEventForTheme?.is_special || selectedEventForTheme?.type === 'special' || !!selectedEventForTheme?.theme_name || !!selectedEventForTheme?.theme_color
-  const themeColor = isSpecialEvent ? (selectedEventForTheme.theme_color || '#FF6B9D') : '#079108'
+  const themeColor = isSpecialEvent ? (selectedEvent?.theme_color || '#FF6B9D') : '#079108'
 
 
 
@@ -409,7 +413,7 @@ const ShopPage = () => {
                 </div>
 
                 <ChekiSection 
-                  loading={loading} members={members} hargaGrup={hargaGrup} hargaMember={hargaMember} 
+                  loading={loading} members={members} hargaGrup={hargaGrup} hargaMember={effectiveHargaMember} 
                   selectedEvent={events.find(e => e.id === formData.event_id)}
                   addToCart={(type, m, startPos) => {
                     if (type === 'member' || type === 'group') {

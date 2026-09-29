@@ -13,7 +13,7 @@ const presetColors = ['#FF6B9D', '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3
 const emptyForm = {
   nama: '', tanggal: '', bulan: '', tahun: new Date().getFullYear(),
   lokasi: '', event_time: '', cheki_time: '', is_past: false,
-  is_special: false, theme_name: '', theme_color: '#FF6B9D', lineup: []
+  is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki: '', lineup: []
 }
 
 const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) => {
@@ -73,7 +73,8 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
       lineup: existingLineup,
       is_special: event.is_special || false,
       theme_name: event.theme_name || '',
-      theme_color: event.theme_color || '#FF6B9D'
+      theme_color: event.theme_color || '#FF6B9D',
+      harga_cheki: event.harga_cheki || ''
     })
     setView('form')
   }
@@ -109,6 +110,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
         is_special: eventType === 'special',
         theme_name: eventType === 'special' ? formData.theme_name : null,
         theme_color: eventType === 'special' ? formData.theme_color : null,
+        harga_cheki: eventType === 'special' && formData.harga_cheki ? parseInt(formData.harga_cheki, 10) : null,
         lineup: formData.lineup
       }
 
@@ -267,12 +269,23 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                   <label className="block text-xs text-pink-300 mb-1.5">Nama tema</label>
                   <input
                     type="text"
-                    placeholder="Valentine Edition"
+                    placeholder="Valentine Edition / Colaboration"
                     value={formData.theme_name}
                     onChange={(e) => setFormData({ ...formData, theme_name: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-[#182032] border border-pink-500/30 text-white rounded-xl placeholder-zinc-600 text-sm focus:outline-none focus:border-pink-500"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-xs text-pink-300 mb-1.5">Harga Cheki Spesial (Rp)</label>
+                  <input
+                    type="number"
+                    placeholder="Contoh: 35000 (Kosongkan jika default)"
+                    value={formData.harga_cheki || ''}
+                    onChange={(e) => setFormData({ ...formData, harga_cheki: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-[#182032] border border-pink-500/30 text-white rounded-xl placeholder-zinc-600 text-sm focus:outline-none focus:border-pink-500"
+                  />
+                  <p className="text-[10px] text-zinc-400 mt-1">Kosongkan jika menggunakan harga reguler. Jika diisi, harga di Shop & OTS akan otomatis menggunakan harga spesial ini.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-zinc-400 mr-1">Warna tema</span>
@@ -286,7 +299,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                     />
                   ))}
                 </div>
-                <p className="text-[11px] text-pink-400">Event spesial hanya tersedia untuk Pre-Order.</p>
+                <p className="text-[11px] text-pink-400">Event spesial mendukung Pre-Order dan OTS.</p>
               </div>
             )}
           </div>
@@ -398,6 +411,11 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                           style={{ backgroundColor: event.theme_color || '#FF6B9D' }}
                         >
                           {event.theme_name || 'Special'}
+                        </span>
+                      )}
+                      {event.harga_cheki && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                          Rp {Number(event.harga_cheki).toLocaleString('id-ID')}
                         </span>
                       )}
                     </div>

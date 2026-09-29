@@ -177,7 +177,7 @@ router.get('/:id', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 1
 // POST: Create new event (admin only)
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { nama, tanggal, bulan, tahun, lokasi, event_time, cheki_time, is_past, type, theme_name, theme_color, lineup } = req.body
+    const { nama, tanggal, bulan, tahun, lokasi, event_time, cheki_time, is_past, type, theme_name, theme_color, lineup, harga_cheki } = req.body
 
     // Insert event
     const { data: event, error: eventError } = await supabase
@@ -194,7 +194,8 @@ router.post('/', authMiddleware, async (req, res) => {
         type: type || 'regular',
         is_special: type === 'special',
         theme_name: type === 'special' ? theme_name : null,
-        theme_color: type === 'special' ? theme_color : null
+        theme_color: type === 'special' ? theme_color : null,
+        harga_cheki: (type === 'special' && harga_cheki) ? parseInt(harga_cheki, 10) : (harga_cheki ? parseInt(harga_cheki, 10) : null)
       })
       .select()
       .single()
@@ -231,6 +232,10 @@ router.patch('/:id', authMiddleware, async (req, res) => {
     // Sync is_special with type if type is updated
     if (updates.type) {
       updates.is_special = updates.type === 'special'
+    }
+
+    if (updates.harga_cheki !== undefined) {
+      updates.harga_cheki = updates.harga_cheki ? parseInt(updates.harga_cheki, 10) : null
     }
 
     // Update event basic info

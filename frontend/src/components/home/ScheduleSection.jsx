@@ -4,7 +4,7 @@ import Skeleton from '../Skeleton'
 
 const ScheduleSection = ({ loading = false, events, navigate }) => {
   return (
-    <section className="py-20 md:py-32 bg-white relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-white dark:bg-[#090d16] relative overflow-hidden transition-colors duration-300">
       <div className="container mx-auto max-w-7xl px-4 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 sm:mb-20 gap-6 md:gap-8 text-center md:text-left">
               <div className="w-full">
@@ -12,12 +12,12 @@ const ScheduleSection = ({ loading = false, events, navigate }) => {
                       <div className="w-8 h-1 bg-[#079108]"></div>
                       <span className="text-[#079108] font-black tracking-[0.4em] text-xs uppercase">SCHEDULE</span>
                    </div>
-                   <h2 className="text-4xl md:text-6xl font-black text-dark tracking-tighter uppercase mb-4">
+                   <h2 className="text-4xl md:text-6xl font-black text-dark dark:text-white tracking-tighter uppercase mb-4">
                       Upcoming <span className="text-[#079108]">Events</span>
                    </h2>
                    <p className="text-gray-400 font-medium max-w-lg mx-auto md:mx-0">Jangan lewatkan penampilan seru kami di event terdekat!</p>
               </div>
-              <button onClick={() => navigate('/schedule')} className="w-full md:w-auto px-10 py-4 rounded-full border-2 border-gray-100 text-[#4A90B5] font-black text-xs uppercase tracking-widest hover:border-[#4A90B5] hover:bg-[#4A90B5]/5 transition-all">
+              <button onClick={() => navigate('/schedule')} className="w-full md:w-auto px-10 py-4 rounded-full border-2 border-gray-100 dark:border-white/10 text-[#4A90B5] font-black text-xs uppercase tracking-widest hover:border-[#4A90B5] hover:bg-[#4A90B5]/5 transition-all">
                   View Full Schedule
               </button>
           </div>
@@ -37,7 +37,7 @@ const ScheduleSection = ({ loading = false, events, navigate }) => {
           ) : events.length > 0 ? (
               <div className="grid gap-8">
                   {events.map((event, idx) => {
-                      const isSpecial = event.is_special || event.nama.toLowerCase().includes('valentine');
+                      const isSpecial = event.is_special || event.nama.toLowerCase().includes('valentine') || Boolean(event.theme_name) || Boolean(event.theme_color);
                       const themeColor = isSpecial ? (event.theme_color || '#FF6B9D') : '#079108';
                       return (
                           <motion.div 
@@ -55,7 +55,7 @@ const ScheduleSection = ({ loading = false, events, navigate }) => {
                                   <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-dark dark:text-white tracking-tight truncate max-w-full">{event.nama}</h3>
                                   {isSpecial && (
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-white text-[8px] font-black uppercase tracking-widest shadow-sm" style={{ backgroundColor: themeColor }}>
-                                      <FaStar size={9} /> SPECIAL
+                                      <FaStar size={9} /> {event.theme_name || 'SPECIAL'}
                                     </span>
                                   )}
                                 </div>
@@ -64,7 +64,7 @@ const ScheduleSection = ({ loading = false, events, navigate }) => {
                                   {event.event_time && <div className="flex items-center gap-2"><FaClock style={{ color: themeColor }} /><span>{event.event_time}</span></div>}
                                 </div>
                               </div>
-                              <div className="hidden md:flex w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-50 items-center justify-center text-gray-300 group-hover:text-white group-hover:bg-theme group-hover:rotate-45 transition-all shadow-inner group-hover:shadow-lg">
+                              <div className="hidden md:flex w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-50 dark:bg-white/5 items-center justify-center text-gray-300 dark:text-gray-400 group-hover:text-white group-hover:bg-theme group-hover:rotate-45 transition-all shadow-inner group-hover:shadow-lg">
                                   <FaArrowRight size={20} className="group-hover:text-white" />
                               </div>
                               <style dangerouslySetInnerHTML={{ __html: `.group:hover .group-hover\\:bg-theme { background-color: ${themeColor} !important; }`}} />
@@ -73,7 +73,7 @@ const ScheduleSection = ({ loading = false, events, navigate }) => {
                   })}
               </div>
           ) : (
-              <div className="text-center py-20 bg-gray-50 rounded-[3rem] border border-dashed border-gray-200">
+              <div className="text-center py-20 bg-gray-50 dark:bg-[#111726]/60 rounded-[3rem] border border-dashed border-gray-200 dark:border-white/10">
                   <p className="text-gray-400 font-black tracking-widest uppercase opacity-50">No upcoming events scheduled</p>
               </div>
           )}
