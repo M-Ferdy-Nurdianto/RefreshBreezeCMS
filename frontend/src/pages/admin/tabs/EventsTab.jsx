@@ -13,7 +13,7 @@ const presetColors = ['#FF6B9D', '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3
 const emptyForm = {
   nama: '', tanggal: '', bulan: '', tahun: new Date().getFullYear(),
   lokasi: '', event_time: '', cheki_time: '', is_past: false,
-  is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki_po: '', harga_cheki_ots: '', lineup: []
+  is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki_po: '', harga_cheki_ots: '', ots_enabled: false, lineup: []
 }
 
 const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) => {
@@ -75,7 +75,8 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
       theme_name: event.theme_name || '',
       theme_color: event.theme_color || '#FF6B9D',
       harga_cheki_po: event.harga_cheki_po || '',
-      harga_cheki_ots: event.harga_cheki_ots || ''
+      harga_cheki_ots: event.harga_cheki_ots || '',
+      ots_enabled: Boolean(event.ots_enabled)
     })
     setView('form')
   }
@@ -113,6 +114,7 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
         theme_color: eventType === 'special' ? formData.theme_color : null,
         harga_cheki_po: eventType === 'special' && formData.harga_cheki_po ? parseInt(formData.harga_cheki_po, 10) : null,
         harga_cheki_ots: eventType === 'special' && formData.harga_cheki_ots ? parseInt(formData.harga_cheki_ots, 10) : null,
+        ots_enabled: eventType === 'special' ? Boolean(formData.ots_enabled) : false,
         lineup: formData.lineup
       }
 
@@ -312,6 +314,22 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                   ))}
                 </div>
                 <p className="text-[11px] text-pink-400">Event spesial mendukung Pre-Order dan OTS.</p>
+
+                {/* Checkbox Aktifkan Order OTS Spesial (Posisi di paling bawah) */}
+                <div className="pt-3 border-t border-pink-500/20">
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(formData.ots_enabled)}
+                      onChange={(e) => setFormData({ ...formData, ots_enabled: e.target.checked })}
+                      className="mt-0.5 w-4 h-4 rounded bg-[#182032] border-pink-500/40 text-pink-500 focus:ring-pink-500 focus:ring-offset-0 cursor-pointer"
+                    />
+                    <div>
+                      <span className="text-xs font-bold text-pink-200">Aktifkan Order OTS Spesial</span>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">Centang untuk membuka akses pemesanan On The Spot (OTS) pada event spesial ini.</p>
+                    </div>
+                  </label>
+                </div>
               </div>
             )}
           </div>
@@ -430,6 +448,11 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                           PO: Rp {Number(event.harga_cheki_po || 0).toLocaleString('id-ID')} | OTS: Rp {Number(event.harga_cheki_ots || 0).toLocaleString('id-ID')}
                         </span>
                       )}
+                      {event.is_special && event.ots_enabled && (
+                        <span className="px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 border border-pink-500/30 text-[10px] font-bold">
+                          OTS: Aktif
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -546,6 +569,16 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                               style={{ backgroundColor: event.theme_color || '#FF6B9D' }}
                             >
                               {event.theme_name || 'Special'}
+                            </span>
+                          )}
+                          {event.is_special && event.ots_enabled && (
+                            <span className="px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 border border-pink-500/30 text-[10px] font-bold">
+                              OTS: Aktif
+                            </span>
+                          )}
+                          {(event.harga_cheki_po || event.harga_cheki_ots) && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                              PO: Rp {Number(event.harga_cheki_po || 0).toLocaleString('id-ID')} | OTS: Rp {Number(event.harga_cheki_ots || 0).toLocaleString('id-ID')}
                             </span>
                           )}
                         </div>

@@ -5,6 +5,7 @@ import RenderTable from '../components/RenderTable'
 import CustomSelect from '../components/CustomSelect'
 import ExportModal from '../../../components/ExportModal'
 import OTSOrderInlineForm from '../components/OTSOrderInlineForm'
+import OTSSpecialInlineForm from '../components/OTSSpecialInlineForm'
 
 const OrdersTab = ({
   orders,
@@ -61,7 +62,9 @@ const OrdersTab = ({
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [showInlineOTS, setShowInlineOTS] = useState(false)
+  const [showInlineSpecialOTS, setShowInlineSpecialOTS] = useState(false)
   const otsTopRef = useRef(null)
+  const otsSpecialTopRef = useRef(null)
 
   const handleToggleOTS = () => {
     setShowInlineOTS(prev => {
@@ -82,6 +85,54 @@ const OrdersTab = ({
       }
       return next
     })
+  }
+
+  const handleToggleSpecialOTS = () => {
+    setShowInlineSpecialOTS(prev => {
+      const next = !prev
+      if (!next && onOtsCartActiveChange) {
+        onOtsCartActiveChange(false)
+      }
+      if (next) {
+        setTimeout(() => {
+          if (otsSpecialTopRef.current) {
+            otsSpecialTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+          const adminMain = document.querySelector('main')
+          if (adminMain) adminMain.scrollTo({ top: 0, behavior: 'smooth' })
+        }, 50)
+      }
+      return next
+    })
+  }
+
+  const handleSelectSubTab = (tabId) => {
+    setOrderSubTab(tabId)
+    if (tabId === 'special') {
+      // Otomatis arahkan ke event spesial aktif jika saat ini filter masih mengarah ke event reguler
+      const currentIsSpecial = events.some(e => String(e.id) === String(eventFilter) && (e.is_special || e.type === 'special'))
+      if (!currentIsSpecial) {
+        const activeSpecial = events.find(e => (e.is_special || e.type === 'special') && !e.is_past) || events.find(e => e.is_special || e.type === 'special')
+        if (activeSpecial) {
+          setEventFilter(String(activeSpecial.id))
+        } else {
+          setEventFilter('all')
+        }
+      }
+    } else if (tabId === 'all' || tabId === 'ots' || tabId === 'po') {
+      // Jika kembali ke regular, pastikan tidak tertinggal di filter event spesial
+      const currentIsSpecial = events.some(e => String(e.id) === String(eventFilter) && (e.is_special || e.type === 'special'))
+      if (currentIsSpecial) {
+        const activeRegular = events.find(e => !e.is_special && e.type !== 'special' && !e.is_past) || events.find(e => !e.is_special && e.type !== 'special')
+        if (activeRegular) {
+          setEventFilter(String(activeRegular.id))
+        } else {
+          setEventFilter('all')
+        }
+      }
+    }
   }
 
   const handleTriggerExport = async (exportData) => {
@@ -124,11 +175,11 @@ const OrdersTab = ({
             { id: 'ots', label: 'OTS', color: 'bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]' },
             { id: 'po', label: 'PO', color: 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]' },
             { id: 'special', label: 'Special', color: 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)]' },
-            { id: 'merch', label: 'Merch', color: 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]', onClick: () => { setOrderSubTab('merch'); onFetchMerchOrders() } }
+            { id: 'merch', label: 'Merch', color: 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]', onClick: () => { handleSelectSubTab('merch'); onFetchMerchOrders() } }
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={tab.onClick || (() => setOrderSubTab(tab.id))}
+              onClick={tab.onClick || (() => handleSelectSubTab(tab.id))}
               className={`flex-1 min-w-[100px] snap-start shrink-0 px-4 py-3 rounded-xl font-bold text-xs transition-all duration-200 ${
                 orderSubTab === tab.id
                   ? `${tab.color} scale-[1.02]`
@@ -190,8 +241,14 @@ const OrdersTab = ({
             value={eventFilter}
             onChange={(e) => setEventFilter(e.target.value)}
             options={[
-              { value: 'all', label: 'Semua Event' },
-              ...events.map(ev => ({ value: ev.id, label: `${ev.nama} - ${ev.bulan} ${ev.tahun}` }))
+              { value: 'all', label: orderSubTab === 'special' ? 'Semua Event Spesial' : 'Semua Event' },
+              ...(orderSubTab === 'special'
+                ? events.filter(ev => ev.is_special || ev.type === 'special')
+                : events.filter(ev => !ev.is_special && ev.type !== 'special')
+              ).map(ev => ({
+                value: ev.id,
+                label: `${ev.nama}${ev.theme_name ? ` (${ev.theme_name})` : ''} - ${ev.bulan} ${ev.tahun}`
+              }))
             ]}
           />
 
@@ -236,23 +293,50 @@ const OrdersTab = ({
 
       {/* Orders Tables */}
       {orderSubTab === 'special' && (
-        <RenderTable
-          data={specialOrders}
-          title="Special Event Orders"
-          emptyMessage="Tidak ada order special event"
-          loading={loading}
-          onView={onViewOrder}
-          onDelete={onDeleteOrder}
-          onStatusChange={onStatusChange}
-          action={
-            <button
-              onClick={onShowOTSSpecialModal}
-              className="px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(236,72,153,0.3)] active:scale-95 bg-pink-500 hover:bg-pink-600 text-white"
-            >
-              <FaPlus /> Order OTS Spesial
-            </button>
-          }
-        />
+        <div className="space-y-6">
+          <div ref={otsSpecialTopRef} />
+          {showInlineSpecialOTS && (
+            <OTSSpecialInlineForm
+              members={members}
+              events={events}
+              defaultEventId={eventFilter !== 'all' ? eventFilter : ''}
+              onClose={() => {
+                setShowInlineSpecialOTS(false)
+                if (onOtsCartActiveChange) onOtsCartActiveChange(false)
+              }}
+              onSuccess={() => {
+                if (onOtsCartActiveChange) onOtsCartActiveChange(false)
+                if (onRefreshOrders) onRefreshOrders()
+              }}
+              onCartChange={(count) => {
+                if (onOtsCartActiveChange) onOtsCartActiveChange(count > 0)
+              }}
+              hargaOtsPerMember={hargaOtsPerMember}
+            />
+          )}
+
+          <RenderTable
+            data={specialOrders}
+            title="Special Event Orders"
+            emptyMessage="Tidak ada order special event"
+            loading={loading}
+            onView={onViewOrder}
+            onDelete={onDeleteOrder}
+            onStatusChange={onStatusChange}
+            action={
+              <button
+                onClick={handleToggleSpecialOTS}
+                className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(236,72,153,0.3)] active:scale-95 ${
+                  showInlineSpecialOTS
+                    ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
+                    : 'bg-pink-500 hover:bg-pink-600 text-white'
+                }`}
+              >
+                {showInlineSpecialOTS ? <><FaTimes /> Tutup Form OTS Spesial</> : <><FaPlus /> Order OTS Spesial</>}
+              </button>
+            }
+          />
+        </div>
       )}
 
       {(orderSubTab === 'all' || orderSubTab === 'ots') && (

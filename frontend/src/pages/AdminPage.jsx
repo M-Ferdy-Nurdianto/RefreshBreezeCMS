@@ -141,7 +141,24 @@ const AdminPage = () => {
 
   useEffect(() => {
     localStorage.setItem('admin_order_subtab', orderSubTab)
-  }, [orderSubTab])
+    if (events.length > 0) {
+      if (orderSubTab === 'special') {
+        const isCurrentSpecial = events.some(e => String(e.id) === String(eventFilter) && (e.is_special || e.type === 'special'))
+        if (!isCurrentSpecial) {
+          const activeSpecial = events.find(e => (e.is_special || e.type === 'special') && !e.is_past) || events.find(e => e.is_special || e.type === 'special')
+          if (activeSpecial) setEventFilter(String(activeSpecial.id))
+          else setEventFilter('all')
+        }
+      } else if (orderSubTab === 'all' || orderSubTab === 'ots' || orderSubTab === 'po') {
+        const isCurrentSpecial = events.some(e => String(e.id) === String(eventFilter) && (e.is_special || e.type === 'special'))
+        if (isCurrentSpecial) {
+          const activeRegular = events.find(e => !e.is_special && e.type !== 'special' && !e.is_past) || events.find(e => !e.is_special && e.type !== 'special')
+          if (activeRegular) setEventFilter(String(activeRegular.id))
+          else setEventFilter('all')
+        }
+      }
+    }
+  }, [orderSubTab, events])
 
   useEffect(() => {
     localStorage.setItem('admin_status_filter', statusFilter)
@@ -234,7 +251,10 @@ const AdminPage = () => {
       if (eventList.length > 0) {
         setEventFilter(prev => {
           if (!prev || prev === 'all') {
-            const activeEvent = eventList.find(e => !e.is_past) || eventList[0]
+            const isSpecialTab = orderSubTab === 'special'
+            const activeEvent = isSpecialTab
+              ? (eventList.find(e => (e.is_special || e.type === 'special') && !e.is_past) || eventList.find(e => e.is_special || e.type === 'special'))
+              : (eventList.find(e => !e.is_special && e.type !== 'special' && !e.is_past) || eventList[0])
             return activeEvent ? String(activeEvent.id) : prev
           }
           return prev

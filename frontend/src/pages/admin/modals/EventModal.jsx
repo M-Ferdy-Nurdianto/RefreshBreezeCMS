@@ -25,13 +25,14 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
         theme_name: editingEvent.theme_name || '',
         theme_color: editingEvent.theme_color || '#FF6B9D',
         harga_cheki_po: editingEvent.harga_cheki_po || '',
-        harga_cheki_ots: editingEvent.harga_cheki_ots || ''
+        harga_cheki_ots: editingEvent.harga_cheki_ots || '',
+        ots_enabled: Boolean(editingEvent.ots_enabled)
       }
     }
     return {
       nama: '', tanggal: '', bulan: '', tahun: new Date().getFullYear(),
       lokasi: '', event_time: '', cheki_time: '', is_past: false,
-      is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki_po: '', harga_cheki_ots: '', lineup: []
+      is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki_po: '', harga_cheki_ots: '', ots_enabled: false, lineup: []
     }
   })
   const [submitting, setSubmitting] = useState(false)
@@ -81,6 +82,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
           theme_color: eventType === 'special' ? formData.theme_color : null,
           harga_cheki_po: eventType === 'special' && formData.harga_cheki_po ? parseInt(formData.harga_cheki_po, 10) : null,
           harga_cheki_ots: eventType === 'special' && formData.harga_cheki_ots ? parseInt(formData.harga_cheki_ots, 10) : null,
+          ots_enabled: eventType === 'special' ? Boolean(formData.ots_enabled) : false,
           lineup: formData.lineup // Send the array of UUIDs
         }
 
@@ -95,6 +97,7 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
           theme_color: eventType === 'special' ? formData.theme_color : null,
           harga_cheki_po: eventType === 'special' && formData.harga_cheki_po ? parseInt(formData.harga_cheki_po, 10) : null,
           harga_cheki_ots: eventType === 'special' && formData.harga_cheki_ots ? parseInt(formData.harga_cheki_ots, 10) : null,
+          ots_enabled: eventType === 'special' ? Boolean(formData.ots_enabled) : false,
           lineup: formData.lineup 
         }
         await api.post('/events', payload)
@@ -249,6 +252,22 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
                 ))}
               </div>
               <p className="text-[11px] text-pink-400 font-medium">Event spesial mendukung Pre-Order dan OTS</p>
+
+              {/* Checkbox Aktifkan Order OTS Spesial */}
+              <div className="pt-2 border-t border-pink-500/20">
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(formData.ots_enabled)}
+                    onChange={(e) => setFormData({ ...formData, ots_enabled: e.target.checked })}
+                    className="mt-0.5 w-4 h-4 rounded bg-[#182032] border-pink-500/40 text-pink-500 focus:ring-pink-500 focus:ring-offset-0 cursor-pointer"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-pink-200">Aktifkan Order OTS Spesial</span>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">Centang untuk membuka akses pemesanan On The Spot (OTS) pada event spesial ini.</p>
+                  </div>
+                </label>
+              </div>
             </div>
           )}
 
