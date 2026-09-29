@@ -451,7 +451,12 @@ const AdminPage = () => {
       fetchEvents()
       showToast.success(isNowPast ? 'Event ditandai selesai!' : 'Event diaktifkan kembali!')
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Gagal', text: error.message })
+      if (error.response?.status === 404) {
+        showToast.error('Event ini sudah tidak ditemukan di database.', 'Event Tidak Ditemukan')
+        fetchEvents()
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: error.response?.data?.error || error.message })
+      }
     }
   }
 

@@ -128,7 +128,13 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
       onRefresh?.()
       closeForm()
     } catch (error) {
-      showToast.error(error.response?.data?.error || error.message, 'Gagal')
+      if (error.response?.status === 404) {
+        showToast.error('Event ini sudah tidak ada di database.', 'Event Tidak Ditemukan')
+        onRefresh?.()
+        closeForm()
+      } else {
+        showToast.error(error.response?.data?.error || error.message, 'Gagal')
+      }
     } finally {
       setSubmitting(false)
     }
