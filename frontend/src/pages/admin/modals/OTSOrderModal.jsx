@@ -5,7 +5,7 @@ import api from '../../../lib/api'
 import { formatMemberName } from '../../../lib/memberUtils'
 import CustomSelect from '../components/CustomSelect'
 
-const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember = 25000, hargaOtsGrup = 30000 }) => {
+const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember = 25000, hargaOtsGrup = 30000, specialOnly = false }) => {
   const [formData, setFormData] = useState({
     nama_lengkap: '',
     event_id: '',
@@ -137,7 +137,13 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
       <div className="bg-[#111726] border border-white/10 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar text-white">
         <div className="p-5 border-b border-white/10 flex justify-between items-center bg-[#161f33] sticky top-0 z-10">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">Order OTS <span className="text-[#079108]">(On The Spot)</span></h3>
+            <h3 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
+              {specialOnly ? (
+                <>Order OTS <span className="text-pink-400">Spesial</span></>
+              ) : (
+                <>Order OTS <span className="text-[#079108]">(On The Spot)</span></>
+              )}
+            </h3>
             {isSpecialEvent && (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1" style={{ backgroundColor: selectedEvent.theme_color || '#FF6B9D' }}>
                 <FaStar size={10} /> {selectedEvent.theme_name || 'Spesial'}
@@ -157,6 +163,8 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
                 <CustomSelect
                   options={events.filter(event => {
                     if (event.is_past) return false;
+                    if (specialOnly && !event.is_special) return false;
+                    if (!specialOnly && event.is_special) return false;
                     const months = { 'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11 };
                     const eventDate = new Date(event.tahun, months[event.bulan] || 0, event.tanggal);
                     const today = new Date();

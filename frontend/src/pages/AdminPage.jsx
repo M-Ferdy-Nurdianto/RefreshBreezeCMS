@@ -59,6 +59,7 @@ const AdminPage = () => {
   const [dateTo, setDateTo] = useState(() => localStorage.getItem('admin_date_to') || '')
 
   const [showOTSModal, setShowOTSModal] = useState(false)
+  const [otsSpecialOnly, setOtsSpecialOnly] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [showOrderDetailModal, setShowOrderDetailModal] = useState(false)
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
@@ -827,7 +828,8 @@ const AdminPage = () => {
             onViewOrder={viewOrderDetail}
             onDeleteOrder={handleDeleteOrder}
             onStatusChange={handleStatusChange}
-            onShowOTSModal={() => setShowOTSModal(true)}
+            onShowOTSModal={() => { setOtsSpecialOnly(false); setShowOTSModal(true) }}
+            onShowOTSSpecialModal={() => { setOtsSpecialOnly(true); setShowOTSModal(true) }}
             onExportExcel={handleExportExcel}
             onExportPdf={handleExportPdf}
             merchOrders={merchOrders}
@@ -955,13 +957,15 @@ const AdminPage = () => {
         <OTSOrderModal
           members={members}
           events={events}
-          onClose={() => setShowOTSModal(false)}
+          onClose={() => { setShowOTSModal(false); setOtsSpecialOnly(false) }}
           onSuccess={() => {
             setShowOTSModal(false)
+            setOtsSpecialOnly(false)
             fetchOrders()
           }}
           hargaOtsPerMember={hargaOtsPerMember}
           hargaOtsGrup={hargaOtsGrup}
+          specialOnly={otsSpecialOnly}
         />
       )}
 

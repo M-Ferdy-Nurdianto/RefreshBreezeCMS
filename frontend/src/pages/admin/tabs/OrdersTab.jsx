@@ -28,6 +28,7 @@ const OrdersTab = ({
   onDeleteOrder,
   onStatusChange,
   onShowOTSModal,
+  onShowOTSSpecialModal,
   onExportExcel,
   onExportPdf,
   merchOrders,
@@ -243,6 +244,14 @@ const OrdersTab = ({
           onView={onViewOrder}
           onDelete={onDeleteOrder}
           onStatusChange={onStatusChange}
+          action={
+            <button
+              onClick={onShowOTSSpecialModal}
+              className="px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-xs shadow-[0_0_15px_rgba(236,72,153,0.3)] active:scale-95 bg-pink-500 hover:bg-pink-600 text-white"
+            >
+              <FaPlus /> Order OTS Spesial
+            </button>
+          }
         />
       )}
 
