@@ -24,13 +24,14 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
         is_special: editingEvent.is_special || false,
         theme_name: editingEvent.theme_name || '',
         theme_color: editingEvent.theme_color || '#FF6B9D',
-        harga_cheki: editingEvent.harga_cheki || ''
+        harga_cheki_po: editingEvent.harga_cheki_po || '',
+        harga_cheki_ots: editingEvent.harga_cheki_ots || ''
       }
     }
     return {
       nama: '', tanggal: '', bulan: '', tahun: new Date().getFullYear(),
       lokasi: '', event_time: '', cheki_time: '', is_past: false,
-      is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki: '', lineup: []
+      is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki_po: '', harga_cheki_ots: '', lineup: []
     }
   })
   const [submitting, setSubmitting] = useState(false)
@@ -78,7 +79,8 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
           is_special: eventType === 'special',
           theme_name: eventType === 'special' ? formData.theme_name : null,
           theme_color: eventType === 'special' ? formData.theme_color : null,
-          harga_cheki: eventType === 'special' && formData.harga_cheki ? parseInt(formData.harga_cheki, 10) : null,
+          harga_cheki_po: eventType === 'special' && formData.harga_cheki_po ? parseInt(formData.harga_cheki_po, 10) : null,
+          harga_cheki_ots: eventType === 'special' && formData.harga_cheki_ots ? parseInt(formData.harga_cheki_ots, 10) : null,
           lineup: formData.lineup // Send the array of UUIDs
         }
 
@@ -91,7 +93,8 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
           is_special: eventType === 'special',
           theme_name: eventType === 'special' ? formData.theme_name : null,
           theme_color: eventType === 'special' ? formData.theme_color : null,
-          harga_cheki: eventType === 'special' && formData.harga_cheki ? parseInt(formData.harga_cheki, 10) : null,
+          harga_cheki_po: eventType === 'special' && formData.harga_cheki_po ? parseInt(formData.harga_cheki_po, 10) : null,
+          harga_cheki_ots: eventType === 'special' && formData.harga_cheki_ots ? parseInt(formData.harga_cheki_ots, 10) : null,
           lineup: formData.lineup 
         }
         await api.post('/events', payload)
@@ -221,9 +224,16 @@ const EventModal = ({ members, onClose, onSuccess, editingEvent }) => {
               />
               <input
                 type="number"
-                placeholder="Harga Cheki Spesial (Rp) - Opsional"
-                value={formData.harga_cheki || ''}
-                onChange={(e) => setFormData({...formData, harga_cheki: e.target.value})}
+                placeholder="Harga Cheki PO (Rp) - Opsional"
+                value={formData.harga_cheki_po || ''}
+                onChange={(e) => setFormData({...formData, harga_cheki_po: e.target.value})}
+                className="w-full px-3.5 py-2 bg-[#182032] border border-pink-500/30 text-white rounded-xl text-xs focus:outline-none focus:border-pink-500"
+              />
+              <input
+                type="number"
+                placeholder="Harga Cheki OTS (Rp) - Opsional"
+                value={formData.harga_cheki_ots || ''}
+                onChange={(e) => setFormData({...formData, harga_cheki_ots: e.target.value})}
                 className="w-full px-3.5 py-2 bg-[#182032] border border-pink-500/30 text-white rounded-xl text-xs focus:outline-none focus:border-pink-500"
               />
               <div className="flex items-center gap-1.5 pt-1">

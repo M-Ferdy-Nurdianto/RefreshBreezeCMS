@@ -75,8 +75,8 @@ const ShopPage = () => {
   // Selected event detection for custom event / special cheki pricing
   const selectedEvent = events.find(e => e.id === formData.event_id)
   const isSpecialEvent = Boolean(selectedEvent?.is_special || selectedEvent?.type === 'special' || selectedEvent?.theme_name || selectedEvent?.theme_color)
-  const effectiveHargaMember = (isSpecialEvent && selectedEvent?.harga_cheki)
-    ? Number(selectedEvent.harga_cheki)
+  const effectiveHargaMember = (isSpecialEvent && selectedEvent?.harga_cheki_po)
+    ? Number(selectedEvent.harga_cheki_po)
     : (Number(config?.harga_cheki_per_member) || 25000)
 
   // Cart Hook

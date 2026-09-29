@@ -21,7 +21,7 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
   const handleEventChange = (eventId) => {
     const selected = events.find(e => e.id === eventId)
     const isSpecial = Boolean(selected?.is_special || selected?.theme_name)
-    const initialPrice = selected?.harga_cheki ? String(selected.harga_cheki) : String(hargaOtsPerMember)
+    const initialPrice = selected?.harga_cheki_ots ? String(selected.harga_cheki_ots) : String(hargaOtsPerMember)
     
     setCustomSpecialPrice(isSpecial ? initialPrice : '')
 
@@ -31,7 +31,7 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
       items: prev.items.map(item => {
         if (item.member_id === 'group') return item
         const newPrice = isSpecial 
-          ? (selected?.harga_cheki ? parseInt(selected.harga_cheki, 10) : parseInt(hargaOtsPerMember, 10))
+          ? (selected?.harga_cheki_ots ? parseInt(selected.harga_cheki_ots, 10) : parseInt(hargaOtsPerMember, 10))
           : parseInt(hargaOtsPerMember, 10)
         return { ...item, price: newPrice }
       })
@@ -63,8 +63,8 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
         const parsed = parseInt(customSpecialPrice, 10)
         if (!isNaN(parsed)) return parsed
       }
-      if (selectedEvent?.harga_cheki) {
-        return parseInt(selectedEvent.harga_cheki, 10)
+      if (selectedEvent?.harga_cheki_ots) {
+        return parseInt(selectedEvent.harga_cheki_ots, 10)
       }
     }
     return parseInt(hargaOtsPerMember, 10)
@@ -193,7 +193,7 @@ const OTSOrderModal = ({ members, events, onClose, onSuccess, hargaOtsPerMember 
                       type="number"
                       value={customSpecialPrice}
                       onChange={(e) => handleSpecialPriceChange(e.target.value)}
-                      placeholder={selectedEvent?.harga_cheki ? String(selectedEvent.harga_cheki) : String(hargaOtsPerMember)}
+                      placeholder={selectedEvent?.harga_cheki_ots ? String(selectedEvent.harga_cheki_ots) : String(hargaOtsPerMember)}
                       className="w-full px-3 py-1.5 bg-[#182032] border border-white/20 text-white font-bold text-xs rounded-lg focus:outline-none focus:border-[#079108]"
                     />
                   </div>

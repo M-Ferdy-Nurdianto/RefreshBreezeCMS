@@ -13,7 +13,7 @@ const presetColors = ['#FF6B9D', '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3
 const emptyForm = {
   nama: '', tanggal: '', bulan: '', tahun: new Date().getFullYear(),
   lokasi: '', event_time: '', cheki_time: '', is_past: false,
-  is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki: '', lineup: []
+  is_special: false, theme_name: '', theme_color: '#FF6B9D', harga_cheki_po: '', harga_cheki_ots: '', lineup: []
 }
 
 const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) => {
@@ -74,7 +74,8 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
       is_special: event.is_special || false,
       theme_name: event.theme_name || '',
       theme_color: event.theme_color || '#FF6B9D',
-      harga_cheki: event.harga_cheki || ''
+      harga_cheki_po: event.harga_cheki_po || '',
+      harga_cheki_ots: event.harga_cheki_ots || ''
     })
     setView('form')
   }
@@ -110,7 +111,8 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
         is_special: eventType === 'special',
         theme_name: eventType === 'special' ? formData.theme_name : null,
         theme_color: eventType === 'special' ? formData.theme_color : null,
-        harga_cheki: eventType === 'special' && formData.harga_cheki ? parseInt(formData.harga_cheki, 10) : null,
+        harga_cheki_po: eventType === 'special' && formData.harga_cheki_po ? parseInt(formData.harga_cheki_po, 10) : null,
+        harga_cheki_ots: eventType === 'special' && formData.harga_cheki_ots ? parseInt(formData.harga_cheki_ots, 10) : null,
         lineup: formData.lineup
       }
 
@@ -277,15 +279,25 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-pink-300 mb-1.5">Harga Cheki Spesial (Rp)</label>
+                  <label className="block text-xs text-pink-300 mb-1.5">Harga Cheki PO (Rp)</label>
                   <input
                     type="number"
-                    placeholder="Contoh: 35000 (Kosongkan jika default)"
-                    value={formData.harga_cheki || ''}
-                    onChange={(e) => setFormData({ ...formData, harga_cheki: e.target.value })}
+                    placeholder="Harga Pre-Order (Kosongkan = default)"
+                    value={formData.harga_cheki_po || ''}
+                    onChange={(e) => setFormData({ ...formData, harga_cheki_po: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-[#182032] border border-pink-500/30 text-white rounded-xl placeholder-zinc-600 text-sm focus:outline-none focus:border-pink-500"
                   />
-                  <p className="text-[10px] text-zinc-400 mt-1">Kosongkan jika menggunakan harga reguler. Jika diisi, harga di Shop & OTS akan otomatis menggunakan harga spesial ini.</p>
+                </div>
+                <div>
+                  <label className="block text-xs text-pink-300 mb-1.5">Harga Cheki OTS (Rp)</label>
+                  <input
+                    type="number"
+                    placeholder="Harga On The Spot (Kosongkan = default)"
+                    value={formData.harga_cheki_ots || ''}
+                    onChange={(e) => setFormData({ ...formData, harga_cheki_ots: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-[#182032] border border-pink-500/30 text-white rounded-xl placeholder-zinc-600 text-sm focus:outline-none focus:border-pink-500"
+                  />
+                  <p className="text-[10px] text-zinc-400 mt-1">Kosongkan jika menggunakan harga reguler. Harga PO berlaku di Shop, OTS berlaku di Order Langsung.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-zinc-400 mr-1">Warna tema</span>
@@ -413,9 +425,9 @@ const EventsTab = ({ events, members, onDeleteEvent, onTogglePast, onRefresh }) 
                           {event.theme_name || 'Special'}
                         </span>
                       )}
-                      {event.harga_cheki && (
+                      {(event.harga_cheki_po || event.harga_cheki_ots) && (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
-                          Rp {Number(event.harga_cheki).toLocaleString('id-ID')}
+                          PO: Rp {Number(event.harga_cheki_po || 0).toLocaleString('id-ID')} | OTS: Rp {Number(event.harga_cheki_ots || 0).toLocaleString('id-ID')}
                         </span>
                       )}
                     </div>
