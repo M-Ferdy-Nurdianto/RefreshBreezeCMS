@@ -163,9 +163,12 @@ router.get('/:id', cachePublic({ sMaxAge: 10, maxAge: 5, staleWhileRevalidate: 1
         )
       `)
       .eq('id', id)
-      .single()
+      .maybeSingle()
 
     if (error) throw error
+    if (!data) {
+      return res.status(404).json({ error: 'Event tidak ditemukan' })
+    }
 
     res.json({ success: true, data })
   } catch (error) {
@@ -187,7 +190,7 @@ router.post('/', authMiddleware, async (req, res) => {
         tanggal: parseInt(tanggal, 10),
         bulan,
         tahun: parseInt(tahun, 10),
-        lokasi,
+        lokasi: lokasi || '-',
         event_time,
         cheki_time,
         is_past: Boolean(is_past),
@@ -204,18 +207,22 @@ router.post('/', authMiddleware, async (req, res) => {
 
     if (eventError) throw eventError
 
-    // Insert lineup if provided
-    if (lineup && lineup.length > 0) {
-      const lineupData = lineup.map(member_id => ({
-        event_id: event.id,
-        member_id
-      }))
+    // Insert lineup if provided (filter only valid UUIDs)
+    if (lineup && Array.isArray(lineup) && lineup.length > 0) {
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      const validMemberIds = lineup.filter(mId => typeof mId === 'string' && UUID_REGEX.test(mId))
+      if (validMemberIds.length > 0) {
+        const lineupData = validMemberIds.map(member_id => ({
+          event_id: event.id,
+          member_id
+        }))
 
-      const { error: lineupError } = await supabase
-        .from('event_lineup')
-        .insert(lineupData)
+        const { error: lineupError } = await supabase
+          .from('event_lineup')
+          .insert(lineupData)
 
-      if (lineupError) throw lineupError
+        if (lineupError) console.error('Lineup insert error:', lineupError)
+      }
     }
 
     res.json({ success: true, data: event })
@@ -231,49 +238,76 @@ router.patch('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params
     const { lineup, ...updates } = req.body
 
-    // Sync is_special with type if type is updated
-    if (updates.type) {
-      updates.is_special = updates.type === 'special'
+    const allowedColumns = [
+      'nama', 'tanggal', 'bulan', 'tahun', 'lokasi', 'event_time', 'cheki_time',
+      'is_past', 'is_special', 'type', 'theme_name', 'theme_color', 'event_date',
+      'deskripsi', 'harga_cheki_po', 'harga_cheki_ots', 'ots_enabled'
+    ]
+
+    const cleanUpdates = {}
+    for (const key of allowedColumns) {
+      if (updates[key] !== undefined) {
+        cleanUpdates[key] = updates[key]
+      }
     }
 
-    if (updates.harga_cheki_po !== undefined) {
-      updates.harga_cheki_po = updates.harga_cheki_po ? parseInt(updates.harga_cheki_po, 10) : null
+    if (cleanUpdates.tanggal !== undefined) {
+      cleanUpdates.tanggal = parseInt(cleanUpdates.tanggal, 10)
     }
-    if (updates.harga_cheki_ots !== undefined) {
-      updates.harga_cheki_ots = updates.harga_cheki_ots ? parseInt(updates.harga_cheki_ots, 10) : null
+    if (cleanUpdates.tahun !== undefined) {
+      cleanUpdates.tahun = parseInt(cleanUpdates.tahun, 10)
     }
-    if (updates.ots_enabled !== undefined) {
-      updates.ots_enabled = Boolean(updates.ots_enabled)
+    if (cleanUpdates.is_past !== undefined) {
+      cleanUpdates.is_past = Boolean(cleanUpdates.is_past)
+    }
+    if (cleanUpdates.type) {
+      cleanUpdates.is_special = cleanUpdates.type === 'special'
+    }
+    if (cleanUpdates.harga_cheki_po !== undefined) {
+      cleanUpdates.harga_cheki_po = cleanUpdates.harga_cheki_po ? parseInt(cleanUpdates.harga_cheki_po, 10) : null
+    }
+    if (cleanUpdates.harga_cheki_ots !== undefined) {
+      cleanUpdates.harga_cheki_ots = cleanUpdates.harga_cheki_ots ? parseInt(cleanUpdates.harga_cheki_ots, 10) : null
+    }
+    if (cleanUpdates.ots_enabled !== undefined) {
+      cleanUpdates.ots_enabled = Boolean(cleanUpdates.ots_enabled)
     }
 
     // Update event basic info
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .update(updates)
+      .update(cleanUpdates)
       .eq('id', id)
       .select()
-      .single()
+      .maybeSingle()
 
     if (eventError) throw eventError
+    if (!event) {
+      return res.status(404).json({ error: 'Event tidak ditemukan' })
+    }
 
     // Update lineup if provided
-    if (lineup !== undefined) {
+    if (lineup !== undefined && Array.isArray(lineup)) {
       // Delete existing lineup
       await supabase
         .from('event_lineup')
         .delete()
         .eq('event_id', id)
 
-      // Insert new lineup
-      if (lineup.length > 0) {
-        const lineupData = lineup.map(member_id => ({
+      // Insert new lineup (filter only valid UUIDs)
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      const validMemberIds = lineup.filter(mId => typeof mId === 'string' && UUID_REGEX.test(mId))
+      if (validMemberIds.length > 0) {
+        const lineupData = validMemberIds.map(member_id => ({
           event_id: id,
           member_id
         }))
 
-        await supabase
+        const { error: lineupError } = await supabase
           .from('event_lineup')
           .insert(lineupData)
+
+        if (lineupError) console.error('Lineup update error:', lineupError)
       }
     }
 
@@ -288,6 +322,9 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params
+
+    await supabase.from('event_lineup').delete().eq('event_id', id)
+    await supabase.from('event_gallery').delete().eq('event_id', id)
 
     const { error } = await supabase
       .from('events')
