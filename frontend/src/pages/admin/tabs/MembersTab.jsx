@@ -84,6 +84,7 @@ const MembersTab = ({ members = [], onRefresh }) => {
   // Search & Filter in list view (default hanya tampilkan member aktif)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('active') // active, all, inactive
+  const [togglingId, setTogglingId] = useState(null) // ID member yang sedang di-toggle
 
   // Form State for Full Page Editor
   const [formData, setFormData] = useState({
@@ -392,8 +393,14 @@ const MembersTab = ({ members = [], onRefresh }) => {
   }
 
   const handleToggleHadir = async (member) => {
+    if (togglingId === member.id) return // Cegah double-click
+    setTogglingId(member.id)
     try {
-      const newStatus = !member.hadir
+      // FIX: Normalisasi hadir — null/undefined dianggap true (aktif), bukan false
+      // !null = true, sehingga toggle tidak pernah nonaktifkan. Gunakan !== false sebagai baseline.
+      const currentStatus = member.hadir !== false
+      const newStatus = !currentStatus
+
       await api.patch(`/members/${member.id}`, { hadir: newStatus })
 
       // SINKRONISASI OTOMATIS KE HERO: Jika dinonaktifkan, langsung keluarkan dari Hero panggung
@@ -457,6 +464,8 @@ const MembersTab = ({ members = [], onRefresh }) => {
       onRefresh()
     } catch (err) {
       showToast.error(err.response?.data?.error || err.message, 'Gagal mengubah status')
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -1405,14 +1414,18 @@ const MembersTab = ({ members = [], onRefresh }) => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleHadir(member)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition ${
+                      disabled={togglingId === member.id}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition disabled:opacity-60 disabled:cursor-not-allowed ${
                         member.hadir !== false
                           ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30'
                           : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-zinc-700'
                       }`}
                       title="Klik untuk toggle status aktif/hadir"
                     >
-                      {member.hadir !== false ? <FaUserCheck /> : <FaUserTimes />}
+                      {togglingId === member.id
+                        ? <span className="animate-spin inline-block w-3 h-3 border border-current border-t-transparent rounded-full" />
+                        : (member.hadir !== false ? <FaUserCheck /> : <FaUserTimes />)
+                      }
                       {member.hadir !== false ? 'Aktif' : 'Nonaktif'}
                     </button>
                     <span className="text-[10px] text-zinc-500">Urutan: #{member.order_index}</span>
